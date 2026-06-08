@@ -1,8 +1,22 @@
 # Core AI Framework Example
 
-Early examples for Apple's `CoreAI.framework` in Xcode 27 beta.
+Early examples for Apple's new `CoreAI.framework` in Xcode 27 beta.
 
-This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app to grow into real model examples once iOS 27 runtime devices/simulators are ready.
+This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app that can grow into real model examples once compatible Core AI model assets and iOS 27 runtime devices/simulators are available.
+
+CoreAI currently looks like a lower-level model runtime and asset framework:
+
+```text
+model asset URL
+-> AIModelAsset metadata and summary
+-> AIModel specialization
+-> AIModelCache compiled artifact lookup
+-> InferenceFunction descriptor inspection
+-> NDArray or image inputs
+-> async inference outputs
+```
+
+It is not a replacement for `FoundationModels`. Foundation Models is still the high-level language model API. CoreAI is closer to the model asset/runtime/specialization layer.
 
 ## Requirements
 
@@ -20,13 +34,52 @@ This repository is intentionally compiler-first. It verifies the public SDK surf
 
 ## Example Coverage
 
-- Runtime discovery: architecture name and available compute units.
-- Model asset inspection: validity, metadata, function summary, and compute types.
-- Specialization: default, CPU-only, and preferred compute unit options.
-- Cache policy: default cache, app-group cache, persistent policy, and purge conditions.
-- Function descriptors: input/state/output names and value descriptor summaries.
-- Inference scaffolding: load the first function and prepare the `function.run(inputs:)` flow.
-- Value descriptors: `NDArrayDescriptor` and `ImageDescriptor` inspection examples.
+| Area | File | What it shows |
+| --- | --- | --- |
+| Runtime discovery | `CoreAIDiscoverySnapshot.swift` | Architecture name, available compute units, default specialization options. |
+| Model assets | `CoreAIModelAssetInspector.swift` | `AIModelAsset.isValid`, metadata, function names, compute types. |
+| Model loading | `CoreAIModelLoader.swift` | `AIModel.specialize`, preferred compute unit options, function loading. |
+| Cache policy | `Examples/CoreAIModelCacheExamples.swift` | Default/app-group caches, persistent policy, purge conditions, cache cleanup. |
+| Function descriptors | `Examples/CoreAIFunctionDescriptorExamples.swift` | Input/state/output names and descriptor summaries. |
+| Inference | `Examples/CoreAIInferenceExamples.swift` | The model/function/input flow for `function.run(inputs:)`. |
+| Values | `Examples/CoreAIValueDescriptorExamples.swift` | Public descriptor inspection for tensors and images. |
+
+The app lists these examples on launch so the repo is easy to navigate from Xcode.
+
+## How To Use CoreAI
+
+The current public flow is:
+
+```swift
+import CoreAI
+
+let modelURL = URL(fileURLWithPath: "/path/to/model")
+
+guard AIModelAsset.isValid(at: modelURL) else {
+    throw CocoaError(.fileReadUnknown)
+}
+
+let asset = try AIModelAsset(contentsOf: modelURL)
+let summary = try asset.summary(includingStatistics: true)
+
+let model = try await AIModel.specialize(
+    contentsOf: modelURL,
+    options: SpecializationOptions(preferredComputeUnitKind: .neuralEngine),
+    cache: .default,
+    cachePolicy: .default
+)
+
+guard let functionName = model.functionNames.first,
+      let function = try model.loadFunction(named: functionName) else {
+    return
+}
+
+let descriptor = function.descriptor
+print(descriptor.inputNames)
+print(descriptor.outputNames)
+```
+
+Running inference requires a real compatible CoreAI model asset and input values that match the function descriptors. The scaffold is in `CoreAIInferenceExamples.swift`.
 
 ## Generate the Xcode Project
 
@@ -49,6 +102,13 @@ xcodebuild -project CoreAILab.xcodeproj \
 ```
 
 This currently compiles successfully against `iPhoneOS27.0.sdk`. Xcode may still print beta-environment warnings about CoreDevice/CoreSimulator until the matching iOS/macOS runtime pieces are installed.
+
+## Current Limitations
+
+- No bundled model asset yet. The SDK exposes the runtime APIs, but this repo still needs a real compatible CoreAI model package before it can include a complete inference demo.
+- `NDArrayDescriptor` and `ImageDescriptor` are inspectable from the public API, but their direct initializers are not public in this beta seed.
+- Simulator availability still needs validation with matching Xcode 27/iOS 27 runtime components.
+- The API is beta and may move quickly between Xcode seeds.
 
 ## Current SDK Shape
 

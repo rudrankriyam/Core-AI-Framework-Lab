@@ -1,5 +1,7 @@
 # Core AI Framework Notes
 
+These notes were generated from the local Xcode 27 beta SDK interfaces, not from public web documentation.
+
 Source inspected:
 
 `/Users/rudrank/Downloads/Xcode-beta.app`
@@ -32,6 +34,11 @@ Subframeworks:
 
 `/Users/rudrank/Downloads/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/SubFrameworks/CoreAICache.framework`
 
+Related public frameworks found in the same SDK scan:
+
+- `VisualIntelligence.framework`
+- `MediaIntelligence.framework`
+
 ## Platform Availability
 
 The public Core AI APIs are annotated:
@@ -60,6 +67,26 @@ and then use types originally defined in `CoreAIDelegates`, `CoreAIAsset`, and `
 
 ## Core Concepts
 
+The public shape is:
+
+```text
+AIModelAsset
+  metadata
+  summary
+  derived artifacts
+
+AIModel
+  specialization
+  cached compiled artifacts
+  function descriptors
+  function loading
+
+InferenceFunction
+  tensor/image inputs
+  state values
+  output values
+```
+
 ### AIModelAsset
 
 From `CoreAIAsset`:
@@ -77,6 +104,22 @@ public struct AIModelAsset {
 ```
 
 This appears to be the file/package inspection layer for Core AI model assets.
+
+Example:
+
+```swift
+let modelURL = URL(fileURLWithPath: "/path/to/model")
+
+guard AIModelAsset.isValid(at: modelURL) else {
+    return
+}
+
+let asset = try AIModelAsset(contentsOf: modelURL)
+let summary = try asset.summary(includingStatistics: true)
+
+print(asset.metadata.author)
+print(summary?.functions.map(\.name) ?? [])
+```
 
 ### Metadata
 
@@ -158,6 +201,19 @@ It also exposes:
 public static var availableKinds: Set<ComputeUnitKind> { get }
 ```
 
+Example:
+
+```swift
+let options = SpecializationOptions(preferredComputeUnitKind: .neuralEngine)
+
+let model = try await AIModel.specialize(
+    contentsOf: modelURL,
+    options: options,
+    cache: .default,
+    cachePolicy: .default
+)
+```
+
 ### Model Cache
 
 `AIModelCache` exposes:
@@ -175,6 +231,8 @@ public static var availableKinds: Set<ComputeUnitKind> { get }
 - `storagePressure`
 - `sourceAssetChangedOrDeleted`
 
+It also exposes `.persistent`, which is useful when the specialized artifact should survive normal purge behavior as much as the framework allows.
+
 ### Runtime and Inference
 
 `InferenceFunction` exposes:
@@ -191,6 +249,20 @@ public static var availableKinds: Set<ComputeUnitKind> { get }
 - pixel buffers
 
 `NDArray` and `NDArrayDescriptor` are the tensor layer. The interface uses new Swift 6.4 experimental features like spans, lifetimes, noncopyable values, and addressable parameters.
+
+In this beta seed, `NDArrayDescriptor` and `ImageDescriptor` expose useful properties publicly, but their direct initializers are not public from normal app code. Treat them as descriptors returned by assets/functions rather than values you freely construct.
+
+Example descriptor inspection:
+
+```swift
+let descriptor = function.descriptor
+
+for inputName in descriptor.inputNames {
+    if let input = descriptor.inputDescriptor(of: inputName) {
+        print(input)
+    }
+}
+```
 
 ## Related New Public Frameworks
 
@@ -216,3 +288,10 @@ Core AI is not a drop-in Foundation Models replacement. It looks closer to a low
 
 Foundation Models remains the high-level language model API. Core AI appears to be the lower-level model runtime/asset layer.
 
+## Open Questions
+
+- What file extension/package shape will Apple document for distributable CoreAI model assets?
+- Will conversion from Core ML or other model formats be exposed in Xcode tooling?
+- Which parts of `CoreAICompiler.framework` are intended for public app use versus build-time tooling?
+- How much of the runtime will work in simulators once matching Xcode 27 simulator components are installed?
+- Will Apple publish downloadable sample CoreAI assets for end-to-end inference examples?
