@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     private let snapshot = CoreAIDiscoverySnapshot.current()
+    private let catalog = CoreAIExampleCatalog.current
 
     var body: some View {
         NavigationStack {
@@ -21,9 +22,24 @@ struct ContentView: View {
                     LabeledContent("Default", value: snapshot.defaultSpecializationDescription)
                     LabeledContent("CPU only", value: snapshot.cpuOnlySpecializationDescription)
                 }
+
+                Section("Examples") {
+                    ForEach(catalog.examples) { example in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(example.title)
+                                .font(.headline)
+                            Text(example.summary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text(example.sourceFile)
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
             }
             .navigationTitle("Core AI Lab")
         }
     }
 }
-

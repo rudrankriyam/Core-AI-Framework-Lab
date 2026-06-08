@@ -14,8 +14,19 @@ This repository is intentionally compiler-first. It verifies the public SDK surf
 
 - `CoreAILab/` - SwiftUI app target that imports `CoreAI`
 - `CoreAILabCore/` - small reusable helpers for Core AI API discovery
+- `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `project.yml` - XcodeGen project definition
+
+## Example Coverage
+
+- Runtime discovery: architecture name and available compute units.
+- Model asset inspection: validity, metadata, function summary, and compute types.
+- Specialization: default, CPU-only, and preferred compute unit options.
+- Cache policy: default cache, app-group cache, persistent policy, and purge conditions.
+- Function descriptors: input/state/output names and value descriptor summaries.
+- Inference scaffolding: load the first function and prepare the `function.run(inputs:)` flow.
+- Value descriptors: `NDArrayDescriptor` and `ImageDescriptor` inspection examples.
 
 ## Generate the Xcode Project
 

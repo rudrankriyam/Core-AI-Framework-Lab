@@ -8,18 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		20DC7C7D32DD4A1EC12A2DC0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BAC26FD3C28057D2EB3B9 /* ContentView.swift */; };
+		23D767D5E88B2066971C86A8 /* CoreAIValueDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = A04F96F0C6BAE98CF1A3DACC /* CoreAIValueDescriptorExamples.swift */; };
 		276937EA2A2F862996C9FE88 /* CoreAIModelAssetInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC575BCC0B46AF7A1B5C9D25 /* CoreAIModelAssetInspector.swift */; };
+		540CA4FC2792FD63AC478A83 /* CoreAIFunctionDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19005FDD13B2669DDBC107D /* CoreAIFunctionDescriptorExamples.swift */; };
+		7263156264C9E82B0B2B7000 /* CoreAIModelCacheExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39C02CA2036F7CAF3EA69F6 /* CoreAIModelCacheExamples.swift */; };
 		7DF3C5CE328CB080300E1066 /* CoreAIDiscoverySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29516B5E1B97C5B372543583 /* CoreAIDiscoverySnapshot.swift */; };
 		82EDEC63F1544135A7CE1F1B /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A27505940084107DB4BE4 /* CoreAIModelLoader.swift */; };
+		9728F13D10B64E689EE75D32 /* CoreAIExampleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32451029280513FDE92D03D5 /* CoreAIExampleCatalog.swift */; };
 		BC21DAF19CD73934BFE12FA3 /* CoreAILabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F6090B296572B54D2FEFFF /* CoreAILabApp.swift */; };
+		D8557E58C2D4C8A7A44AE909 /* CoreAIInferenceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B301B41BD7E4CF55D9F63D /* CoreAIInferenceExamples.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		038AFEB51AE4DEE9DF525932 /* CoreAILab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CoreAILab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29516B5E1B97C5B372543583 /* CoreAIDiscoverySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIDiscoverySnapshot.swift; sourceTree = "<group>"; };
+		32451029280513FDE92D03D5 /* CoreAIExampleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIExampleCatalog.swift; sourceTree = "<group>"; };
 		443BAC26FD3C28057D2EB3B9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		876A27505940084107DB4BE4 /* CoreAIModelLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelLoader.swift; sourceTree = "<group>"; };
+		A04F96F0C6BAE98CF1A3DACC /* CoreAIValueDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIValueDescriptorExamples.swift; sourceTree = "<group>"; };
+		C39C02CA2036F7CAF3EA69F6 /* CoreAIModelCacheExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelCacheExamples.swift; sourceTree = "<group>"; };
 		C8F6090B296572B54D2FEFFF /* CoreAILabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAILabApp.swift; sourceTree = "<group>"; };
+		D19005FDD13B2669DDBC107D /* CoreAIFunctionDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionDescriptorExamples.swift; sourceTree = "<group>"; };
+		F9B301B41BD7E4CF55D9F63D /* CoreAIInferenceExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIInferenceExamples.swift; sourceTree = "<group>"; };
 		FC575BCC0B46AF7A1B5C9D25 /* CoreAIModelAssetInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelAssetInspector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -30,8 +40,21 @@
 				29516B5E1B97C5B372543583 /* CoreAIDiscoverySnapshot.swift */,
 				FC575BCC0B46AF7A1B5C9D25 /* CoreAIModelAssetInspector.swift */,
 				876A27505940084107DB4BE4 /* CoreAIModelLoader.swift */,
+				14D5CC1BF1D29E6519E9C55A /* Examples */,
 			);
 			path = CoreAILabCore;
+			sourceTree = "<group>";
+		};
+		14D5CC1BF1D29E6519E9C55A /* Examples */ = {
+			isa = PBXGroup;
+			children = (
+				32451029280513FDE92D03D5 /* CoreAIExampleCatalog.swift */,
+				D19005FDD13B2669DDBC107D /* CoreAIFunctionDescriptorExamples.swift */,
+				F9B301B41BD7E4CF55D9F63D /* CoreAIInferenceExamples.swift */,
+				C39C02CA2036F7CAF3EA69F6 /* CoreAIModelCacheExamples.swift */,
+				A04F96F0C6BAE98CF1A3DACC /* CoreAIValueDescriptorExamples.swift */,
+			);
+			path = Examples;
 			sourceTree = "<group>";
 		};
 		5F9D792254474C903B0DDDA3 /* CoreAILab */ = {
@@ -117,9 +140,14 @@
 			files = (
 				20DC7C7D32DD4A1EC12A2DC0 /* ContentView.swift in Sources */,
 				7DF3C5CE328CB080300E1066 /* CoreAIDiscoverySnapshot.swift in Sources */,
+				9728F13D10B64E689EE75D32 /* CoreAIExampleCatalog.swift in Sources */,
+				540CA4FC2792FD63AC478A83 /* CoreAIFunctionDescriptorExamples.swift in Sources */,
+				D8557E58C2D4C8A7A44AE909 /* CoreAIInferenceExamples.swift in Sources */,
 				BC21DAF19CD73934BFE12FA3 /* CoreAILabApp.swift in Sources */,
 				276937EA2A2F862996C9FE88 /* CoreAIModelAssetInspector.swift in Sources */,
+				7263156264C9E82B0B2B7000 /* CoreAIModelCacheExamples.swift in Sources */,
 				82EDEC63F1544135A7CE1F1B /* CoreAIModelLoader.swift in Sources */,
+				23D767D5E88B2066971C86A8 /* CoreAIValueDescriptorExamples.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
