@@ -1,0 +1,348 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00E5D7EB25F93F1C68DC92DD /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */; };
+		09BCB1F303DE23AEFDCA7C00 /* CoreAIValueDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */; };
+		0D4A159FDF138A057E6FBD05 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7FB5157DD183D55DA2447D /* ContentView.swift */; };
+		19BA562A4055C908F759D5F1 /* CoreAIFunctionDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */; };
+		497F922B1E7636C4085F0C08 /* CoreAIExampleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */; };
+		5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */; };
+		85F9A7E385952219927593EF /* CoreAIModelAssetInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */; };
+		8BBA372F6066016FEA01FB71 /* CoreAIInferenceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */; };
+		997F86A32E5C9170CFC7C2A6 /* CoreAIModelCacheExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */; };
+		DEAC20E57B30F70636E2596B /* CoreAIDiscoverySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionDescriptorExamples.swift; sourceTree = "<group>"; };
+		0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIValueDescriptorExamples.swift; sourceTree = "<group>"; };
+		0E7FB5157DD183D55DA2447D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelAssetInspector.swift; sourceTree = "<group>"; };
+		21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAILabApp.swift; sourceTree = "<group>"; };
+		234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelLoader.swift; sourceTree = "<group>"; };
+		2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIExampleCatalog.swift; sourceTree = "<group>"; };
+		510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIDiscoverySnapshot.swift; sourceTree = "<group>"; };
+		61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIInferenceExamples.swift; sourceTree = "<group>"; };
+		CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelCacheExamples.swift; sourceTree = "<group>"; };
+		D2D26D131216A9303511EA95 /* CoreAILab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CoreAILab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0AE61D8A66E21D3D1A4BF8DE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2D26D131216A9303511EA95 /* CoreAILab.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1E3BD640315DF10A599327D3 /* Examples */ = {
+			isa = PBXGroup;
+			children = (
+				2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */,
+				02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */,
+				61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */,
+				CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */,
+				0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */,
+			);
+			path = Examples;
+			sourceTree = "<group>";
+		};
+		3ED934629907E899683959F2 /* CoreAILabCore */ = {
+			isa = PBXGroup;
+			children = (
+				510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */,
+				17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */,
+				234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */,
+				1E3BD640315DF10A599327D3 /* Examples */,
+			);
+			path = CoreAILabCore;
+			sourceTree = "<group>";
+		};
+		837F0A5A5CF103B4832A2A60 /* CoreAILab */ = {
+			isa = PBXGroup;
+			children = (
+				0E7FB5157DD183D55DA2447D /* ContentView.swift */,
+				21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */,
+			);
+			path = CoreAILab;
+			sourceTree = "<group>";
+		};
+		985E45ED297AF2849326E072 = {
+			isa = PBXGroup;
+			children = (
+				837F0A5A5CF103B4832A2A60 /* CoreAILab */,
+				3ED934629907E899683959F2 /* CoreAILabCore */,
+				0AE61D8A66E21D3D1A4BF8DE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		52EBF8BB8EEC1FC63AA18BF0 /* CoreAILab */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 974728A5B8E09234D6043C50 /* Build configuration list for PBXNativeTarget "CoreAILab" */;
+			buildPhases = (
+				F47B6CFA068F3E5725978827 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreAILab;
+			packageProductDependencies = (
+			);
+			productName = CoreAILab;
+			productReference = D2D26D131216A9303511EA95 /* CoreAILab.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BA9AB9CB23405E80107D6483 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = FFD340FEABEE675F27BE4335 /* Build configuration list for PBXProject "CoreAIFrameworkLab" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 985E45ED297AF2849326E072;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0AE61D8A66E21D3D1A4BF8DE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				52EBF8BB8EEC1FC63AA18BF0 /* CoreAILab */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F47B6CFA068F3E5725978827 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D4A159FDF138A057E6FBD05 /* ContentView.swift in Sources */,
+				DEAC20E57B30F70636E2596B /* CoreAIDiscoverySnapshot.swift in Sources */,
+				497F922B1E7636C4085F0C08 /* CoreAIExampleCatalog.swift in Sources */,
+				19BA562A4055C908F759D5F1 /* CoreAIFunctionDescriptorExamples.swift in Sources */,
+				8BBA372F6066016FEA01FB71 /* CoreAIInferenceExamples.swift in Sources */,
+				5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */,
+				85F9A7E385952219927593EF /* CoreAIModelAssetInspector.swift in Sources */,
+				997F86A32E5C9170CFC7C2A6 /* CoreAIModelCacheExamples.swift in Sources */,
+				00E5D7EB25F93F1C68DC92DD /* CoreAIModelLoader.swift in Sources */,
+				09BCB1F303DE23AEFDCA7C00 /* CoreAIValueDescriptorExamples.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2A6A5855572B6AA80EBE02D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				INFOPLIST_KEY_CFBundleDisplayName = "Core AI Lab";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILab;
+				PRODUCT_NAME = CoreAILab;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		48CAF63B4D0AA27B41B6DADB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		73AB55270797F80D4BD472E2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C75E0475BED4AEEF80A464BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				INFOPLIST_KEY_CFBundleDisplayName = "Core AI Lab";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILab;
+				PRODUCT_NAME = CoreAILab;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		974728A5B8E09234D6043C50 /* Build configuration list for PBXNativeTarget "CoreAILab" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A6A5855572B6AA80EBE02D5 /* Debug */,
+				C75E0475BED4AEEF80A464BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FFD340FEABEE675F27BE4335 /* Build configuration list for PBXProject "CoreAIFrameworkLab" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				48CAF63B4D0AA27B41B6DADB /* Debug */,
+				73AB55270797F80D4BD472E2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BA9AB9CB23405E80107D6483 /* Project object */;
+}

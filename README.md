@@ -1,8 +1,8 @@
-# Core AI Framework Example
+# Core AI Framework Lab
 
-Early examples for Apple's new `CoreAI.framework` in Xcode 27 beta.
+An early lab for Apple's new `CoreAI.framework` in Xcode 27 beta.
 
-This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app that can grow into real model examples once compatible Core AI model assets and iOS 27 runtime devices/simulators are available.
+This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app, Core AI Lab, that can grow into real model examples once compatible Core AI model assets and iOS 27 runtime devices/simulators are available.
 
 CoreAI currently looks like a lower-level model runtime and asset framework:
 
@@ -84,7 +84,7 @@ Running inference requires a real compatible CoreAI model asset and input values
 ## Generate the Xcode Project
 
 ```bash
-cd Core-AI-Framework-Example
+cd Core-AI-Framework-Lab
 xcodegen generate
 ```
 
@@ -94,7 +94,7 @@ Use the expanded Xcode beta directly:
 
 ```bash
 DEVELOPER_DIR=/Users/rudrank/Downloads/Xcode-beta.app/Contents/Developer \
-xcodebuild -project CoreAILab.xcodeproj \
+xcodebuild -project CoreAIFrameworkLab.xcodeproj \
   -scheme CoreAILab \
   -destination 'generic/platform=iOS' \
   -derivedDataPath ./build \
