@@ -31,6 +31,7 @@ from s3gen import (
 from t3 import (
     T3_HEAD_DIM,
     T3_MAX_CONTEXT_LENGTH,
+    T3_MAX_TEXT_TOKENS,
     T3_NUM_HEADS,
     T3_NUM_LAYERS,
     T3_START_SPEECH_TOKEN,
@@ -86,6 +87,16 @@ def normalize_text(text: str) -> str:
     if not text.endswith((".", "!", "?", "-", ",")):
         text += "."
     return text
+
+
+def tokenize_text(tokenizer, text: str) -> list[int]:
+    input_ids = tokenizer(
+        text,
+        return_tensors="np",
+        truncation=True,
+        max_length=T3_MAX_TEXT_TOKENS,
+    ).input_ids[0]
+    return input_ids[:T3_MAX_TEXT_TOKENS].astype(np.int32).tolist()
 
 
 def gpu_options() -> SpecializationOptions:
@@ -393,11 +404,7 @@ async def synthesize(
         assets.tokenizer,
         local_files_only=True,
     )
-    text_tokens = tokenizer(
-        normalized_text,
-        return_tensors="np",
-        truncation=True,
-    ).input_ids[0].astype(np.int32).tolist()
+    text_tokens = tokenize_text(tokenizer, normalized_text)
     print(f"[INFO] Normalized text: {normalized_text}")
     print(f"[INFO] Text token count: {len(text_tokens)}")
 

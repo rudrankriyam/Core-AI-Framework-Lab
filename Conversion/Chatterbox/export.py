@@ -29,11 +29,13 @@ from t3 import (
     T3_CONDITION_TOKEN_COUNT,
     T3_HIDDEN_SIZE,
     T3_MAX_CONTEXT_LENGTH,
+    T3_MAX_TEXT_TOKENS,
     create_cache_tensors,
     load_t3_embedding_modules,
     load_t3_transformer,
 )
 from s3gen import (
+    S3GEN_GENERATED_MEL_FRAMES,
     S3GEN_GENERATED_TOKENS,
     S3GEN_TOTAL_MEL_FRAMES,
     load_s3gen_model,
@@ -460,7 +462,7 @@ def export_t3_embeddings(
     text_length = torch.export.Dim(
         "text_length",
         min=1,
-        max=256,
+        max=T3_MAX_TEXT_TOKENS,
     )
     prefill_inputs = (
         torch.zeros((1, 16), dtype=torch.int32),
@@ -802,7 +804,7 @@ def default_output(mode: str) -> Path:
     return exports / "ChatterboxTurboVocoder.aimodel"
 
 
-def main() -> None:
+def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Convert Chatterbox Turbo components to native Core AI assets."
     )
@@ -832,8 +834,11 @@ def main() -> None:
     parser.add_argument(
         "--mel-frames",
         type=int,
-        default=100,
-        help="Static vocoder input length. 100 frames emits 2 seconds at 24 kHz.",
+        default=S3GEN_GENERATED_MEL_FRAMES,
+        help=(
+            "Static vocoder input length. Defaults to the "
+            f"{S3GEN_GENERATED_MEL_FRAMES}-frame S3Gen output."
+        ),
     )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument(
@@ -853,6 +858,11 @@ def main() -> None:
         default=16,
         help="Weights per INT4 quantization block.",
     )
+    return parser
+
+
+def main() -> None:
+    parser = build_argument_parser()
     args = parser.parse_args()
 
     output_path = args.output or default_output(args.mode)

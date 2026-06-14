@@ -15,6 +15,7 @@ from coreai.runtime import (
 from huggingface_hub import hf_hub_download
 
 from s3gen import (
+    S3GEN_GENERATED_MEL_FRAMES,
     load_s3gen_model,
     reference_inputs as s3gen_reference_inputs,
 )
@@ -175,7 +176,7 @@ async def run_validations(args: argparse.Namespace) -> None:
         )
 
 
-def main() -> None:
+def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run converted Chatterbox assets with the Core AI runtime."
     )
@@ -189,12 +190,25 @@ def main() -> None:
         type=Path,
         help="Path to ChatterboxTurboVocoder.aimodel.",
     )
-    parser.add_argument("--mel-frames", type=int, default=256)
+    parser.add_argument(
+        "--mel-frames",
+        type=int,
+        default=S3GEN_GENERATED_MEL_FRAMES,
+        help=(
+            "Static vocoder input length. Defaults to the "
+            f"{S3GEN_GENERATED_MEL_FRAMES}-frame S3Gen output."
+        ),
+    )
     parser.add_argument(
         "--compute-unit",
         choices=["default", "gpu", "cpu"],
         default="gpu",
     )
+    return parser
+
+
+def main() -> None:
+    parser = build_argument_parser()
     args = parser.parse_args()
 
     if args.s3gen is None and args.vocoder is None:
