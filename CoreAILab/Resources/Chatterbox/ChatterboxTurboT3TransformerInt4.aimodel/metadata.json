@@ -1,0 +1,7 @@
+{
+  "author" : "Resemble AI; Core AI conversion by Core AI Framework Lab",
+  "license" : "MIT",
+  "description" : "The Chatterbox Turbo GPT-2-medium T3 backbone and speech-token head converted to Core AI INT4 symmetric per-block weights with sensitive embeddings, boundary blocks, and the speech head retained at higher precision. Dynamic prefill and fixed-shape decode return only newly computed key\/value cache slices.",
+  "assetVersion" : "2.0",
+  "creationDate" : "20260614T052435Z"
+}

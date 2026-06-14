@@ -8,36 +8,167 @@
 
 /* Begin PBXBuildFile section */
 		00E5D7EB25F93F1C68DC92DD /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */; };
+		02B13AC886CCC8EABD95A560 /* ChatterboxPipelineStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CB94E1104082F6644C44F8 /* ChatterboxPipelineStage.swift */; };
+		02B5AAD400C38A8B522AFFEC /* Core AI Lab.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7716B246D5E600F1622AB1D5 /* Core AI Lab.icon */; };
+		058DD2182AA98F6C8FB3AF7A /* CoreAILabTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3023B74C3A5985D2F9FE7A1C /* CoreAILabTab.swift */; };
 		09BCB1F303DE23AEFDCA7C00 /* CoreAIValueDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */; };
+		0A95113F0B0CF7B0678487A6 /* CoreAIModelCacheExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */; };
+		0B87E67DCA445215F20FF05C /* ChatterboxCoreAIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA28FD73B2E27F575A75A28 /* ChatterboxCoreAIError.swift */; };
 		0D4A159FDF138A057E6FBD05 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7FB5157DD183D55DA2447D /* ContentView.swift */; };
+		120B0455418BA762E89D0FA1 /* ChatterboxCoreAIEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */; };
+		12482592EBFF56BE5B3BAE30 /* ChatterboxModelInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E8FCF284E2BA285950E13F /* ChatterboxModelInspection.swift */; };
+		18E1A38669E7133383781D91 /* CoreAIValueDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */; };
 		19BA562A4055C908F759D5F1 /* CoreAIFunctionDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */; };
+		1C23BFC4FC006C195C230FF9 /* ChatterboxSampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */; };
+		2016E7D403BE4C6D2E005868 /* ChatterboxGenerationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED22859185F784C24FFBCA8 /* ChatterboxGenerationRequest.swift */; };
+		2316B32CC2E08910DAD1EE9F /* ChatterboxNDArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D1A13D87AB37EF81055D40 /* ChatterboxNDArray.swift */; };
+		2486DD84DFF6AFB8EFBC0E26 /* ChatterboxNDArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D1A13D87AB37EF81055D40 /* ChatterboxNDArray.swift */; };
+		27368950A09746EC0B06C643 /* ChatterboxWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63E2FF6512383B12E812915 /* ChatterboxWorkspaceModel.swift */; };
+		2C96A06F7BC7380C87F354CE /* ChatterboxGenerationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED22859185F784C24FFBCA8 /* ChatterboxGenerationRequest.swift */; };
+		30EAC3477888A085FF557869 /* ChatterboxModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 396852B1FAC06BFF18951A80 /* ChatterboxModelSection.swift */; };
+		32E425903F804C3875C78D7C /* ChatterboxGenerationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A75CBB86106F2CBCFB630 /* ChatterboxGenerationResult.swift */; };
+		384E95E4A3D8EC70901C9524 /* Chatterbox in Resources */ = {isa = PBXBuildFile; fileRef = A1E1F350924813824143F274 /* Chatterbox */; };
+		3F0C34F96B21DE35BE1E9A04 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7FB5157DD183D55DA2447D /* ContentView.swift */; };
+		41F376E188A8FAD6DC6FA2CB /* ChatterboxCoreAIEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */; };
+		4277CDE729A7FF2D57E27606 /* CoreAIRuntimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BDEDF8EA279E5684E08A23 /* CoreAIRuntimeView.swift */; };
+		452965CC869EB0A21201C0B0 /* CoreAIExampleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */; };
 		497F922B1E7636C4085F0C08 /* CoreAIExampleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */; };
+		5050463651E9CD18150B9332 /* ChatterboxWaveFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9107CFB7DE7898B9BF2709DE /* ChatterboxWaveFile.swift */; };
+		50EAAD999EF3C5AEF59F5358 /* ChatterboxModelInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E8FCF284E2BA285950E13F /* ChatterboxModelInspection.swift */; };
+		55723F32E20DA6FFFF971223 /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = 82EE376070C846AA73B0D35C /* Transformers */; };
+		587CB62099E976FDBC8CEE4D /* ChatterboxGenerationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813EBCF1FD7AC7EFCB06DA62 /* ChatterboxGenerationSection.swift */; };
+		590CCCEDBEDF66F4011C22EE /* ChatterboxModelState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */; };
+		5B40C3E9C781C95BF34DE707 /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */; };
+		5CCC20A2176CAA56D63FB424 /* ChatterboxFunctionContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */; };
 		5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */; };
+		5E7436BA605A59122B138AD3 /* ChatterboxContractValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA19B4067C60A0A537331EB /* ChatterboxContractValidation.swift */; };
+		6810C0469276B0BEE9AC9009 /* ChatterboxSampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */; };
+		692486B786D92E35236CA47D /* ChatterboxHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0B70040AF4A85BEBDDF741 /* ChatterboxHeroView.swift */; };
+		6AA174CC2BBE0AF4BD9DC285 /* Core AI Lab.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7716B246D5E600F1622AB1D5 /* Core AI Lab.icon */; };
+		7A61F5F8013556AA2568DC10 /* ChatterboxFunctionContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13289EC5D8CF1ACDF270AC0 /* ChatterboxFunctionContract.swift */; };
+		7CC544AAD0428ABAE7BB8EAC /* ChatterboxPipelineSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC50CC0AD3A4D0AD5FBB90D /* ChatterboxPipelineSection.swift */; };
+		7E193CFD47214093B5FF8605 /* CoreAILabTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3023B74C3A5985D2F9FE7A1C /* CoreAILabTab.swift */; };
+		805099BD99FC5C3DBB0E889C /* ChatterboxFunctionContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13289EC5D8CF1ACDF270AC0 /* ChatterboxFunctionContract.swift */; };
+		81AA80DAD456B43FC29A1CD9 /* CoreAIRuntimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BDEDF8EA279E5684E08A23 /* CoreAIRuntimeView.swift */; };
+		82E4212D0D5569A32A2633BB /* CoreAILabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */; };
 		85F9A7E385952219927593EF /* CoreAIModelAssetInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */; };
+		862DF4D00DCD7711215B7B2F /* ChatterboxWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6356D08377A950FCD28A1D53 /* ChatterboxWorkspaceView.swift */; };
 		8BBA372F6066016FEA01FB71 /* CoreAIInferenceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */; };
+		8FF8F11628F482621C447CBA /* ChatterboxPresentedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */; };
 		997F86A32E5C9170CFC7C2A6 /* CoreAIModelCacheExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */; };
+		9BF0158FDCAE31AFEBABB28A /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = 946B71584A8D8FDAD3C13EBC /* Transformers */; };
+		A282A0775612CEAB4AAD38B9 /* ChatterboxWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6356D08377A950FCD28A1D53 /* ChatterboxWorkspaceView.swift */; };
+		A962CA5FF714F143B17D0F40 /* CoreAIFunctionDescriptorExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */; };
+		AA4CB2784B33B1497087FC83 /* ChatterboxPipelineSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC50CC0AD3A4D0AD5FBB90D /* ChatterboxPipelineSection.swift */; };
+		AB153F6A9DF85D5C786E8E9E /* CoreAIModelAssetInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */; };
+		B1EAFD233AB034359794074B /* ChatterboxGenerationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A75CBB86106F2CBCFB630 /* ChatterboxGenerationResult.swift */; };
+		B26D48F172BEDF966CE2F752 /* ChatterboxTextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A04618A4B5052304398F09 /* ChatterboxTextNormalizer.swift */; };
+		C192F1703C0A772D0636385B /* CoreAIInferenceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */; };
+		C458DDB432749AFC64CC9FC5 /* ChatterboxCoreAIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA28FD73B2E27F575A75A28 /* ChatterboxCoreAIError.swift */; };
+		CCAB00B7E37FEE6395D2EC8E /* ChatterboxPromptSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC778B589272E18662D305E /* ChatterboxPromptSection.swift */; };
+		D18BFA8AB3F227D74D1F2F29 /* ChatterboxModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 396852B1FAC06BFF18951A80 /* ChatterboxModelSection.swift */; };
+		D932221AADD71587DBF6C18D /* ChatterboxPromptSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC778B589272E18662D305E /* ChatterboxPromptSection.swift */; };
+		DBDABC2C289C2DFD75A28166 /* ChatterboxWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63E2FF6512383B12E812915 /* ChatterboxWorkspaceModel.swift */; };
+		DE0EA2E4C8590969F7D8BF01 /* ChatterboxHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0B70040AF4A85BEBDDF741 /* ChatterboxHeroView.swift */; };
 		DEAC20E57B30F70636E2596B /* CoreAIDiscoverySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */; };
+		E1CD0865862C56565ED7C755 /* ChatterboxWaveFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9107CFB7DE7898B9BF2709DE /* ChatterboxWaveFile.swift */; };
+		E7C962C5368A73F55B8A740A /* ChatterboxPipelineStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CB94E1104082F6644C44F8 /* ChatterboxPipelineStage.swift */; };
+		E7DEDE4CE9FFC20A85A0F72F /* ChatterboxContractValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA19B4067C60A0A537331EB /* ChatterboxContractValidation.swift */; };
+		E94827A704AE915035A0F3E0 /* CoreAIDiscoverySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */; };
+		ED5233DFD76904694C22FA1B /* ChatterboxFunctionContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */; };
+		F484A9A89062169F0B46E927 /* ChatterboxModelState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */; };
+		F620ACDD1D14D4E1968E87EB /* ChatterboxTextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A04618A4B5052304398F09 /* ChatterboxTextNormalizer.swift */; };
+		FCDFA708F18DF817E91C1C05 /* ChatterboxGenerationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813EBCF1FD7AC7EFCB06DA62 /* ChatterboxGenerationSection.swift */; };
+		FE62262C0C77E54FCE03CAFD /* ChatterboxPresentedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B39660D98EFB394B530928C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA9AB9CB23405E80107D6483 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7012BB18CFA207768695515;
+			remoteInfo = CoreAILabMac;
+		};
+		E4FDB171F8A607AAE5591FE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA9AB9CB23405E80107D6483 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 52EBF8BB8EEC1FC63AA18BF0;
+			remoteInfo = CoreAILab;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		02BF1E2C42E4C021306E01BC /* CoreAIFunctionDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionDescriptorExamples.swift; sourceTree = "<group>"; };
 		0D19FFD0BAED9F6EBC471B01 /* CoreAIValueDescriptorExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIValueDescriptorExamples.swift; sourceTree = "<group>"; };
 		0E7FB5157DD183D55DA2447D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1739562589A0A59E426BA1DC /* CoreAILabMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreAILabMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelAssetInspector.swift; sourceTree = "<group>"; };
+		19E8FCF284E2BA285950E13F /* ChatterboxModelInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxModelInspection.swift; sourceTree = "<group>"; };
 		21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAILabApp.swift; sourceTree = "<group>"; };
 		234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelLoader.swift; sourceTree = "<group>"; };
 		2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIExampleCatalog.swift; sourceTree = "<group>"; };
+		3023B74C3A5985D2F9FE7A1C /* CoreAILabTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAILabTab.swift; sourceTree = "<group>"; };
+		30BDEDF8EA279E5684E08A23 /* CoreAIRuntimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRuntimeView.swift; sourceTree = "<group>"; };
+		396852B1FAC06BFF18951A80 /* ChatterboxModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxModelSection.swift; sourceTree = "<group>"; };
 		510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIDiscoverySnapshot.swift; sourceTree = "<group>"; };
+		58D1A13D87AB37EF81055D40 /* ChatterboxNDArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxNDArray.swift; sourceTree = "<group>"; };
 		61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIInferenceExamples.swift; sourceTree = "<group>"; };
+		622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxSampling.swift; sourceTree = "<group>"; };
+		6356D08377A950FCD28A1D53 /* ChatterboxWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxWorkspaceView.swift; sourceTree = "<group>"; };
+		6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxCoreAIEngine.swift; sourceTree = "<group>"; };
+		7716B246D5E600F1622AB1D5 /* Core AI Lab.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "Core AI Lab.icon"; sourceTree = "<group>"; };
+		813EBCF1FD7AC7EFCB06DA62 /* ChatterboxGenerationSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxGenerationSection.swift; sourceTree = "<group>"; };
+		89CBD720B1150F05E8690E10 /* CoreAILabMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreAILabMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BA19B4067C60A0A537331EB /* ChatterboxContractValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxContractValidation.swift; sourceTree = "<group>"; };
+		9107CFB7DE7898B9BF2709DE /* ChatterboxWaveFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxWaveFile.swift; sourceTree = "<group>"; };
+		9BC50CC0AD3A4D0AD5FBB90D /* ChatterboxPipelineSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPipelineSection.swift; sourceTree = "<group>"; };
+		9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxFunctionContractTests.swift; sourceTree = "<group>"; };
+		9F0B70040AF4A85BEBDDF741 /* ChatterboxHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxHeroView.swift; sourceTree = "<group>"; };
+		A1E1F350924813824143F274 /* Chatterbox */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Chatterbox; path = CoreAILab/Resources/Chatterbox; sourceTree = SOURCE_ROOT; };
+		A63E2FF6512383B12E812915 /* ChatterboxWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxWorkspaceModel.swift; sourceTree = "<group>"; };
+		B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPresentedError.swift; sourceTree = "<group>"; };
+		C394362AACF3A478B2AB77C2 /* CoreAILabTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CoreAILabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C39A75CBB86106F2CBCFB630 /* ChatterboxGenerationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxGenerationResult.swift; sourceTree = "<group>"; };
+		C4CB94E1104082F6644C44F8 /* ChatterboxPipelineStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPipelineStage.swift; sourceTree = "<group>"; };
 		CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelCacheExamples.swift; sourceTree = "<group>"; };
+		CAC778B589272E18662D305E /* ChatterboxPromptSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPromptSection.swift; sourceTree = "<group>"; };
 		D2D26D131216A9303511EA95 /* CoreAILab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CoreAILab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDA28FD73B2E27F575A75A28 /* ChatterboxCoreAIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxCoreAIError.swift; sourceTree = "<group>"; };
+		F13289EC5D8CF1ACDF270AC0 /* ChatterboxFunctionContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxFunctionContract.swift; sourceTree = "<group>"; };
+		F2A04618A4B5052304398F09 /* ChatterboxTextNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxTextNormalizer.swift; sourceTree = "<group>"; };
+		FED22859185F784C24FFBCA8 /* ChatterboxGenerationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxGenerationRequest.swift; sourceTree = "<group>"; };
+		FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxModelState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1E841288E9A1B9B5E604583C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55723F32E20DA6FFFF971223 /* Transformers in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D22004517A29EA4BBC39E54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BF0158FDCAE31AFEBABB28A /* Transformers in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0AE61D8A66E21D3D1A4BF8DE /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				D2D26D131216A9303511EA95 /* CoreAILab.app */,
+				1739562589A0A59E426BA1DC /* CoreAILabMac.app */,
+				89CBD720B1150F05E8690E10 /* CoreAILabMacTests.xctest */,
+				C394362AACF3A478B2AB77C2 /* CoreAILabTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,16 +191,52 @@
 				510ACAF51A51428EF99D148F /* CoreAIDiscoverySnapshot.swift */,
 				17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */,
 				234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */,
+				C0FDD2697D38EB3E494B3037 /* Chatterbox */,
 				1E3BD640315DF10A599327D3 /* Examples */,
 			);
 			path = CoreAILabCore;
+			sourceTree = "<group>";
+		};
+		5CE0AE9A82CE49782EB79D48 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				6B01322C1D2FDAAFCA9B28A1 /* Chatterbox */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		6B01322C1D2FDAAFCA9B28A1 /* Chatterbox */ = {
+			isa = PBXGroup;
+			children = (
+				813EBCF1FD7AC7EFCB06DA62 /* ChatterboxGenerationSection.swift */,
+				9F0B70040AF4A85BEBDDF741 /* ChatterboxHeroView.swift */,
+				396852B1FAC06BFF18951A80 /* ChatterboxModelSection.swift */,
+				9BC50CC0AD3A4D0AD5FBB90D /* ChatterboxPipelineSection.swift */,
+				B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */,
+				CAC778B589272E18662D305E /* ChatterboxPromptSection.swift */,
+				A63E2FF6512383B12E812915 /* ChatterboxWorkspaceModel.swift */,
+				6356D08377A950FCD28A1D53 /* ChatterboxWorkspaceView.swift */,
+			);
+			path = Chatterbox;
+			sourceTree = "<group>";
+		};
+		6EA1C8C2C5BD0669CA66C06B /* CoreAILabTests */ = {
+			isa = PBXGroup;
+			children = (
+				9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */,
+			);
+			path = CoreAILabTests;
 			sourceTree = "<group>";
 		};
 		837F0A5A5CF103B4832A2A60 /* CoreAILab */ = {
 			isa = PBXGroup;
 			children = (
 				0E7FB5157DD183D55DA2447D /* ContentView.swift */,
+				7716B246D5E600F1622AB1D5 /* Core AI Lab.icon */,
 				21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */,
+				3023B74C3A5985D2F9FE7A1C /* CoreAILabTab.swift */,
+				30BDEDF8EA279E5684E08A23 /* CoreAIRuntimeView.swift */,
+				5CE0AE9A82CE49782EB79D48 /* Features */,
 			);
 			path = CoreAILab;
 			sourceTree = "<group>";
@@ -77,20 +244,62 @@
 		985E45ED297AF2849326E072 = {
 			isa = PBXGroup;
 			children = (
+				A1E1F350924813824143F274 /* Chatterbox */,
 				837F0A5A5CF103B4832A2A60 /* CoreAILab */,
 				3ED934629907E899683959F2 /* CoreAILabCore */,
+				6EA1C8C2C5BD0669CA66C06B /* CoreAILabTests */,
 				0AE61D8A66E21D3D1A4BF8DE /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		C0FDD2697D38EB3E494B3037 /* Chatterbox */ = {
+			isa = PBXGroup;
+			children = (
+				8BA19B4067C60A0A537331EB /* ChatterboxContractValidation.swift */,
+				6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */,
+				DDA28FD73B2E27F575A75A28 /* ChatterboxCoreAIError.swift */,
+				F13289EC5D8CF1ACDF270AC0 /* ChatterboxFunctionContract.swift */,
+				FED22859185F784C24FFBCA8 /* ChatterboxGenerationRequest.swift */,
+				C39A75CBB86106F2CBCFB630 /* ChatterboxGenerationResult.swift */,
+				19E8FCF284E2BA285950E13F /* ChatterboxModelInspection.swift */,
+				FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */,
+				58D1A13D87AB37EF81055D40 /* ChatterboxNDArray.swift */,
+				C4CB94E1104082F6644C44F8 /* ChatterboxPipelineStage.swift */,
+				622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */,
+				F2A04618A4B5052304398F09 /* ChatterboxTextNormalizer.swift */,
+				9107CFB7DE7898B9BF2709DE /* ChatterboxWaveFile.swift */,
+			);
+			path = Chatterbox;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2B314B1EC29529715B6CBFE4 /* CoreAILabTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AD80BAC6E03AC43669DC70C4 /* Build configuration list for PBXNativeTarget "CoreAILabTests" */;
+			buildPhases = (
+				C3D1F476958F0CA5922C0529 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				446FAE316446443179B2754F /* PBXTargetDependency */,
+			);
+			name = CoreAILabTests;
+			packageProductDependencies = (
+			);
+			productName = CoreAILabTests;
+			productReference = C394362AACF3A478B2AB77C2 /* CoreAILabTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		52EBF8BB8EEC1FC63AA18BF0 /* CoreAILab */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 974728A5B8E09234D6043C50 /* Build configuration list for PBXNativeTarget "CoreAILab" */;
 			buildPhases = (
 				F47B6CFA068F3E5725978827 /* Sources */,
+				7F4C8B60D9052C3D46B3A719 /* Resources */,
+				1E841288E9A1B9B5E604583C /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -98,9 +307,48 @@
 			);
 			name = CoreAILab;
 			packageProductDependencies = (
+				82EE376070C846AA73B0D35C /* Transformers */,
 			);
 			productName = CoreAILab;
 			productReference = D2D26D131216A9303511EA95 /* CoreAILab.app */;
+			productType = "com.apple.product-type.application";
+		};
+		80F1D8B998F162D6CDCC7F3D /* CoreAILabMacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB63708D38F2D252B150074B /* Build configuration list for PBXNativeTarget "CoreAILabMacTests" */;
+			buildPhases = (
+				5817B5F1C0BAC3F9C9965C6B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				719D811C7A950CA88E365CF1 /* PBXTargetDependency */,
+			);
+			name = CoreAILabMacTests;
+			packageProductDependencies = (
+			);
+			productName = CoreAILabMacTests;
+			productReference = 89CBD720B1150F05E8690E10 /* CoreAILabMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C7012BB18CFA207768695515 /* CoreAILabMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D54243D40BAD2F059C762A0 /* Build configuration list for PBXNativeTarget "CoreAILabMac" */;
+			buildPhases = (
+				C481D0DFEA761A63D09331DE /* Sources */,
+				78DC6338C0672E559A0B489A /* Resources */,
+				7D22004517A29EA4BBC39E54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreAILabMac;
+			packageProductDependencies = (
+				946B71584A8D8FDAD3C13EBC /* Transformers */,
+			);
+			productName = CoreAILabMac;
+			productReference = 1739562589A0A59E426BA1DC /* CoreAILabMac.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -123,42 +371,161 @@
 			);
 			mainGroup = 985E45ED297AF2849326E072;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1239074455AB9B84602ACCE9 /* XCRemoteSwiftPackageReference "swift-transformers" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0AE61D8A66E21D3D1A4BF8DE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				52EBF8BB8EEC1FC63AA18BF0 /* CoreAILab */,
+				C7012BB18CFA207768695515 /* CoreAILabMac */,
+				80F1D8B998F162D6CDCC7F3D /* CoreAILabMacTests */,
+				2B314B1EC29529715B6CBFE4 /* CoreAILabTests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		78DC6338C0672E559A0B489A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				384E95E4A3D8EC70901C9524 /* Chatterbox in Resources */,
+				6AA174CC2BBE0AF4BD9DC285 /* Core AI Lab.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7F4C8B60D9052C3D46B3A719 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				02B5AAD400C38A8B522AFFEC /* Core AI Lab.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		5817B5F1C0BAC3F9C9965C6B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CCC20A2176CAA56D63FB424 /* ChatterboxFunctionContractTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C3D1F476958F0CA5922C0529 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ED5233DFD76904694C22FA1B /* ChatterboxFunctionContractTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C481D0DFEA761A63D09331DE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E7436BA605A59122B138AD3 /* ChatterboxContractValidation.swift in Sources */,
+				120B0455418BA762E89D0FA1 /* ChatterboxCoreAIEngine.swift in Sources */,
+				0B87E67DCA445215F20FF05C /* ChatterboxCoreAIError.swift in Sources */,
+				805099BD99FC5C3DBB0E889C /* ChatterboxFunctionContract.swift in Sources */,
+				2C96A06F7BC7380C87F354CE /* ChatterboxGenerationRequest.swift in Sources */,
+				B1EAFD233AB034359794074B /* ChatterboxGenerationResult.swift in Sources */,
+				587CB62099E976FDBC8CEE4D /* ChatterboxGenerationSection.swift in Sources */,
+				DE0EA2E4C8590969F7D8BF01 /* ChatterboxHeroView.swift in Sources */,
+				12482592EBFF56BE5B3BAE30 /* ChatterboxModelInspection.swift in Sources */,
+				D18BFA8AB3F227D74D1F2F29 /* ChatterboxModelSection.swift in Sources */,
+				F484A9A89062169F0B46E927 /* ChatterboxModelState.swift in Sources */,
+				2316B32CC2E08910DAD1EE9F /* ChatterboxNDArray.swift in Sources */,
+				AA4CB2784B33B1497087FC83 /* ChatterboxPipelineSection.swift in Sources */,
+				E7C962C5368A73F55B8A740A /* ChatterboxPipelineStage.swift in Sources */,
+				8FF8F11628F482621C447CBA /* ChatterboxPresentedError.swift in Sources */,
+				D932221AADD71587DBF6C18D /* ChatterboxPromptSection.swift in Sources */,
+				1C23BFC4FC006C195C230FF9 /* ChatterboxSampling.swift in Sources */,
+				F620ACDD1D14D4E1968E87EB /* ChatterboxTextNormalizer.swift in Sources */,
+				E1CD0865862C56565ED7C755 /* ChatterboxWaveFile.swift in Sources */,
+				27368950A09746EC0B06C643 /* ChatterboxWorkspaceModel.swift in Sources */,
+				862DF4D00DCD7711215B7B2F /* ChatterboxWorkspaceView.swift in Sources */,
+				3F0C34F96B21DE35BE1E9A04 /* ContentView.swift in Sources */,
+				E94827A704AE915035A0F3E0 /* CoreAIDiscoverySnapshot.swift in Sources */,
+				452965CC869EB0A21201C0B0 /* CoreAIExampleCatalog.swift in Sources */,
+				A962CA5FF714F143B17D0F40 /* CoreAIFunctionDescriptorExamples.swift in Sources */,
+				C192F1703C0A772D0636385B /* CoreAIInferenceExamples.swift in Sources */,
+				82E4212D0D5569A32A2633BB /* CoreAILabApp.swift in Sources */,
+				7E193CFD47214093B5FF8605 /* CoreAILabTab.swift in Sources */,
+				AB153F6A9DF85D5C786E8E9E /* CoreAIModelAssetInspector.swift in Sources */,
+				0A95113F0B0CF7B0678487A6 /* CoreAIModelCacheExamples.swift in Sources */,
+				5B40C3E9C781C95BF34DE707 /* CoreAIModelLoader.swift in Sources */,
+				81AA80DAD456B43FC29A1CD9 /* CoreAIRuntimeView.swift in Sources */,
+				18E1A38669E7133383781D91 /* CoreAIValueDescriptorExamples.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F47B6CFA068F3E5725978827 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7DEDE4CE9FFC20A85A0F72F /* ChatterboxContractValidation.swift in Sources */,
+				41F376E188A8FAD6DC6FA2CB /* ChatterboxCoreAIEngine.swift in Sources */,
+				C458DDB432749AFC64CC9FC5 /* ChatterboxCoreAIError.swift in Sources */,
+				7A61F5F8013556AA2568DC10 /* ChatterboxFunctionContract.swift in Sources */,
+				2016E7D403BE4C6D2E005868 /* ChatterboxGenerationRequest.swift in Sources */,
+				32E425903F804C3875C78D7C /* ChatterboxGenerationResult.swift in Sources */,
+				FCDFA708F18DF817E91C1C05 /* ChatterboxGenerationSection.swift in Sources */,
+				692486B786D92E35236CA47D /* ChatterboxHeroView.swift in Sources */,
+				50EAAD999EF3C5AEF59F5358 /* ChatterboxModelInspection.swift in Sources */,
+				30EAC3477888A085FF557869 /* ChatterboxModelSection.swift in Sources */,
+				590CCCEDBEDF66F4011C22EE /* ChatterboxModelState.swift in Sources */,
+				2486DD84DFF6AFB8EFBC0E26 /* ChatterboxNDArray.swift in Sources */,
+				7CC544AAD0428ABAE7BB8EAC /* ChatterboxPipelineSection.swift in Sources */,
+				02B13AC886CCC8EABD95A560 /* ChatterboxPipelineStage.swift in Sources */,
+				FE62262C0C77E54FCE03CAFD /* ChatterboxPresentedError.swift in Sources */,
+				CCAB00B7E37FEE6395D2EC8E /* ChatterboxPromptSection.swift in Sources */,
+				6810C0469276B0BEE9AC9009 /* ChatterboxSampling.swift in Sources */,
+				B26D48F172BEDF966CE2F752 /* ChatterboxTextNormalizer.swift in Sources */,
+				5050463651E9CD18150B9332 /* ChatterboxWaveFile.swift in Sources */,
+				DBDABC2C289C2DFD75A28166 /* ChatterboxWorkspaceModel.swift in Sources */,
+				A282A0775612CEAB4AAD38B9 /* ChatterboxWorkspaceView.swift in Sources */,
 				0D4A159FDF138A057E6FBD05 /* ContentView.swift in Sources */,
 				DEAC20E57B30F70636E2596B /* CoreAIDiscoverySnapshot.swift in Sources */,
 				497F922B1E7636C4085F0C08 /* CoreAIExampleCatalog.swift in Sources */,
 				19BA562A4055C908F759D5F1 /* CoreAIFunctionDescriptorExamples.swift in Sources */,
 				8BBA372F6066016FEA01FB71 /* CoreAIInferenceExamples.swift in Sources */,
 				5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */,
+				058DD2182AA98F6C8FB3AF7A /* CoreAILabTab.swift in Sources */,
 				85F9A7E385952219927593EF /* CoreAIModelAssetInspector.swift in Sources */,
 				997F86A32E5C9170CFC7C2A6 /* CoreAIModelCacheExamples.swift in Sources */,
 				00E5D7EB25F93F1C68DC92DD /* CoreAIModelLoader.swift in Sources */,
+				4277CDE729A7FF2D57E27606 /* CoreAIRuntimeView.swift in Sources */,
 				09BCB1F303DE23AEFDCA7C00 /* CoreAIValueDescriptorExamples.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		446FAE316446443179B2754F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 52EBF8BB8EEC1FC63AA18BF0 /* CoreAILab */;
+			targetProxy = E4FDB171F8A607AAE5591FE4 /* PBXContainerItemProxy */;
+		};
+		719D811C7A950CA88E365CF1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7012BB18CFA207768695515 /* CoreAILabMac */;
+			targetProxy = B39660D98EFB394B530928C0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		2A6A5855572B6AA80EBE02D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Core AI Lab";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -230,16 +597,36 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
+		};
+		6DD7D96F5CCDEDBF4E2CF948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Core AI Lab";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Core AI Lab";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabMac;
+				PRODUCT_NAME = CoreAILab;
+				SDKROOT = macosx;
+			};
+			name = Release;
 		};
 		73AB55270797F80D4BD472E2 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -288,21 +675,99 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
+		79C40E9A175D9B21D5D42127 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabMacTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CoreAILab.app/Contents/MacOS/CoreAILab";
+			};
+			name = Release;
+		};
+		978A1A9054CBB6AFC512E0D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CoreAILab.app/CoreAILab";
+			};
+			name = Debug;
+		};
+		AA6249A450FE5633B95D88B8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CoreAILab.app/CoreAILab";
+			};
+			name = Release;
+		};
+		BC7A79EF92FD94F5F0E87C0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Core AI Lab";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Core AI Lab";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabMac;
+				PRODUCT_NAME = CoreAILab;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		C75E0475BED4AEEF80A464BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Core AI Lab";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -321,14 +786,60 @@
 			};
 			name = Release;
 		};
+		E903F23B5C306E7B54ED8FB2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudrank.CoreAILabMacTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CoreAILab.app/Contents/MacOS/CoreAILab";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4D54243D40BAD2F059C762A0 /* Build configuration list for PBXNativeTarget "CoreAILabMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC7A79EF92FD94F5F0E87C0A /* Debug */,
+				6DD7D96F5CCDEDBF4E2CF948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		974728A5B8E09234D6043C50 /* Build configuration list for PBXNativeTarget "CoreAILab" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A6A5855572B6AA80EBE02D5 /* Debug */,
 				C75E0475BED4AEEF80A464BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AD80BAC6E03AC43669DC70C4 /* Build configuration list for PBXNativeTarget "CoreAILabTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				978A1A9054CBB6AFC512E0D3 /* Debug */,
+				AA6249A450FE5633B95D88B8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CB63708D38F2D252B150074B /* Build configuration list for PBXNativeTarget "CoreAILabMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E903F23B5C306E7B54ED8FB2 /* Debug */,
+				79C40E9A175D9B21D5D42127 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -343,6 +854,30 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1239074455AB9B84602ACCE9 /* XCRemoteSwiftPackageReference "swift-transformers" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/huggingface/swift-transformers";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		82EE376070C846AA73B0D35C /* Transformers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1239074455AB9B84602ACCE9 /* XCRemoteSwiftPackageReference "swift-transformers" */;
+			productName = Transformers;
+		};
+		946B71584A8D8FDAD3C13EBC /* Transformers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1239074455AB9B84602ACCE9 /* XCRemoteSwiftPackageReference "swift-transformers" */;
+			productName = Transformers;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BA9AB9CB23405E80107D6483 /* Project object */;
 }

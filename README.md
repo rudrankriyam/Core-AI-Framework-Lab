@@ -5,9 +5,12 @@
 [![Platforms](https://img.shields.io/badge/platforms-iOS%2027%20%7C%20macOS%2027-lightgrey)](https://developer.apple.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An early lab for Apple's new `CoreAI.framework` in Xcode 27 beta.
+A hands-on lab for Apple's `CoreAI.framework` in Xcode 27 beta.
 
-This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app, Core AI Lab, that can grow into real model examples once compatible Core AI model assets and iOS 27 runtime devices/simulators are available.
+The main experiment is a native Chatterbox Turbo text-to-speech workspace. The
+app bundles the converted model, tokenizes text in Swift, and runs the complete
+T3 -> S3Gen -> HiFT pipeline through Core AI. It does not use MLX, Python, a
+server, or a model-download step at runtime.
 
 CoreAI currently looks like a lower-level model runtime and asset framework:
 
@@ -31,11 +34,45 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 
 ## What's Inside
 
-- `CoreAILab/` - SwiftUI app target that imports `CoreAI`
+- `CoreAILab/` - SwiftUI app with the Chatterbox synthesis workspace
 - `CoreAILabCore/` - small reusable helpers for Core AI API discovery
+- `CoreAILabCore/Chatterbox/` - Core AI model storage, specialization, and function-contract code
 - `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
+- `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `project.yml` - XcodeGen project definition
+
+## Chatterbox Workspace
+
+The macOS target embeds four `.aimodel` assets and a Hugging Face tokenizer:
+
+| Asset | Precision | Entrypoints | Role |
+| --- | --- | --- | --- |
+| T3 embeddings | FP16 | `prefill`, `decode` | Built-in voice conditioning plus text/speech embeddings |
+| T3 transformer | mixed INT4/INT8/FP16 | `prefill`, `decode` | Autoregressive speech-token generation with persistent KV caches |
+| S3Gen | FP16 | `main` | 256 speech tokens to 512 generated mel frames |
+| HiFT vocoder | FP16 | `vocoder` | 80-bin mel frames to 24 kHz waveform audio |
+
+The bundle occupies about 600 MiB on disk and reports 625.1 MB of allocated
+model data on the tested Mac. The app validates all six native entrypoints
+before enabling generation and persistently caches Core AI specialization.
+
+The production export has capacity for 253 generated speech tokens plus three
+end-silence tokens. That is a 10.24-second graph window. The WAV writer trims
+the static graph output to the model's actual stop token, so short utterances do
+not contain several seconds of padding.
+
+Verified on an M5 Mac (`h17g`) with Xcode 27 beta:
+
+- 139 generated tokens
+- 5.68 seconds of 24 kHz mono PCM audio
+- 4.85 seconds for a warm Release button-driven app run
+- 0.85 real-time factor, or 1.17x faster than real time
+- complete Whisper transcript ending in `with Core AI.`
+- zero clipped samples
+
+See `Conversion/Chatterbox/README.md` for reproducible conversion, parity, and
+runtime-validation commands.
 
 ## Example Coverage
 
@@ -84,7 +121,8 @@ print(descriptor.inputNames)
 print(descriptor.outputNames)
 ```
 
-Running inference requires a real compatible CoreAI model asset and input values that match the function descriptors. The scaffold is in `CoreAIInferenceExamples.swift`.
+The complete native runtime is implemented in
+`CoreAILabCore/Chatterbox/ChatterboxCoreAIEngine.swift`.
 
 ## Generate the Xcode Project
 
@@ -93,27 +131,48 @@ cd Core-AI-Framework-Lab
 xcodegen generate
 ```
 
-## Build
+## Build and Run on macOS
 
-Use the expanded Xcode beta directly:
+Use Xcode 27 beta directly. A machine-wide `xcode-select` pointing at an older
+Xcode will not expose the `CoreAI` module.
 
 ```bash
-DEVELOPER_DIR=/Users/rudrank/Downloads/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
 xcodebuild -project CoreAIFrameworkLab.xcodeproj \
-  -scheme CoreAILab \
-  -destination 'generic/platform=iOS' \
-  -derivedDataPath ./build \
+  -scheme CoreAILabMac \
+  -destination 'platform=macOS,arch=arm64' \
+  -derivedDataPath ./build/Xcode27 \
   build
+
+open build/Xcode27/Build/Products/Debug/CoreAILab.app
 ```
 
-This currently compiles successfully against `iPhoneOS27.0.sdk`. Xcode may still print beta-environment warnings about CoreDevice/CoreSimulator until the matching iOS/macOS runtime pieces are installed.
+Run the macOS contract tests with the same scheme:
+
+```bash
+DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
+xcodebuild -project CoreAIFrameworkLab.xcodeproj \
+  -scheme CoreAILabMac \
+  -destination 'platform=macOS,arch=arm64' \
+  -derivedDataPath ./build/Xcode27 \
+  test
+```
+
+The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app remains available through the `CoreAILab` scheme for device builds.
 
 ## Current Limitations
 
-- No bundled model asset yet. The SDK exposes the runtime APIs, but this repo still needs a real compatible CoreAI model package before it can include a complete inference demo.
-- `NDArrayDescriptor` and `ImageDescriptor` are inspectable from the public API, but their direct initializers are not public in this beta seed.
-- Simulator availability still needs validation with matching Xcode 27/iOS 27 runtime components.
-- The API is beta and may move quickly between Xcode seeds.
+- The app ships one fixed Chatterbox Turbo voice prepared from Resemble AI's
+  official `ivr_female_01` demo reference. The raw reference recording is not
+  bundled, and runtime voice selection or reference-voice cloning is not
+  exposed.
+- One native graph invocation supports up to 253 generated speech tokens, or
+  about 10.12 seconds of speech plus the 120 ms end-silence tail. The app
+  rejects an utterance that reaches this ceiling instead of returning clipped
+  audio.
+- The 600 MiB model bundle is included only in the macOS target.
+- Simulator and device support may differ during the Xcode 27 beta cycle.
+- Core AI and its converter packages are beta APIs and may move between seeds.
 
 ## Current SDK Shape
 

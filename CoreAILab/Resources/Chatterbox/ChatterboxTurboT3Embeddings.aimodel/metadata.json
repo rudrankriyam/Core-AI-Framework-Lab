@@ -1,0 +1,7 @@
+{
+  "license" : "MIT",
+  "author" : "Resemble AI; Core AI conversion by Core AI Framework Lab",
+  "creationDate" : "20260614T071330Z",
+  "description" : "Chatterbox Turbo T3 text and speech embedding entrypoints. The prefill function prepends 376 built-in voice conditioning vectors, and decode embeds one generated speech token.",
+  "assetVersion" : "2.0"
+}

@@ -3,3 +3,7 @@ DerivedData/
 build/
 *.xcuserstate
 xcuserdata/
+Conversion/Chatterbox/exports/
+Conversion/Chatterbox/.venv/
+__pycache__/
+*.pyc

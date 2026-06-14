@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "52EBF8BB8EEC1FC63AA18BF0"
-               BuildableName = "CoreAILab.app"
-               BlueprintName = "CoreAILab"
+               BlueprintIdentifier = "C7012BB18CFA207768695515"
+               BuildableName = "CoreAILabMac.app"
+               BlueprintName = "CoreAILabMac"
                ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "52EBF8BB8EEC1FC63AA18BF0"
-            BuildableName = "CoreAILab.app"
-            BlueprintName = "CoreAILab"
+            BlueprintIdentifier = "C7012BB18CFA207768695515"
+            BuildableName = "CoreAILabMac.app"
+            BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -44,9 +44,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2B314B1EC29529715B6CBFE4"
-               BuildableName = "CoreAILabTests.xctest"
-               BlueprintName = "CoreAILabTests"
+               BlueprintIdentifier = "80F1D8B998F162D6CDCC7F3D"
+               BuildableName = "CoreAILabMacTests.xctest"
+               BlueprintName = "CoreAILabMacTests"
                ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -68,9 +68,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "52EBF8BB8EEC1FC63AA18BF0"
-            BuildableName = "CoreAILab.app"
-            BlueprintName = "CoreAILab"
+            BlueprintIdentifier = "C7012BB18CFA207768695515"
+            BuildableName = "CoreAILabMac.app"
+            BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -87,9 +87,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "52EBF8BB8EEC1FC63AA18BF0"
-            BuildableName = "CoreAILab.app"
-            BlueprintName = "CoreAILab"
+            BlueprintIdentifier = "C7012BB18CFA207768695515"
+            BuildableName = "CoreAILabMac.app"
+            BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
