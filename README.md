@@ -1,5 +1,10 @@
 # Core AI Framework Lab
 
+[![Xcode 27 beta](https://img.shields.io/badge/Xcode-27%20beta-147EFB?logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
+[![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
+[![Platforms](https://img.shields.io/badge/platforms-iOS%2027%20%7C%20macOS%2027-lightgrey)](https://developer.apple.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An early lab for Apple's new `CoreAI.framework` in Xcode 27 beta.
 
 This repository is intentionally compiler-first. It verifies the public SDK surface, documents the new framework shape, and gives us a small SwiftUI app, Core AI Lab, that can grow into real model examples once compatible Core AI model assets and iOS 27 runtime devices/simulators are available.
@@ -122,3 +127,13 @@ This currently compiles successfully against `iPhoneOS27.0.sdk`. Xcode may still
 - `CoreAICache`
 
 See `coreai.md` for the current symbol notes.
+
+## Contributing
+
+Contributions, experiments, and corrections are welcome. Please open an issue
+or submit a pull request.
+
+## License
+
+Core AI Framework Lab is available under the MIT License. See
+[`LICENSE`](LICENSE) for details.
