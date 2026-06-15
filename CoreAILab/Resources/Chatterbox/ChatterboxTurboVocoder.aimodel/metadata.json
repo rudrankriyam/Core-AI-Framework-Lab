@@ -1,0 +1,7 @@
+{
+  "creationDate" : "20260614T054351Z",
+  "license" : "MIT",
+  "author" : "Resemble AI; Core AI conversion by Core AI Framework Lab",
+  "description" : "The weighted Chatterbox Turbo HiFT vocoder converted from PyTorch in float16 with Apple coreai-torch. The vocoder accepts 80-bin mel frames plus explicit phase and noise tensors and emits 24 kHz waveform samples.",
+  "assetVersion" : "2.0"
+}

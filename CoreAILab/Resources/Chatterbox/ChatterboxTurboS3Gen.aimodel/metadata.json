@@ -1,0 +1,7 @@
+{
+  "assetVersion" : "2.0",
+  "license" : "MIT",
+  "creationDate" : "20260614T071406Z",
+  "author" : "Resemble AI; Core AI conversion by Core AI Framework Lab",
+  "description" : "Chatterbox Turbo S3Gen converted to Core AI in float16. It accepts 256 speech tokens and explicit mean-flow noise covering 1012 prompt-plus-output mel frames."
+}

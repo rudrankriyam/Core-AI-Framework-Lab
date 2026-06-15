@@ -1,45 +1,21 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let snapshot = CoreAIDiscoverySnapshot.current()
-    private let catalog = CoreAIExampleCatalog.current
+    @State private var selection = CoreAILabTab.synthesize
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section("Runtime") {
-                    LabeledContent("Framework", value: snapshot.frameworkName)
-                    LabeledContent("Device architecture", value: snapshot.deviceArchitectureName)
-                }
-
-                Section("Compute Units") {
-                    ForEach(snapshot.availableComputeUnits, id: \.self) { unit in
-                        Text(unit)
-                    }
-                }
-
-                Section("Specialization") {
-                    LabeledContent("Default", value: snapshot.defaultSpecializationDescription)
-                    LabeledContent("CPU only", value: snapshot.cpuOnlySpecializationDescription)
-                }
-
-                Section("Examples") {
-                    ForEach(catalog.examples) { example in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(example.title)
-                                .font(.headline)
-                            Text(example.summary)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Text(example.sourceFile)
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
+        TabView(selection: $selection) {
+            Tab("Synthesize", systemImage: "waveform", value: .synthesize) {
+                ChatterboxWorkspaceView()
             }
-            .navigationTitle("Core AI Lab")
+
+            Tab("Core AI", systemImage: "cpu", value: .runtime) {
+                CoreAIRuntimeView()
+            }
         }
     }
+}
+
+#Preview {
+    ContentView()
 }
