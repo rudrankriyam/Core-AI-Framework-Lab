@@ -21,6 +21,11 @@ struct CoreAIConversionArtifactDestinationView: View {
                     example: example,
                     initialModelURL: artifact.url
                 )
+            } else if artifact.resourceKind == "diffusion" {
+                AppleDiffusionWorkspaceView(
+                    example: AppleDiffusionExample(resourceBundleURL: artifact.url),
+                    initialModelURL: artifact.url
+                )
             } else {
                 CoreAIResourceBundleSummaryView(artifact: artifact)
             }

@@ -174,6 +174,35 @@ Converted weights and tokenizer resources remain local and subject to Qwen's
 upstream license. Set `COREAI_QWEN_BUNDLE_PATH` to an exported resource folder
 to opt into the real-model integration test.
 
+## Run Apple's Diffusion Examples
+
+Apple's registry includes Stable Diffusion 1.5, Stable Diffusion 2.1, Stable
+Diffusion 3.5 Medium, and FLUX.2 Klein 4B presets. Export any of them from the
+pinned repository clone; for example:
+
+```bash
+uv run coreai.diffusion.export runwayml/stable-diffusion-v1-5 \
+  --compression none \
+  --compute-precision float16
+```
+
+Open its entry under **Apple Models**, choose the diffusion playground, and
+import the entire exported resource folder. The Lab resolves Apple's v0.2
+metadata and dispatches to `StableDiffusionPipeline`, `SD3Pipeline`, or
+`Flux2Pipeline`. Prompt, negative prompt, seed, step count, and guidance are
+editable, generation is cancellable, and the resulting image and elapsed time
+stay on device.
+
+The Lab keeps security-scoped access alive for the loaded folder because
+Apple's pipelines load some components lazily during generation. Set
+`COREAI_DIFFUSION_BUNDLE_PATH` to opt into a one-step real-model integration
+test.
+
+Stable Diffusion 3.5 Medium is gated on Hugging Face. Accept Stability AI's
+upstream terms and authenticate with `hf auth login` before export; Core AI Lab
+never reads or stores those credentials. FLUX.2 does not consume a negative
+prompt, so the playground hides that control after loading a FLUX.2 bundle.
+
 ## Asset Inspector
 
 Open any `.aimodel` package to inspect validity, author, license, description,
@@ -304,8 +333,9 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 - Apple's repository ships export code and runtime utilities, not converted
   model weights. Export remains a local `uv` workflow in this first slice.
 - YOLOS object detection, EfficientSAM point segmentation, SAM 3 text
-  segmentation, and Qwen3 0.6B language generation have dedicated
-  Apple-runtime playgrounds. Diffusion and audio are the next runtime slices.
+  segmentation, Qwen3 0.6B language generation, and Apple's four diffusion
+  presets have dedicated Apple-runtime playgrounds. Audio is the next runtime
+  slice.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.

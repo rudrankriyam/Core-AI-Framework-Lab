@@ -81,6 +81,17 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.languageModel(languageExample)
                     )
                 }
+
+                if let diffusionExample = model.diffusionExample {
+                    if diffusionExample == .stableDiffusion35 {
+                        Text("Stable Diffusion 3.5 weights require accepting Stability AI's gated Hugging Face terms and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
+                            .foregroundStyle(.secondary)
+                    }
+                    NavigationLink(
+                        diffusionExample.playgroundButtonTitle,
+                        value: AppleModelLibraryRoute.diffusion(diffusionExample)
+                    )
+                }
             }
 
             Section("Provenance") {
