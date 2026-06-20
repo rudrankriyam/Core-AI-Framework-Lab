@@ -68,6 +68,9 @@ struct AppleCoreAIModelCatalogTests {
         let sam3 = try #require(
             models.first { $0.shortName == "sam3" }
         )
+        let wav2Vec2 = try #require(
+            models.first { $0.shortName == "wav2vec2-base" }
+        )
 
         #expect(yolosTiny.runtimeSupport == .objectDetection)
         #expect(yolosTiny.runtimeSupport.productName == "CoreAIObjectDetection")
@@ -88,6 +91,9 @@ struct AppleCoreAIModelCatalogTests {
         #expect(sam3.isRunnableInLab)
         let diffusionModels = models.filter { $0.runtimeSupport == .diffusion }
         #expect(diffusionModels.allSatisfy { $0.isRunnableInLab })
+        #expect(wav2Vec2.runtimeSupport == .audio)
+        #expect(wav2Vec2.audioExample == .wav2Vec2)
+        #expect(wav2Vec2.isRunnableInLab)
     }
 
     private func loadCatalog() throws -> AppleCoreAIModelCatalogDocument {

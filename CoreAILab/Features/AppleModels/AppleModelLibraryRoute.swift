@@ -5,5 +5,6 @@ enum AppleModelLibraryRoute: Hashable {
     case segmentation(AppleSegmentationExample)
     case languageModel(AppleLanguageExample)
     case diffusion(AppleDiffusionExample)
+    case audio(AppleAudioExample)
     case conversion(modelID: String)
 }

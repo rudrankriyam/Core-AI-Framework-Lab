@@ -92,6 +92,13 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.diffusion(diffusionExample)
                     )
                 }
+
+                if let audioExample = model.audioExample {
+                    NavigationLink(
+                        audioExample.playgroundButtonTitle,
+                        value: AppleModelLibraryRoute.audio(audioExample)
+                    )
+                }
             }
 
             Section("Provenance") {
