@@ -41,6 +41,7 @@ struct AppleDiffusionWorkspaceModelTests {
             )
         ])
         #expect(workspace.result?.image.width == 4)
+        #expect(workspace.statusMessage == "Generated on device in 0.25 seconds.")
         #expect(!workspace.isShowingError)
     }
 
