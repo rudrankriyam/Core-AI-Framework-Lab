@@ -78,6 +78,8 @@ struct AppleCoreAIModelCatalogTests {
         )
         #expect(!yolosBase.isRunnableInLab)
         #expect(qwen.runtimeSupport == .languageModel)
+        #expect(qwen.languageExample == .qwen3_0_6B)
+        #expect(qwen.isRunnableInLab)
         #expect(efficientSAM.runtimeSupport == .segmentation)
         #expect(efficientSAM.segmentationExample == .efficientSAM)
         #expect(efficientSAM.isRunnableInLab)

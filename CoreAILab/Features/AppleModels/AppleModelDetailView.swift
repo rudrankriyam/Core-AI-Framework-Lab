@@ -74,6 +74,13 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.segmentation(segmentationExample)
                     )
                 }
+
+                if let languageExample = model.languageExample {
+                    NavigationLink(
+                        languageExample.playgroundButtonTitle,
+                        value: AppleModelLibraryRoute.languageModel(languageExample)
+                    )
+                }
             }
 
             Section("Provenance") {

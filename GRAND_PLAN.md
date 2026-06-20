@@ -88,6 +88,10 @@ The first platform slice is now represented in the repository:
   specialization and inference rather than only mocked orchestration.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
 - Runnable EfficientSAM and SAM 3 playgrounds built on Apple’s `CoreAISegmentation` package, with point or text prompts, bundle-aware conversion handoff, mask overlays, and explicit gated-weight licensing boundaries.
+- A runnable Qwen3 0.6B playground built on Apple’s `CoreAILanguageModels`
+  package and `FoundationModels`, with macOS and iOS export recipes,
+  bundle-aware conversion handoff, bounded generation, cancellation, and
+  session reset.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
@@ -95,8 +99,8 @@ This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 1
 is still incomplete until imports, provenance, and outputs live in persistent
 Lab Projects. The next vertical slices should add that persistence and
-restart-safe jobs, then EfficientSAM, Qwen3 0.6B, and the multi-model SAM3 plus
-Qwen composition shown in Apple’s Core AI material.
+restart-safe jobs, then diffusion, audio, and the multi-model SAM3 plus Qwen
+composition shown in Apple’s Core AI material.
 
 ## 4. Product boundary
 

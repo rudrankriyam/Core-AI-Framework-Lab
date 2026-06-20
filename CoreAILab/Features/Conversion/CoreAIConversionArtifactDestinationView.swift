@@ -15,6 +15,12 @@ struct CoreAIConversionArtifactDestinationView: View {
                     example: example,
                     initialModelURL: artifact.url
                 )
+            } else if artifact.resourceKind == "llm",
+                      let example = AppleLanguageExample(resourceBundleURL: artifact.url) {
+                AppleLanguageWorkspaceView(
+                    example: example,
+                    initialModelURL: artifact.url
+                )
             } else {
                 CoreAIResourceBundleSummaryView(artifact: artifact)
             }

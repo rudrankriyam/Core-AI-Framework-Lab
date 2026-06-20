@@ -64,6 +64,8 @@ struct AppleModelLibraryView: View {
                     AppleObjectDetectionWorkspaceView()
                 case .segmentation(let example):
                     AppleSegmentationWorkspaceView(example: example)
+                case .languageModel(let example):
+                    AppleLanguageWorkspaceView(example: example)
                 case .conversion(let modelID):
                     CoreAIConversionWorkspaceView(initialModelID: modelID)
                 }

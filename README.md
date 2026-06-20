@@ -40,8 +40,8 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/` - small reusable helpers for Core AI API discovery
 - `CoreAILabCore/Chatterbox/` - Core AI model storage, specialization, and function-contract code
 - `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
-- `CoreAILabCore/AppleModels/` - pinned Apple registry models, recipe metadata, and the YOLOS runtime adapter
-- `CoreAILab/Features/AppleModels/` - searchable model library and object-detection playground
+- `CoreAILabCore/AppleModels/` - pinned Apple registry models plus language, vision, and segmentation runtime adapters
+- `CoreAILab/Features/AppleModels/` - searchable model library and task-specific playgrounds
 - `CoreAILab/Features/Conversion/` - visual recipe configuration, environment checks, live logs, cancellation, and artifact handoff
 - `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
@@ -150,6 +150,29 @@ The verified export is a 63.4 MB FP16 asset with a static Float16
 `[1, 3, 512, 512]` input, `logits [1, 100, 92]`, and
 `pred_boxes [1, 100, 4]`. On the tested Mac, warm inference took 23.7-49 ms.
 The generated asset reports the upstream YOLOS Apache-2.0 license.
+
+## Run Apple's Qwen3 0.6B Example
+
+Export Qwen from the root of the pinned Apple repository clone. The macOS
+preset uses a 4-bit model and an 8,192-token context:
+
+```bash
+uv run coreai.llm.export Qwen/Qwen3-0.6B \
+  --compression 4bit \
+  --compute-precision float16 \
+  --max-context-length 8192
+```
+
+Open **Apple Models -> qwen3-0.6b -> Qwen3 0.6B Playground** and import the
+entire exported resource folder, not one nested `.aimodel`. The playground
+loads Apple's `CoreAILanguageModel`, creates a `FoundationModels`
+`LanguageModelSession`, and supports bounded generation, cancellation, and a
+fresh-session reset. The iOS export command is shown beside the macOS command
+in the app.
+
+Converted weights and tokenizer resources remain local and subject to Qwen's
+upstream license. Set `COREAI_QWEN_BUNDLE_PATH` to an exported resource folder
+to opt into the real-model integration test.
 
 ## Asset Inspector
 
@@ -280,9 +303,9 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 
 - Apple's repository ships export code and runtime utilities, not converted
   model weights. Export remains a local `uv` workflow in this first slice.
-- YOLOS object detection, EfficientSAM point segmentation, and SAM 3 text
-  segmentation have dedicated Apple-runtime playgrounds. Language, diffusion,
-  and additional audio adapters are the next runtime slices.
+- YOLOS object detection, EfficientSAM point segmentation, SAM 3 text
+  segmentation, and Qwen3 0.6B language generation have dedicated
+  Apple-runtime playgrounds. Diffusion and audio are the next runtime slices.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
