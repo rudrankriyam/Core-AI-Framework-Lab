@@ -23,7 +23,6 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     private(set) var phase: CoreAIFunctionWorkbenchPhase = .idle
     private(set) var exportStatusMessage: String?
     private(set) var exportedPackageURL: URL?
-    var exportExpectFrequentReshapes = false
 
     @ObservationIgnored
     private let runtimeService: any CoreAIFunctionRuntimeServicing
@@ -197,7 +196,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         guard canExportIntegration,
               let report = assetWorkspace.report else { return }
         let contracts = contracts
-        let profile = assetWorkspace.selectedProfile
+        let specializationConfiguration = assetWorkspace.selectedConfiguration
         let operationID = UUID()
         exportOperationID = operationID
         exportStatusMessage = "Exporting model, manifest, and Swift runtime…"
@@ -213,8 +212,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
                 let result = try await integrationExporter.export(
                     report: report,
                     contracts: contracts,
-                    specializationProfile: profile,
-                    expectFrequentReshapes: exportExpectFrequentReshapes,
+                    specializationConfiguration: specializationConfiguration,
                     destinationParentURL: destinationParentURL
                 )
                 guard exportOperationID == operationID else { return }

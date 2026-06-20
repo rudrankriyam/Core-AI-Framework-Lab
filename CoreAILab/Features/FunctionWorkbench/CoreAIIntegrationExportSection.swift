@@ -5,13 +5,15 @@ struct CoreAIIntegrationExportSection: View {
     let chooseDestination: () -> Void
 
     var body: some View {
-        @Bindable var workspace = workspace
         Section {
-            Toggle(
-                "AOT expects frequent reshapes",
-                isOn: $workspace.exportExpectFrequentReshapes
+            LabeledContent(
+                "Specialization",
+                value: workspace.assetWorkspace.selectedProfile.title
             )
-            .disabled(workspace.isExportingIntegration)
+            LabeledContent(
+                "Frequent reshapes",
+                value: workspace.assetWorkspace.expectFrequentReshapes ? "Expected" : "Not expected"
+            )
 
             if workspace.isExportingIntegration {
                 ProgressView("Copying and hashing the model asset…")
@@ -38,7 +40,7 @@ struct CoreAIIntegrationExportSection: View {
             Text("Integration Export")
         } footer: {
             Text(
-                "Exports the original asset, a versioned contract manifest, generated Swift invocation code, and an optional AOT compile script. Stateful and image-input functions remain manifest-only."
+                "Exports the original asset, a versioned contract manifest, generated Swift invocation code, and an optional AOT compile script using the active specialization configuration. Stateful and image-input functions remain manifest-only."
             )
         }
     }

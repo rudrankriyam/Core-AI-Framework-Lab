@@ -12,8 +12,7 @@ struct CoreAIExportManifest: Codable, Equatable, Sendable {
     init(
         artifact: Artifact,
         report: CoreAIModelAssetReport,
-        specializationProfile: CoreAISpecializationProfile,
-        expectFrequentReshapes: Bool = false,
+        specializationConfiguration: CoreAISpecializationConfiguration,
         contracts: [CoreAIFunctionContract]
     ) {
         schemaVersion = Self.currentSchemaVersion
@@ -24,10 +23,7 @@ struct CoreAIExportManifest: Codable, Equatable, Sendable {
             description: report.description,
             computeTypes: report.computeTypes.sorted()
         )
-        specialization = Specialization(
-            profile: specializationProfile,
-            expectFrequentReshapes: expectFrequentReshapes
-        )
+        specialization = Specialization(configuration: specializationConfiguration)
         functions = contracts.sorted { $0.name < $1.name }.map(Function.init)
     }
 
@@ -50,9 +46,10 @@ struct CoreAIExportManifest: Codable, Equatable, Sendable {
         let expectFrequentReshapes: Bool
         let runtimeDefaultsToCPUOnly: Bool
 
-        init(profile: CoreAISpecializationProfile, expectFrequentReshapes: Bool) {
+        init(configuration: CoreAISpecializationConfiguration) {
+            let profile = configuration.profile
             self.profile = profile.rawValue
-            self.expectFrequentReshapes = expectFrequentReshapes
+            expectFrequentReshapes = configuration.expectFrequentReshapes
             runtimeDefaultsToCPUOnly = profile == .cpuOnly
             switch profile {
             case .preferGPU:

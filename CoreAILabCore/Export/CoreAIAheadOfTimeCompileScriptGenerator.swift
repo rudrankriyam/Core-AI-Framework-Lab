@@ -3,8 +3,7 @@ import Foundation
 struct CoreAIAheadOfTimeCompileScriptGenerator: Sendable {
     func generate(
         assetRelativePath: String,
-        profile: CoreAISpecializationProfile,
-        expectFrequentReshapes: Bool = false
+        configuration: CoreAISpecializationConfiguration
     ) -> String {
         var argumentLines = [
             "  --output \"$SCRIPT_DIR/Compiled\"",
@@ -12,7 +11,7 @@ struct CoreAIAheadOfTimeCompileScriptGenerator: Sendable {
             "  --platform macOS",
             "  --min-deployment-version 27.0",
         ]
-        switch profile {
+        switch configuration.profile {
         case .preferGPU:
             argumentLines.append("  --preferred-compute gpu")
         case .preferNeuralEngine:
@@ -20,11 +19,11 @@ struct CoreAIAheadOfTimeCompileScriptGenerator: Sendable {
         case .automatic, .cpuOnly:
             break
         }
-        if expectFrequentReshapes {
+        if configuration.expectFrequentReshapes {
             argumentLines.append("  --expect-frequent-reshapes")
         }
         let continuation = argumentLines.joined(separator: " \\\n")
-        let cpuNote = profile == .cpuOnly
+        let cpuNote = configuration.profile == .cpuOnly
             ? "# coreai-build has no CPU-only compile flag. Pass .cpuOnly to the generated runtime loader.\n"
             : ""
         return """

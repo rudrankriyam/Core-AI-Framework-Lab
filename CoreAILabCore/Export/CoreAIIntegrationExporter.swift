@@ -42,8 +42,7 @@ actor CoreAIIntegrationExporter {
     func export(
         report: CoreAIModelAssetReport,
         contracts: [CoreAIFunctionContract],
-        specializationProfile: CoreAISpecializationProfile,
-        expectFrequentReshapes: Bool = false,
+        specializationConfiguration: CoreAISpecializationConfiguration,
         destinationParentURL: URL
     ) async throws -> CoreAIIntegrationExportResult {
         try Task.checkCancellation()
@@ -64,8 +63,7 @@ actor CoreAIIntegrationExporter {
         let generated = generator.generate(
             assetName: report.url.lastPathComponent,
             contracts: contracts,
-            specializationProfile: specializationProfile,
-            expectFrequentReshapes: expectFrequentReshapes
+            specializationConfiguration: specializationConfiguration
         )
         let packageName = generated.typeName + "Integration"
         let finalURL = destinationParentURL.appending(
@@ -110,8 +108,7 @@ actor CoreAIIntegrationExporter {
                 byteCount: digest.byteCount
             ),
             report: report,
-            specializationProfile: specializationProfile,
-            expectFrequentReshapes: expectFrequentReshapes,
+            specializationConfiguration: specializationConfiguration,
             contracts: contracts
         )
         let encoder = JSONEncoder()
@@ -127,8 +124,7 @@ actor CoreAIIntegrationExporter {
         let compileScriptURL = temporaryURL.appending(path: "compile-model.sh")
         let compileScript = compileScriptGenerator.generate(
             assetRelativePath: artifactPath,
-            profile: specializationProfile,
-            expectFrequentReshapes: expectFrequentReshapes
+            configuration: specializationConfiguration
         )
         try Data(compileScript.utf8).write(to: compileScriptURL, options: .atomic)
         try fileManager.setAttributes(

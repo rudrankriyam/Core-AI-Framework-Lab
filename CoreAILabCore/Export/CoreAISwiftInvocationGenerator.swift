@@ -10,8 +10,9 @@ struct CoreAISwiftInvocationGenerator: Sendable {
     func generate(
         assetName: String,
         contracts: [CoreAIFunctionContract],
-        specializationProfile: CoreAISpecializationProfile = .automatic,
-        expectFrequentReshapes: Bool = false
+        specializationConfiguration: CoreAISpecializationConfiguration = .init(
+            profile: .automatic
+        )
     ) -> Output {
         let typeName = typeIdentifier(for: assetName) + "CoreAIModel"
         let errorTypeName = typeName + "Error"
@@ -50,8 +51,8 @@ struct CoreAISwiftInvocationGenerator: Sendable {
                 private let model: AIModel
 
                 private static var defaultSpecializationOptions: SpecializationOptions {
-                    var options = \(specializationExpression(specializationProfile))
-                    options.expectFrequentReshapes = \(expectFrequentReshapes)
+                    var options = \(specializationExpression(specializationConfiguration.profile))
+                    options.expectFrequentReshapes = \(specializationConfiguration.expectFrequentReshapes)
                     return options
                 }
 

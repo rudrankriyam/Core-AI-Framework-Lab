@@ -13,7 +13,7 @@ struct CoreAIIntegrationExportTests {
                 byteCount: 42
             ),
             report: report(at: URL(filePath: "/private/source/fixture.aimodel")),
-            specializationProfile: .preferGPU,
+            specializationConfiguration: .init(profile: .preferGPU),
             contracts: [tensorContract(named: "main")]
         )
 
@@ -57,7 +57,7 @@ struct CoreAIIntegrationExportTests {
             _ = try await CoreAIIntegrationExporter().export(
                 report: report(at: sourceURL),
                 contracts: [tensorContract(named: "main")],
-                specializationProfile: .automatic,
+                specializationConfiguration: .init(profile: .automatic),
                 destinationParentURL: sourceURL
             )
             Issue.record("Expected a destination within the source to be rejected.")
@@ -108,13 +108,13 @@ struct CoreAIIntegrationExportTests {
         let first = try await exporter.export(
             report: sourceReport,
             contracts: contracts,
-            specializationProfile: .automatic,
+            specializationConfiguration: .init(profile: .automatic),
             destinationParentURL: firstParent
         )
         let second = try await exporter.export(
             report: sourceReport,
             contracts: contracts,
-            specializationProfile: .automatic,
+            specializationConfiguration: .init(profile: .automatic),
             destinationParentURL: secondParent
         )
 
@@ -141,7 +141,7 @@ struct CoreAIIntegrationExportTests {
             _ = try await exporter.export(
                 report: sourceReport,
                 contracts: contracts,
-                specializationProfile: .automatic,
+                specializationConfiguration: .init(profile: .automatic),
                 destinationParentURL: firstParent
             )
             Issue.record("Expected an existing destination to reject export.")
@@ -172,7 +172,7 @@ struct CoreAIIntegrationExportTests {
             _ = try await CoreAIIntegrationExporter().export(
                 report: report(at: sourceURL),
                 contracts: [tensorContract(named: "main")],
-                specializationProfile: .automatic,
+                specializationConfiguration: .init(profile: .automatic),
                 destinationParentURL: destinationParent
             )
             Issue.record("Expected symbolic-link rejection.")
@@ -193,7 +193,7 @@ struct CoreAIIntegrationExportTests {
             return try await CoreAIIntegrationExporter().export(
                 report: report(at: fixtureURL()),
                 contracts: [tensorContract(named: "main")],
-                specializationProfile: .automatic,
+                specializationConfiguration: .init(profile: .automatic),
                 destinationParentURL: destinationParent
             )
         }
@@ -213,16 +213,21 @@ struct CoreAIIntegrationExportTests {
     @Test
     func compileScriptUsesOnlySupportedComputeFlags() {
         let generator = CoreAIAheadOfTimeCompileScriptGenerator()
-        let gpu = generator.generate(assetRelativePath: "Resources/model.aimodel", profile: .preferGPU)
+        let gpu = generator.generate(
+            assetRelativePath: "Resources/model.aimodel",
+            configuration: .init(profile: .preferGPU)
+        )
         let neuralEngine = generator.generate(
             assetRelativePath: "Resources/model.aimodel",
-            profile: .preferNeuralEngine
+            configuration: .init(profile: .preferNeuralEngine)
         )
-        let cpu = generator.generate(assetRelativePath: "Resources/model.aimodel", profile: .cpuOnly)
+        let cpu = generator.generate(
+            assetRelativePath: "Resources/model.aimodel",
+            configuration: .init(profile: .cpuOnly)
+        )
         let reshaping = generator.generate(
             assetRelativePath: "Resources/model.aimodel",
-            profile: .automatic,
-            expectFrequentReshapes: true
+            configuration: .init(profile: .automatic, expectFrequentReshapes: true)
         )
 
         #expect(gpu.contains("--preferred-compute gpu"))
@@ -240,12 +245,12 @@ struct CoreAIIntegrationExportTests {
         let cpu = generator.generate(
             assetName: "cpu.aimodel",
             contracts: [contract],
-            specializationProfile: .cpuOnly
+            specializationConfiguration: .init(profile: .cpuOnly)
         ).source
         let gpu = generator.generate(
             assetName: "gpu.aimodel",
             contracts: [contract],
-            specializationProfile: .preferGPU
+            specializationConfiguration: .init(profile: .preferGPU)
         ).source
 
         #expect(cpu.contains("var options = .cpuOnly"))
@@ -258,7 +263,10 @@ struct CoreAIIntegrationExportTests {
         let source = CoreAISwiftInvocationGenerator().generate(
             assetName: "dynamic.aimodel",
             contracts: [tensorContract(named: "main")],
-            expectFrequentReshapes: true
+            specializationConfiguration: .init(
+                profile: .automatic,
+                expectFrequentReshapes: true
+            )
         ).source
 
         #expect(source.contains("options.expectFrequentReshapes = true"))
@@ -269,8 +277,7 @@ struct CoreAIIntegrationExportTests {
     func compileScriptHasValidShellSyntax() throws {
         let script = CoreAIAheadOfTimeCompileScriptGenerator().generate(
             assetRelativePath: "Resources/model's fixture.aimodel",
-            profile: .cpuOnly,
-            expectFrequentReshapes: true
+            configuration: .init(profile: .cpuOnly, expectFrequentReshapes: true)
         )
         let directory = temporaryDirectory()
         let scriptURL = directory.appending(path: "compile-model.sh")
@@ -292,7 +299,7 @@ struct CoreAIIntegrationExportTests {
                 tensorContract(named: "main"),
                 tensorContract(named: "precedencegroup"),
             ],
-            specializationProfile: .preferGPU
+            specializationConfiguration: .init(profile: .preferGPU)
         ).source
         let directory = temporaryDirectory()
         let sourceURL = directory.appending(path: "Generated.swift")
