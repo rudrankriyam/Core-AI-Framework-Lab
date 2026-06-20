@@ -62,6 +62,34 @@ struct AppleDiffusionWorkspaceModelTests {
     }
 
     @Test
+    func fluxUsesBundleDefaultsAndOmitsUnsupportedNegativePrompt() async throws {
+        let info = AppleDiffusionModelInfo(
+            pipelineName: "FLUX.2",
+            width: 512,
+            height: 512,
+            supportsImageToImage: false,
+            defaultStepCount: 4,
+            defaultGuidanceScale: 1,
+            supportsNegativePrompt: false
+        )
+        let engine = try AppleDiffusionGeneratorStub(
+            image: makeTestImage(),
+            modelInfo: info
+        )
+        let workspace = AppleDiffusionWorkspaceModel(example: .flux2Klein4B, engine: engine)
+        workspace.negativePrompt = "this must not reach FLUX"
+
+        await workspace.loadPipeline(from: URL(filePath: "/tmp/flux2"))
+        #expect(workspace.stepCount == 4)
+        #expect(workspace.guidanceScale == 1)
+
+        workspace.startGeneration()
+        await waitForGeneration(workspace)
+
+        #expect(await engine.requests.first?.negativePrompt == "")
+    }
+
+    @Test
     func cancellationDiscardsALateImage() async throws {
         let engine = try AppleDiffusionGeneratorStub(
             image: makeTestImage(),
@@ -105,12 +133,26 @@ struct AppleDiffusionWorkspaceModelTests {
 
 private actor AppleDiffusionGeneratorStub: AppleDiffusionGenerating {
     private let image: CGImage
+    private let modelInfo: AppleDiffusionModelInfo
     private let generationDelay: Duration?
     private(set) var requests: [AppleDiffusionRequest] = []
     private var isLoaded = false
 
-    init(image: CGImage, generationDelay: Duration? = nil) {
+    init(
+        image: CGImage,
+        modelInfo: AppleDiffusionModelInfo? = nil,
+        generationDelay: Duration? = nil
+    ) {
         self.image = image
+        self.modelInfo = modelInfo ?? AppleDiffusionModelInfo(
+            pipelineName: "Test Diffusion",
+            width: image.width,
+            height: image.height,
+            supportsImageToImage: false,
+            defaultStepCount: 20,
+            defaultGuidanceScale: 7.5,
+            supportsNegativePrompt: true
+        )
         self.generationDelay = generationDelay
     }
 
@@ -119,12 +161,7 @@ private actor AppleDiffusionGeneratorStub: AppleDiffusionGenerating {
             throw AppleDiffusionGeneratorStubError.invalidPipeline
         }
         isLoaded = true
-        return AppleDiffusionModelInfo(
-            pipelineName: "Test Diffusion",
-            width: image.width,
-            height: image.height,
-            supportsImageToImage: false
-        )
+        return modelInfo
     }
 
     func generate(_ request: AppleDiffusionRequest) async throws -> AppleDiffusionResult {

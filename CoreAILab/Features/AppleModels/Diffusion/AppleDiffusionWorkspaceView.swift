@@ -44,8 +44,13 @@ struct AppleDiffusionWorkspaceView: View {
             Section("Prompt") {
                 TextField("Describe an image", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
-                TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
-                    .lineLimit(2...5)
+                if workspace.modelInfo?.supportsNegativePrompt == false {
+                    Text("FLUX.2 does not consume a negative prompt.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
+                        .lineLimit(2...5)
+                }
 
                 Stepper("Seed: \(workspace.seed)", value: $workspace.seed, in: 0...Int(UInt32.max))
                 Stepper("Steps: \(workspace.stepCount)", value: $workspace.stepCount, in: 1...100)

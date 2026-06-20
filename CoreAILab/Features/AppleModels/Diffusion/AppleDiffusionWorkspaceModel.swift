@@ -50,6 +50,8 @@ final class AppleDiffusionWorkspaceModel {
             let loadedInfo = try await engine.loadPipeline(at: url)
             modelName = url.lastPathComponent
             modelInfo = loadedInfo
+            stepCount = loadedInfo.defaultStepCount
+            guidanceScale = Double(loadedInfo.defaultGuidanceScale)
             result = nil
             clearError()
             statusMessage = "\(loadedInfo.pipelineName) is ready at \(loadedInfo.width) × \(loadedInfo.height)."
@@ -62,7 +64,9 @@ final class AppleDiffusionWorkspaceModel {
         guard generationTask == nil, canGenerate else { return }
         let request = AppleDiffusionRequest(
             prompt: normalizedPrompt,
-            negativePrompt: negativePrompt.trimmingCharacters(in: .whitespacesAndNewlines),
+            negativePrompt: modelInfo?.supportsNegativePrompt == true
+                ? negativePrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                : "",
             seed: UInt32(clamping: seed),
             stepCount: stepCount,
             guidanceScale: Float(guidanceScale)

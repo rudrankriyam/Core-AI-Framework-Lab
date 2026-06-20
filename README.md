@@ -198,6 +198,11 @@ Apple's pipelines load some components lazily during generation. Set
 `COREAI_DIFFUSION_BUNDLE_PATH` to opt into a one-step real-model integration
 test.
 
+Stable Diffusion 3.5 Medium is gated on Hugging Face. Accept Stability AI's
+upstream terms and authenticate with `hf auth login` before export; Core AI Lab
+never reads or stores those credentials. FLUX.2 does not consume a negative
+prompt, so the playground hides that control after loading a FLUX.2 bundle.
+
 ## Asset Inspector
 
 Open any `.aimodel` package to inspect validity, author, license, description,

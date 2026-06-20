@@ -2,6 +2,26 @@ import CoreAIDiffusionPipeline
 import Foundation
 
 actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
+    private final class ScopedResourceLease: @unchecked Sendable {
+        let url: URL
+        private let isAccessing: Bool
+
+        init(url: URL) {
+            self.url = url
+            isAccessing = url.startAccessingSecurityScopedResource()
+        }
+
+        deinit {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        func matches(_ otherURL: URL) -> Bool {
+            url.standardizedFileURL == otherURL.standardizedFileURL
+        }
+    }
+
     private enum LoadedPipeline {
         case stable(StableDiffusionPipeline)
         case stableDiffusion3(SD3Pipeline)
@@ -60,6 +80,36 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
             }
         }
 
+        var defaultStepCount: Int {
+            if let defaultSteps = descriptor.defaultSteps {
+                return defaultSteps
+            }
+            switch self {
+            case .stable: return 50
+            case .stableDiffusion3: return 28
+            case .flux2: return 4
+            }
+        }
+
+        var defaultGuidanceScale: Float {
+            if let defaultGuidanceScale = descriptor.defaultGuidanceScale {
+                return defaultGuidanceScale
+            }
+            switch self {
+            case .stable: return 7.5
+            case .stableDiffusion3: return 5
+            case .flux2: return 1
+            }
+        }
+
+        var supportsNegativePrompt: Bool {
+            if case .flux2 = self {
+                false
+            } else {
+                true
+            }
+        }
+
         func generate(
             configuration: PipelineConfiguration,
             progressHandler: (PipelineProgress) -> Bool
@@ -85,17 +135,12 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
     }
 
     private var pipeline: LoadedPipeline?
-    private var scopedResourceURL: URL?
-    private var isAccessingScopedResource = false
-
-    deinit {
-        if isAccessingScopedResource {
-            scopedResourceURL?.stopAccessingSecurityScopedResource()
-        }
-    }
+    private var scopedResourceLease: ScopedResourceLease?
 
     func loadPipeline(at url: URL) async throws -> AppleDiffusionModelInfo {
-        let isAccessing = url.startAccessingSecurityScopedResource()
+        let candidateLease = scopedResourceLease.flatMap { lease in
+            lease.matches(url) ? lease : nil
+        } ?? ScopedResourceLease(url: url)
 
         do {
             let descriptor = try PipelineDescriptor.resolve(at: url, config: .auto)
@@ -122,22 +167,20 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
                 )
             }
 
-            releaseScopedResource()
             pipeline = loadedPipeline
-            scopedResourceURL = url
-            isAccessingScopedResource = isAccessing
+            scopedResourceLease = candidateLease
 
             let size = loadedPipeline.defaultImageSize
             return AppleDiffusionModelInfo(
                 pipelineName: loadedPipeline.displayName,
                 width: size.width,
                 height: size.height,
-                supportsImageToImage: loadedPipeline.supportsImageToImage
+                supportsImageToImage: loadedPipeline.supportsImageToImage,
+                defaultStepCount: loadedPipeline.defaultStepCount,
+                defaultGuidanceScale: loadedPipeline.defaultGuidanceScale,
+                supportsNegativePrompt: loadedPipeline.supportsNegativePrompt
             )
         } catch {
-            if isAccessing {
-                url.stopAccessingSecurityScopedResource()
-            }
             throw error
         }
     }
@@ -179,14 +222,6 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
             image: image,
             durationSeconds: Self.seconds(from: clock.now - start)
         )
-    }
-
-    private func releaseScopedResource() {
-        if isAccessingScopedResource {
-            scopedResourceURL?.stopAccessingSecurityScopedResource()
-        }
-        scopedResourceURL = nil
-        isAccessingScopedResource = false
     }
 
     private static func seconds(from duration: Duration) -> Double {

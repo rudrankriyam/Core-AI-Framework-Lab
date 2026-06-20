@@ -6,6 +6,9 @@ struct AppleDiffusionModelInfo: Equatable, Sendable {
     let width: Int
     let height: Int
     let supportsImageToImage: Bool
+    let defaultStepCount: Int
+    let defaultGuidanceScale: Float
+    let supportsNegativePrompt: Bool
 }
 
 struct AppleDiffusionRequest: Equatable, Sendable {
