@@ -1,3 +1,4 @@
+import CoreAI
 import Foundation
 import Observation
 
@@ -7,7 +8,7 @@ final class CoreAIAssetWorkspaceModel {
     private struct PendingCacheRemoval {
         let scope: CoreAICacheRemovalScope
         let assetURL: URL
-        let profile: CoreAISpecializationProfile
+        let configuration: CoreAISpecializationConfiguration
     }
 
     private(set) var report: CoreAIModelAssetReport?
@@ -18,9 +19,13 @@ final class CoreAIAssetWorkspaceModel {
     var selectedProfile: CoreAISpecializationProfile = .automatic {
         didSet {
             guard selectedProfile != oldValue else { return }
-            cancelPendingCacheRemoval()
-            cacheStatus = .unchecked
-            specializationResult = nil
+            specializationConfigurationChanged()
+        }
+    }
+    var expectFrequentReshapes = SpecializationOptions.default.expectFrequentReshapes {
+        didSet {
+            guard expectFrequentReshapes != oldValue else { return }
+            specializationConfigurationChanged()
         }
     }
     private var pendingCacheRemoval: PendingCacheRemoval?
@@ -48,6 +53,13 @@ final class CoreAIAssetWorkspaceModel {
 
     var canSpecialize: Bool {
         report != nil && selectedProfile.isAvailable && !phase.isBusy
+    }
+
+    var selectedConfiguration: CoreAISpecializationConfiguration {
+        CoreAISpecializationConfiguration(
+            profile: selectedProfile,
+            expectFrequentReshapes: expectFrequentReshapes
+        )
     }
 
     var cacheRemovalTitle: String {
@@ -98,7 +110,7 @@ final class CoreAIAssetWorkspaceModel {
         do {
             let result = try await specializationService.specialize(
                 at: report.url,
-                profile: selectedProfile,
+                configuration: selectedConfiguration,
                 cachePolicy: .standard
             )
             guard self.operationID == operationID else { return }
@@ -116,7 +128,7 @@ final class CoreAIAssetWorkspaceModel {
         pendingCacheRemoval = PendingCacheRemoval(
             scope: scope,
             assetURL: report.url,
-            profile: selectedProfile
+            configuration: selectedConfiguration
         )
         isConfirmingCacheRemoval = true
     }
@@ -130,7 +142,7 @@ final class CoreAIAssetWorkspaceModel {
             case .selectedProfile:
                 try await specializationService.removeCachedEntry(
                     at: pendingCacheRemoval.assetURL,
-                    profile: pendingCacheRemoval.profile
+                    configuration: pendingCacheRemoval.configuration
                 )
             case .allProfilesForAsset:
                 try await specializationService.removeCachedEntries(
@@ -159,7 +171,7 @@ final class CoreAIAssetWorkspaceModel {
         do {
             let isCached = try await specializationService.isCached(
                 at: report.url,
-                profile: selectedProfile
+                configuration: selectedConfiguration
             )
             guard operationID == expectedOperationID else { return }
             cacheStatus = isCached ? .cached : .notCached
@@ -194,5 +206,11 @@ final class CoreAIAssetWorkspaceModel {
     private func cancelPendingCacheRemoval() {
         pendingCacheRemoval = nil
         isConfirmingCacheRemoval = false
+    }
+
+    private func specializationConfigurationChanged() {
+        cancelPendingCacheRemoval()
+        cacheStatus = .unchecked
+        specializationResult = nil
     }
 }

@@ -2,8 +2,8 @@ import Foundation
 @testable import CoreAILab
 
 actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
-    private var cachedProfiles: Set<CoreAISpecializationProfile>
-    private var removedProfiles: [CoreAISpecializationProfile] = []
+    private var cachedConfigurations: Set<CoreAISpecializationConfiguration>
+    private var removedConfigurations: [CoreAISpecializationConfiguration] = []
     private var removedProfileURLs: [URL] = []
     private var removedAssetCount = 0
     private var removedAssetURLs: [URL] = []
@@ -14,6 +14,8 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
     private let contractResponses: [[CoreAIFunctionContract]]
     private let delayedContractLookup: Int?
     private let failingContractLookups: Set<Int>
+    private let benchmarkRunDelay: Duration?
+    private var completedBenchmarkRuns = 0
 
     init(
         cachedProfiles: Set<CoreAISpecializationProfile> = [],
@@ -21,21 +23,28 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
         failingCacheLookups: Set<Int> = [],
         contractResponses: [[CoreAIFunctionContract]] = [[]],
         delayedContractLookup: Int? = nil,
-        failingContractLookups: Set<Int> = []
+        failingContractLookups: Set<Int> = [],
+        cachedConfigurations: Set<CoreAISpecializationConfiguration> = [],
+        benchmarkRunDelay: Duration? = nil
     ) {
-        self.cachedProfiles = cachedProfiles
+        self.cachedConfigurations = cachedConfigurations.union(
+            cachedProfiles.map {
+                CoreAISpecializationConfiguration(profile: $0)
+            }
+        )
         self.delayedCacheLookup = delayedCacheLookup
         self.failingCacheLookups = failingCacheLookups
         self.contractResponses = contractResponses
         self.delayedContractLookup = delayedContractLookup
         self.failingContractLookups = failingContractLookups
+        self.benchmarkRunDelay = benchmarkRunDelay
     }
 
     func reset() {}
 
     func isCached(
         at url: URL,
-        profile: CoreAISpecializationProfile
+        configuration: CoreAISpecializationConfiguration
     ) async throws -> Bool {
         cacheLookupCount += 1
         let lookup = cacheLookupCount
@@ -45,34 +54,35 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
         if failingCacheLookups.contains(lookup) {
             throw CocoaError(.fileReadUnknown)
         }
-        return cachedProfiles.contains(profile)
+        return cachedConfigurations.contains(configuration)
     }
 
     func specialize(
         at url: URL,
-        profile: CoreAISpecializationProfile,
+        configuration: CoreAISpecializationConfiguration,
         cachePolicy: CoreAICachePolicyChoice
     ) -> CoreAISpecializationResult {
-        cachedProfiles.insert(profile)
+        cachedConfigurations.insert(configuration)
         return CoreAISpecializationResult(
+            configuration: configuration,
             duration: .milliseconds(25),
             loadedFromCache: false,
             functionNames: ["main"],
-            bookmarkData: Data(profile.rawValue.utf8)
+            bookmarkData: Data(configuration.profile.rawValue.utf8)
         )
     }
 
     func removeCachedEntry(
         at url: URL,
-        profile: CoreAISpecializationProfile
+        configuration: CoreAISpecializationConfiguration
     ) {
-        cachedProfiles.remove(profile)
-        removedProfiles.append(profile)
+        cachedConfigurations.remove(configuration)
+        removedConfigurations.append(configuration)
         removedProfileURLs.append(url)
     }
 
     func removeCachedEntries(at url: URL) {
-        cachedProfiles.removeAll()
+        cachedConfigurations.removeAll()
         removedAssetCount += 1
         removedAssetURLs.append(url)
     }
@@ -101,12 +111,77 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
         )
     }
 
+    func benchmarkFunction(
+        named functionName: String,
+        inputs: [CoreAIFunctionInputPlan],
+        configuration: CoreAIFunctionBenchmarkConfiguration
+    ) async throws -> CoreAIFunctionBenchmarkResult {
+        try configuration.validate()
+        var warmupDurations: [Duration] = []
+        for _ in 0..<configuration.warmupRuns {
+            try Task.checkCancellation()
+            await waitForBenchmarkRun()
+            completedBenchmarkRuns += 1
+            warmupDurations.append(.milliseconds(10))
+            try Task.checkCancellation()
+        }
+        var trials: [CoreAIBenchmarkTrial] = []
+        for index in 0..<configuration.measuredRuns {
+            try Task.checkCancellation()
+            await waitForBenchmarkRun()
+            completedBenchmarkRuns += 1
+            trials.append(
+                CoreAIBenchmarkTrial(
+                    index: index + 1,
+                    duration: .milliseconds((index + 1) * 10)
+                )
+            )
+            try Task.checkCancellation()
+        }
+        return CoreAIFunctionBenchmarkResult(
+            functionName: functionName,
+            functionLoadDuration: .milliseconds(2),
+            inputPreparationDuration: .milliseconds(3),
+            warmupDurations: warmupDurations,
+            trials: trials,
+            statistics: try CoreAIBenchmarkStatistics(trials: trials),
+            outputs: [],
+            environment: CoreAIBenchmarkEnvironment(
+                capturedAt: Date(timeIntervalSince1970: 0),
+                platform: "test",
+                operatingSystem: "test",
+                deviceArchitectureName: "test",
+                availableComputeUnits: ["CPU"],
+                buildConfiguration: .debug,
+                startedThermalState: .nominal,
+                endedThermalState: .nominal
+            )
+        )
+    }
+
     func removalSnapshot() -> (
-        profiles: [CoreAISpecializationProfile],
+        configurations: [CoreAISpecializationConfiguration],
         assetCount: Int,
         profileURLs: [URL],
         assetURLs: [URL]
     ) {
-        (removedProfiles, removedAssetCount, removedProfileURLs, removedAssetURLs)
+        (
+            removedConfigurations,
+            removedAssetCount,
+            removedProfileURLs,
+            removedAssetURLs
+        )
+    }
+
+    func completedBenchmarkRunCount() -> Int {
+        completedBenchmarkRuns
+    }
+
+    private func waitForBenchmarkRun() async {
+        guard let benchmarkRunDelay else { return }
+        let activeRun = Task.detached {
+            try? await Task.sleep(for: benchmarkRunDelay)
+        }
+        await activeRun.value
     }
 }

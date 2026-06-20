@@ -169,7 +169,7 @@ struct CoreAIFunctionWorkbenchTests {
         do {
             let specialization = try await service.specialize(
                 at: fixtureURL,
-                profile: .automatic,
+                configuration: CoreAISpecializationConfiguration(profile: .automatic),
                 cachePolicy: .standard
             )
             #expect(
@@ -181,7 +181,7 @@ struct CoreAIFunctionWorkbenchTests {
             #expect(
                 try await service.isCached(
                     at: fixtureURL,
-                    profile: .automatic
+                    configuration: CoreAISpecializationConfiguration(profile: .automatic)
                 )
             )
 
@@ -228,7 +228,7 @@ struct CoreAIFunctionWorkbenchTests {
             #expect(
                 try await service.isCached(
                     at: fixtureURL,
-                    profile: .automatic
+                    configuration: CoreAISpecializationConfiguration(profile: .automatic)
                 ) == false
             )
         } catch {

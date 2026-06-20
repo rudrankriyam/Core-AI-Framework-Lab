@@ -6,10 +6,11 @@ enum CoreAIFunctionWorkbenchPhase: Sendable, Equatable {
     case preparingContracts
     case ready
     case running
+    case benchmarking
 
     var isBusy: Bool {
         switch self {
-        case .loadingAsset, .preparingContracts, .running:
+        case .loadingAsset, .preparingContracts, .running, .benchmarking:
             true
         case .idle, .ready:
             false
