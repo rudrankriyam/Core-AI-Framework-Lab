@@ -12,7 +12,7 @@ struct CoreAIAssetInspectorView: View {
     var body: some View {
         Group {
             if let report = workspace.report {
-                CoreAIAssetReportView(report: report)
+                CoreAIAssetReportView(report: report, workspace: workspace)
             } else if workspace.isInspecting {
                 ContentUnavailableView {
                     Label("Inspecting Model", systemImage: "doc.text.magnifyingglass")
@@ -36,6 +36,7 @@ struct CoreAIAssetInspectorView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
+                    .disabled(workspace.phase.isBusy)
             }
         }
         .fileImporter(
@@ -44,9 +45,9 @@ struct CoreAIAssetInspectorView: View {
         ) { result in
             handleModelImport(result)
         }
-        .alert("Unable to Inspect Model", isPresented: $workspace.isShowingError) {
+        .alert("Core AI Operation Failed", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The model could not be inspected.")
+            Text(workspace.errorMessage ?? "The Core AI operation failed.")
         }
         .task(id: initialURL) {
             if let initialURL {

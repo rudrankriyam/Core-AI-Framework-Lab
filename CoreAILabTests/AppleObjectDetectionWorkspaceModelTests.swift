@@ -49,7 +49,8 @@ struct CoreAIAssetWorkspaceModelTests {
             computeTypes: ["float16"]
         )
         let workspace = CoreAIAssetWorkspaceModel(
-            inspectionService: CoreAIAssetInspectorStub(report: validReport)
+            inspectionService: CoreAIAssetInspectorStub(report: validReport),
+            specializationService: CoreAISpecializationServiceStub()
         )
 
         await workspace.inspect(url: validURL)

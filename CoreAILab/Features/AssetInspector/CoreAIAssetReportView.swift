@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CoreAIAssetReportView: View {
     let report: CoreAIModelAssetReport
+    @Bindable var workspace: CoreAIAssetWorkspaceModel
 
     var body: some View {
         List {
@@ -17,12 +18,28 @@ struct CoreAIAssetReportView: View {
             }
 
             Section("Functions") {
-                if report.functionNames.isEmpty {
+                if report.functions.isEmpty {
                     Text("No functions were declared in the asset summary.")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(report.functionNames, id: \.self) { functionName in
-                        Label(functionName, systemImage: "function")
+                    ForEach(report.functions) { function in
+                        DisclosureGroup {
+                            CoreAIAssetSignatureValuesView(
+                                title: "Inputs",
+                                values: function.inputs
+                            )
+                            CoreAIAssetSignatureValuesView(
+                                title: "State",
+                                values: function.states
+                            )
+                            CoreAIAssetSignatureValuesView(
+                                title: "Outputs",
+                                values: function.outputs
+                            )
+                        } label: {
+                            Label(function.name, systemImage: "function")
+                                .font(.body.monospaced())
+                        }
                     }
                 }
             }
@@ -43,6 +60,8 @@ struct CoreAIAssetReportView: View {
                     .font(.callout.monospaced())
                     .textSelection(.enabled)
             }
+
+            CoreAISpecializationControlsView(workspace: workspace)
         }
     }
 
