@@ -71,6 +71,30 @@ struct AppleSegmentationWorkspaceModelTests {
         #expect(workspace.result?.segmentCount == 1)
     }
 
+    @Test
+    func failedRunClearsThePreviousMask() async throws {
+        let engine = AppleImageSegmenterStub()
+        let workspace = AppleSegmentationWorkspaceModel(
+            example: .efficientSAM,
+            engine: engine
+        )
+        let imageURL = try makeTestImage(width: 4, height: 4)
+        defer { try? FileManager.default.removeItem(at: imageURL) }
+        await workspace.loadModel(from: URL(filePath: "/tmp/efficient-sam"))
+        workspace.loadImage(from: imageURL)
+        await workspace.runSegmentation()
+        #expect(workspace.result != nil)
+        #expect(workspace.renderedImage != nil)
+
+        await engine.failNextRun()
+        await workspace.runSegmentation()
+
+        #expect(workspace.result == nil)
+        #expect(workspace.renderedImage == nil)
+        #expect(workspace.previewImage != nil)
+        #expect(workspace.isShowingError)
+    }
+
     private func makeTestImage(width: Int, height: Int) throws -> URL {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
@@ -101,6 +125,11 @@ struct AppleSegmentationWorkspaceModelTests {
 
 private actor AppleImageSegmenterStub: AppleImageSegmenting {
     private(set) var queries: [AppleSegmentationQuery] = []
+    private var shouldFailNextRun = false
+
+    func failNextRun() {
+        shouldFailNextRun = true
+    }
 
     func loadModel(at url: URL) throws {
         if url.lastPathComponent == "invalid-bundle" {
@@ -111,7 +140,11 @@ private actor AppleImageSegmenterStub: AppleImageSegmenting {
     func segment(
         image: CGImage,
         query: AppleSegmentationQuery
-    ) -> AppleSegmentationResult {
+    ) throws -> AppleSegmentationResult {
+        if shouldFailNextRun {
+            shouldFailNextRun = false
+            throw AppleImageSegmenterStubError.invalidQuery
+        }
         queries.append(query)
         return AppleSegmentationResult(
             renderedImage: image,
@@ -123,8 +156,14 @@ private actor AppleImageSegmenterStub: AppleImageSegmenting {
 
 private enum AppleImageSegmenterStubError: LocalizedError {
     case invalidModel
+    case invalidQuery
 
     var errorDescription: String? {
-        "The replacement segmenter bundle is invalid."
+        switch self {
+        case .invalidModel:
+            "The replacement segmenter bundle is invalid."
+        case .invalidQuery:
+            "The segmenter rejected this query."
+        }
     }
 }

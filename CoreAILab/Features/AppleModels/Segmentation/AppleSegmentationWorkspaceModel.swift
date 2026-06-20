@@ -110,6 +110,8 @@ final class AppleSegmentationWorkspaceModel {
             return
         }
 
+        clearResult()
+
         let query: AppleSegmentationQuery
         if example.usesTextPrompt {
             guard !normalizedTextPrompt.isEmpty else {
