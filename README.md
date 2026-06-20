@@ -91,6 +91,19 @@ This first conversion slice deliberately uses a local Apple repository clone.
 Automatic cloning, resumable jobs across app launches, custom PyTorch recipe
 authoring, and content-addressed artifact storage remain later milestones.
 
+## Specialization and Cache Controls
+
+Open any `.aimodel` in **Asset Inspector** to choose automatic, CPU-only, GPU-
+preferred, or Neural-Engine-preferred specialization. Core AI Lab checks the
+default `AIModelCache` for that exact asset and profile, specializes with either
+the standard or persistent purge policy, and can remove one profile or every
+cached profile for the selected source asset.
+
+These controls use only Apple's public cache APIs. Core AI does not expose a
+cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
+reports honest known-entry hit/miss state instead of guessing from private
+filesystem paths. Removing an entry means the model must specialize again.
+
 ## Run Apple's YOLOS Tiny Example
 
 From a clone of Apple's repository at the pinned revision:

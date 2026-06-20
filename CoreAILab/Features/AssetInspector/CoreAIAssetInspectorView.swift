@@ -12,7 +12,7 @@ struct CoreAIAssetInspectorView: View {
     var body: some View {
         Group {
             if let report = workspace.report {
-                CoreAIAssetReportView(report: report)
+                CoreAIAssetReportView(report: report, workspace: workspace)
             } else if workspace.isInspecting {
                 ContentUnavailableView {
                     Label("Inspecting Model", systemImage: "doc.text.magnifyingglass")
@@ -36,6 +36,7 @@ struct CoreAIAssetInspectorView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
+                    .disabled(workspace.phase.isBusy)
             }
         }
         .fileImporter(
