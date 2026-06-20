@@ -40,14 +40,6 @@ struct AppleAudioWorkspaceView: View {
                     Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
                         .buttonStyle(.borderedProminent)
                         .disabled(!workspace.canTranscribe)
-                    if workspace.isTranscribing {
-                        Button(
-                            "Cancel",
-                            systemImage: "stop.fill",
-                            role: .destructive,
-                            action: workspace.cancelTranscription
-                        )
-                    }
                 }
 
                 Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
@@ -85,7 +77,6 @@ struct AppleAudioWorkspaceView: View {
                 await workspace.loadModel(from: initialModelURL)
             }
         }
-        .onDisappear(perform: workspace.cancelTranscription)
     }
 
     private func importModel() {

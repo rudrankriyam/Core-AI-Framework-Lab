@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -50,25 +51,6 @@ struct AppleAudioWorkspaceModelTests {
     }
 
     @Test
-    func cancellationDiscardsALateTranscript() async throws {
-        let engine = AppleAudioTranscriberStub(
-            transcript: "TOO LATE",
-            transcriptionDelay: .milliseconds(100)
-        )
-        let workspace = AppleAudioWorkspaceModel(engine: engine)
-        await workspace.loadModel(from: URL(filePath: "/tmp/wav2vec2.aimodel"))
-        workspace.selectAudio(URL(filePath: "/tmp/speech.wav"))
-
-        workspace.startTranscription()
-        try await Task.sleep(for: .milliseconds(10))
-        workspace.cancelTranscription()
-        await waitForTranscription(workspace)
-
-        #expect(workspace.result == nil)
-        #expect(workspace.statusMessage == "Transcription canceled.")
-    }
-
-    @Test
     func audioLoaderResamplesToSixteenKilohertzMono() throws {
         let url = FileManager.default.temporaryDirectory
             .appending(path: "core-ai-audio-(UUID().uuidString).wav")
@@ -85,6 +67,43 @@ struct AppleAudioWorkspaceModelTests {
 
         #expect(abs(converted.values.count - 1_600) <= 2)
         #expect(abs(converted.durationSeconds - 0.1) < 0.001)
+    }
+
+    @Test
+    func audioLoaderAveragesStereoChannelsBeforeResampling() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appending(path: "core-ai-stereo-\(UUID().uuidString).wav")
+        defer { try? FileManager.default.removeItem(at: url) }
+        let format = try #require(
+            AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 44_100,
+                channels: 2,
+                interleaved: false
+            )
+        )
+        let buffer = try #require(
+            AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 4_410)
+        )
+        buffer.frameLength = 4_410
+        let channels = try #require(buffer.floatChannelData)
+        for frame in 0..<Int(buffer.frameLength) {
+            channels[0][frame] = 0.6
+            channels[1][frame] = -0.2
+        }
+        do {
+            let file = try AVAudioFile(forWriting: url, settings: format.settings)
+            try file.write(from: buffer)
+        }
+
+        let converted = try AppleAudioSampleLoader.loadMono16k(
+            from: url,
+            maximumDurationSeconds: 5
+        )
+        let mean = converted.values.reduce(0, +) / Float(converted.values.count)
+
+        #expect(abs(mean - 0.2) < 0.01)
+        #expect(abs(converted.values.count - 1_600) <= 2)
     }
 
     private func makeEmissions(tokens: [Int]) -> [Float] {
@@ -104,13 +123,11 @@ struct AppleAudioWorkspaceModelTests {
 
 private actor AppleAudioTranscriberStub: AppleAudioTranscribing {
     private let transcript: String
-    private let transcriptionDelay: Duration?
     private(set) var audioURLs: [URL] = []
     private var isLoaded = false
 
-    init(transcript: String, transcriptionDelay: Duration? = nil) {
+    init(transcript: String) {
         self.transcript = transcript
-        self.transcriptionDelay = transcriptionDelay
     }
 
     func loadModel(at url: URL) throws -> AppleAudioModelInfo {
@@ -128,9 +145,6 @@ private actor AppleAudioTranscriberStub: AppleAudioTranscribing {
     func transcribe(audioAt url: URL) async throws -> AppleAudioTranscriptionResult {
         guard isLoaded else { throw AppleAudioError.modelNotLoaded }
         audioURLs.append(url)
-        if let transcriptionDelay {
-            try await Task.sleep(for: transcriptionDelay)
-        }
         return AppleAudioTranscriptionResult(
             transcript: transcript,
             audioDurationSeconds: 1,

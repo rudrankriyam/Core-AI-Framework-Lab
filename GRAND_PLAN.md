@@ -98,7 +98,7 @@ The first platform slice is now represented in the repository:
   cancellation, image output, and bundle-aware conversion handoff.
 - A runnable Wav2Vec2 audio playground built directly on Core AI, with
   AVFoundation decoding and 16 kHz mono resampling, static-contract validation,
-  greedy CTC decoding, cancellation, timing, and direct conversion handoff.
+  greedy CTC decoding, timing, and direct conversion handoff.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 

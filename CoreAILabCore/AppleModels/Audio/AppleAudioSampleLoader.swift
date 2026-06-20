@@ -26,12 +26,17 @@ enum AppleAudioSampleLoader {
         guard duration <= maximumDurationSeconds else {
             throw AppleAudioError.audioTooLong(maximumSeconds: maximumDurationSeconds)
         }
-        guard let destinationFormat = AVAudioFormat(
+        guard let monoSourceFormat = AVAudioFormat(
+            commonFormat: .pcmFormatFloat32,
+            sampleRate: sourceFormat.sampleRate,
+            channels: 1,
+            interleaved: false
+        ), let destinationFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: sampleRate,
             channels: 1,
             interleaved: false
-        ), let converter = AVAudioConverter(from: sourceFormat, to: destinationFormat) else {
+        ) else {
             throw AppleAudioError.audioConversionFailed
         }
 
@@ -44,7 +49,39 @@ enum AppleAudioSampleLoader {
         }
         try file.read(into: inputBuffer)
 
-        let estimatedFrames = ceil(Double(inputBuffer.frameLength) * sampleRate / sourceFormat.sampleRate)
+        guard let sourceChannels = inputBuffer.floatChannelData,
+              let monoBuffer = AVAudioPCMBuffer(
+                  pcmFormat: monoSourceFormat,
+                  frameCapacity: inputBuffer.frameLength
+              ), let monoChannel = monoBuffer.floatChannelData?[0] else {
+            throw AppleAudioError.audioConversionFailed
+        }
+        monoBuffer.frameLength = inputBuffer.frameLength
+        let channelCount = Int(sourceFormat.channelCount)
+        for frame in 0..<Int(inputBuffer.frameLength) {
+            var sum: Float = 0
+            for channel in 0..<channelCount {
+                sum += sourceChannels[channel][frame]
+            }
+            monoChannel[frame] = sum / Float(channelCount)
+        }
+
+        if sourceFormat.sampleRate == sampleRate {
+            let frameCount = Int(monoBuffer.frameLength)
+            return AppleAudioSamples(
+                values: Array(UnsafeBufferPointer(start: monoChannel, count: frameCount)),
+                durationSeconds: Double(frameCount) / sampleRate
+            )
+        }
+
+        guard let converter = AVAudioConverter(
+            from: monoSourceFormat,
+            to: destinationFormat
+        ) else {
+            throw AppleAudioError.audioConversionFailed
+        }
+
+        let estimatedFrames = ceil(Double(monoBuffer.frameLength) * sampleRate / sourceFormat.sampleRate)
         guard let outputBuffer = AVAudioPCMBuffer(
             pcmFormat: destinationFormat,
             frameCapacity: AVAudioFrameCount(estimatedFrames + 32)
@@ -62,7 +99,7 @@ enum AppleAudioSampleLoader {
             }
             suppliedInput = true
             inputStatus.pointee = .haveData
-            return inputBuffer
+            return monoBuffer
         }
         guard status == .haveData || status == .endOfStream,
               conversionError == nil,

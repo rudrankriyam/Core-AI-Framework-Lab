@@ -76,12 +76,6 @@ final class AppleAudioWorkspaceModel {
         }
     }
 
-    func cancelTranscription() {
-        guard transcriptionTask != nil else { return }
-        statusMessage = "Canceling transcription…"
-        transcriptionTask?.cancel()
-    }
-
     func presentImportError(_ error: any Error) {
         present(error)
     }
@@ -98,9 +92,6 @@ final class AppleAudioWorkspaceModel {
             result = transcription
             clearError()
             statusMessage = "Transcribed on device in \(transcription.inferenceDurationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds."
-        } catch is CancellationError {
-            result = nil
-            statusMessage = "Transcription canceled."
         } catch {
             present(error)
         }
