@@ -70,18 +70,10 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
     }
 
     var exportCommand: String {
-        if type == "llm" {
-            return (["uv", "run", "coreai.llm.export"] + exportArguments)
-                .joined(separator: " ")
-        }
-        if type == "diffusion" {
-            return (["uv", "run", "coreai.diffusion.export"] + exportArguments)
-                .joined(separator: " ")
-        }
-        guard let exportScript else {
-            return ""
-        }
-        return "uv run \(exportScript) --model \(huggingFaceID)"
+        CoreAIConversionCommand.displayString(
+            executableName: "uv",
+            arguments: exportProgramArguments
+        )
     }
 
     var labRecommendedExportCommand: String {
@@ -113,6 +105,39 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
             folder = family ?? shortName
         }
         return "models/\(folder)"
+    }
+
+    var registryType: String {
+        type ?? "utility"
+    }
+
+    var exportProgramArguments: [String] {
+        if type == "llm" {
+            return ["run", "coreai.llm.export"] + exportArguments
+        }
+        if type == "diffusion" {
+            return ["run", "coreai.diffusion.export"] + exportArguments
+        }
+        guard let exportScript else {
+            return []
+        }
+        return ["run", exportScript, "--model", huggingFaceID]
+    }
+
+    var supportedConversionPrecisions: [CoreAIConversionPrecision] {
+        guard let exportScript else { return [] }
+
+        switch exportScript {
+        case "models/depth-anything/export.py":
+            return [.float32]
+        case "models/clap/export.py",
+             "models/sam3/export.py",
+             "models/t5/export.py",
+             "models/wav2vec2/export.py":
+            return [.float16, .float32]
+        default:
+            return CoreAIConversionPrecision.allCases
+        }
     }
 
     func recipeURL(sourceRevision: String) -> URL? {

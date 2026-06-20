@@ -36,6 +36,11 @@ struct AppleModelDetailView: View {
                 if let recipeURL = model.recipeURL(sourceRevision: sourceRevision) {
                     Link("Read the pinned Apple recipe", destination: recipeURL)
                 }
+
+                NavigationLink(
+                    "Convert This Recipe",
+                    value: AppleModelLibraryRoute.conversion(modelID: model.id)
+                )
             }
 
             Section("Runtime integration") {

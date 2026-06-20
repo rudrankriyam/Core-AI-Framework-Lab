@@ -2,6 +2,7 @@ import Foundation
 
 enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case appleModels
+    case conversion
     case chatterbox
     case assetInspector
     case runtime
@@ -12,6 +13,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .appleModels:
             "Apple Models"
+        case .conversion:
+            "Convert"
         case .chatterbox:
             "Chatterbox"
         case .assetInspector:
@@ -25,6 +28,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .appleModels:
             "square.stack.3d.up"
+        case .conversion:
+            "arrow.triangle.2.circlepath"
         case .chatterbox:
             "waveform"
         case .assetInspector:
