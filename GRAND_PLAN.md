@@ -96,6 +96,9 @@ The first platform slice is now represented in the repository:
   `CoreAIDiffusionPipeline` package, with runtime dispatch across Stable
   Diffusion 1.x/2.x, SD3.5, and FLUX.2, editable generation controls,
   cancellation, image output, and bundle-aware conversion handoff.
+- A runnable Wav2Vec2 audio playground built directly on Core AI, with
+  AVFoundation decoding and 16 kHz mono resampling, static-contract validation,
+  greedy CTC decoding, timing, and direct conversion handoff.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
@@ -103,8 +106,8 @@ This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 1
 is still incomplete until imports, provenance, and outputs live in persistent
 Lab Projects. The next vertical slices should add that persistence and
-restart-safe jobs, then audio and the multi-model SAM3 plus Qwen composition
-shown in Apple’s Core AI material.
+restart-safe jobs, then the multi-model SAM3 plus Qwen composition shown in
+Apple’s Core AI material.
 
 ## 4. Product boundary
 

@@ -60,6 +60,8 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
             return .diffusion
         }
         switch modelType {
+        case "wav2vec2":
+            return .audio
         case "efficient-sam", "sam3":
             return .segmentation
         case "yolo":
@@ -88,6 +90,7 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
             || segmentationExample != nil
             || languageExample != nil
             || diffusionExample != nil
+            || audioExample != nil
     }
 
     var segmentationExample: AppleSegmentationExample? {
@@ -100,6 +103,10 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
 
     var diffusionExample: AppleDiffusionExample? {
         AppleDiffusionExample(shortName: shortName)
+    }
+
+    var audioExample: AppleAudioExample? {
+        AppleAudioExample(shortName: shortName)
     }
 
     var recipePath: String {

@@ -68,6 +68,8 @@ struct AppleModelLibraryView: View {
                     AppleLanguageWorkspaceView(example: example)
                 case .diffusion(let example):
                     AppleDiffusionWorkspaceView(example: example)
+                case .audio(let example):
+                    AppleAudioWorkspaceView(example: example)
                 case .conversion(let modelID):
                     CoreAIConversionWorkspaceView(initialModelID: modelID)
                 }

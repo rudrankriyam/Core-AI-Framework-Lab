@@ -203,6 +203,26 @@ upstream terms and authenticate with `hf auth login` before export; Core AI Lab
 never reads or stores those credentials. FLUX.2 does not consume a negative
 prompt, so the playground hides that control after loading a FLUX.2 bundle.
 
+## Run Apple's Wav2Vec2 Audio Example
+
+Export Apple's static five-second Wav2Vec2 recipe from the pinned repository:
+
+```bash
+uv run models/wav2vec2/export.py \
+  --model wav2vec2_asr_base_960h \
+  --dtype float16
+```
+
+Open **Apple Models -> wav2vec2-base -> Wav2Vec2 Base Playground**, import the
+generated `.aimodel`, and choose a speech recording no longer than five
+seconds. The Lab uses AVFoundation to decode, downmix, and resample the clip to
+16 kHz mono, pads it to the recipe's `[1, 80000]` input, runs Core AI, and
+decodes the `[1, time, 29]` emissions with the upstream CTC label order.
+
+Set both `COREAI_WAV2VEC2_MODEL_PATH` and `COREAI_WAV2VEC2_AUDIO_PATH` to opt
+into the real-model transcription test. Chatterbox Turbo remains the Lab's
+separate runnable text-to-speech example.
+
 ## Asset Inspector
 
 Open any `.aimodel` package to inspect validity, author, license, description,
@@ -334,8 +354,9 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
   model weights. Export remains a local `uv` workflow in this first slice.
 - YOLOS object detection, EfficientSAM point segmentation, SAM 3 text
   segmentation, Qwen3 0.6B language generation, and Apple's four diffusion
-  presets have dedicated Apple-runtime playgrounds. Audio is the next runtime
-  slice.
+  presets have dedicated Apple-runtime playgrounds. Wav2Vec2 adds Apple's
+  speech-to-text recipe alongside the existing Chatterbox Turbo text-to-speech
+  workspace.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.

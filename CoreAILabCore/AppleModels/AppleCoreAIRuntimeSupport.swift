@@ -4,6 +4,7 @@ enum AppleCoreAIRuntimeSupport: String, Hashable, Sendable {
     case genericAsset
     case languageModel
     case diffusion
+    case audio
     case segmentation
     case objectDetection
 
@@ -15,6 +16,8 @@ enum AppleCoreAIRuntimeSupport: String, Hashable, Sendable {
             "Apple language-model runtime"
         case .diffusion:
             "Apple diffusion runtime"
+        case .audio:
+            "Core AI audio runtime"
         case .segmentation:
             "Apple segmentation runtime"
         case .objectDetection:
@@ -30,6 +33,8 @@ enum AppleCoreAIRuntimeSupport: String, Hashable, Sendable {
             "CoreAILM"
         case .diffusion:
             "CoreAIDiffusion"
+        case .audio:
+            nil
         case .segmentation:
             "CoreAISegmentation"
         case .objectDetection:
@@ -45,6 +50,8 @@ enum AppleCoreAIRuntimeSupport: String, Hashable, Sendable {
             "Apple's CoreAILM package provides tokenization, generation, sampling, state, and profiling utilities."
         case .diffusion:
             "Apple's CoreAIDiffusion package orchestrates the multi-asset diffusion pipeline and schedulers."
+        case .audio:
+            "Core AI Lab decodes audio, runs Apple's exported Wav2Vec2 function, and performs greedy CTC transcription."
         case .segmentation:
             "Apple's CoreAISegmentation package provides image preparation, prompts, post-processing, and visualization."
         case .objectDetection:

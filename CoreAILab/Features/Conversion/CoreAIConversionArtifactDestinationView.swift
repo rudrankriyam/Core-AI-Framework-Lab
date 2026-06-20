@@ -7,7 +7,14 @@ struct CoreAIConversionArtifactDestinationView: View {
     var body: some View {
         switch artifact.kind {
         case .modelAsset:
-            CoreAIAssetInspectorView(initialURL: artifact.url)
+            if let example = AppleAudioExample(modelAssetURL: artifact.url) {
+                AppleAudioWorkspaceView(
+                    example: example,
+                    initialModelURL: artifact.url
+                )
+            } else {
+                CoreAIAssetInspectorView(initialURL: artifact.url)
+            }
         case .resourceBundle:
             if artifact.resourceKind == "segmenter",
                let example = AppleSegmentationExample(resourceBundleURL: artifact.url) {
