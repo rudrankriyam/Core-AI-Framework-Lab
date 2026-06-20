@@ -1,6 +1,7 @@
 import Foundation
 
 enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
+    case projects
     case appleModels
     case conversion
     case chatterbox
@@ -11,6 +12,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
 
     var title: String {
         switch self {
+        case .projects:
+            "Projects"
         case .appleModels:
             "Apple Models"
         case .conversion:
@@ -26,6 +29,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .projects:
+            "folder"
         case .appleModels:
             "square.stack.3d.up"
         case .conversion:

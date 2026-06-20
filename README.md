@@ -7,12 +7,13 @@
 
 A native workbench for Apple's `CoreAI.framework` in Xcode 27 beta.
 
-Core AI Lab connects a searchable snapshot of Apple's open-source model
-recipes, visual conversion, generic `.aimodel` inspection, a descriptor-driven
-function workbench, and task-specific model playgrounds. Chatterbox Turbo
-remains the custom end-to-end stress test. YOLOS Tiny is the first official
-Apple-repository example, exported locally and run through Apple's own
-`CoreAIObjectDetection` Swift package.
+Core AI Lab connects persistent projects, content-addressed model storage, a
+searchable snapshot of Apple's open-source model recipes, visual conversion,
+generic `.aimodel` inspection, a descriptor-driven function workbench, and
+task-specific model playgrounds. Chatterbox Turbo remains the custom end-to-end
+stress test. YOLOS Tiny is the first official Apple-repository example,
+exported locally and run through Apple's own `CoreAIObjectDetection` Swift
+package.
 
 CoreAI currently looks like a lower-level model runtime and asset framework:
 
@@ -44,6 +45,8 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Features/AppleModels/` - searchable model library and task-specific playgrounds
 - `CoreAILab/Features/Conversion/` - visual recipe configuration, environment checks, live logs, cancellation, and artifact handoff
 - `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
+- `CoreAILab/Features/Projects/` - persistent project library, artifact inventory, and Inspector/Workbench handoff
+- `CoreAILabCore/Projects/` - SwiftData project schema and atomic SHA-256 artifact storage
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
@@ -74,6 +77,22 @@ conversion, the selected upstream recipe may fetch its original model weights;
 their licenses, authentication requirements, and source revisions remain
 independent of Apple's BSD-3-Clause recipe repository.
 
+## Persistent Projects and Artifact Storage
+
+Open **Projects** to create a durable Lab Project, then import a `.aimodel`, an
+Apple resource folder, or a supporting file. Project metadata is persisted with
+SwiftData at `Application Support/Core AI Lab/Projects.store`. Large artifact
+content lives beside it under `Artifacts/` in a streamed SHA-256 store rather
+than in the database or repository.
+
+Imports reject symbolic links, hash deterministic relative paths and file
+boundaries, copy into a staging directory, verify the staged content, and only
+then atomically promote it into the store. Identical content is shared across
+projects. Removing the last project reference reclaims the stored copy; deleting
+one of several references does not. Stored `.aimodel` packages open directly in
+Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
+Project** action instead of remaining tied to their original output folder.
+
 ## Visual Conversion Workbench
 
 On macOS, open **Convert** or choose **Convert This Recipe** from any Apple
@@ -90,9 +109,10 @@ The app passes a typed executable URL and argument array to Foundation
 can create a `uv` environment and download large upstream checkpoints. Gated
 models still require the user's own source authentication and license access.
 
-This first conversion slice deliberately uses a local Apple repository clone.
-Automatic cloning, resumable jobs across app launches, custom PyTorch recipe
-authoring, and content-addressed artifact storage remain later milestones.
+This conversion slice deliberately uses a local Apple repository clone.
+Automatic cloning, resumable jobs across app launches, and custom PyTorch recipe
+authoring remain later milestones. Completed output artifacts can now be copied
+into persistent projects.
 
 ## Specialization and Cache Controls
 
@@ -107,10 +127,10 @@ These controls use only Apple's public cache APIs. Core AI does not expose a
 cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
 reports honest known-entry hit/miss state instead of guessing from private
 filesystem paths. Removing an entry means the model must specialize again.
-Persistent cache policy is intentionally not offered for session-scoped
-imports: Core AI requires the app to retain its opaque model bookmark to load
-or remove such an entry after the source disappears. That option belongs with
-the planned persistent project library rather than a disposable file picker.
+Persistent cache policy is not offered yet: Core AI requires the app to retain
+its opaque model bookmark to load or remove such an entry after the source
+disappears. Projects now keep the source artifact stable, but the bookmark still
+needs to become versioned project metadata before that policy can be honest.
 
 ## Generic Function Workbench
 
@@ -427,8 +447,8 @@ device; an empty or misrouted filtered run fails the harness.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
-- Imported assets are session-scoped. A content-addressed persistent artifact
-  library is planned but not included yet.
+- Projects and imported artifacts persist across launches. Conversion job
+  execution and benchmark evidence are not restart-safe yet.
 - The generic function workbench currently generates NDArray inputs only.
   Stateful execution, image-input adaptation, imported fixtures, persisted
   benchmark evidence, and raw-output export remain later Runtime Studio work.

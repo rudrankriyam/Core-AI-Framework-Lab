@@ -7,6 +7,7 @@ struct CoreAIConversionWorkspaceView: View {
     @State private var isChoosingRepository = false
     @State private var isChoosingOutputDirectory = false
     @State private var isChoosingUVExecutable = false
+    @State private var artifactToStore: CoreAIConversionArtifact?
 
     init(initialModelID: String? = nil) {
         _workspace = State(
@@ -34,7 +35,8 @@ struct CoreAIConversionWorkspaceView: View {
 
                     CoreAIConversionEvidenceView(
                         workspace: workspace,
-                        revealInFinder: revealInFinder
+                        revealInFinder: revealInFinder,
+                        storeInProject: chooseProject
                     )
                     .frame(minWidth: 420, idealWidth: 620)
                 }
@@ -66,6 +68,9 @@ struct CoreAIConversionWorkspaceView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(workspace.errorMessage ?? "The conversion could not be completed.")
+        }
+        .sheet(item: $artifactToStore) { artifact in
+            CoreAIArtifactProjectPickerView(artifactURL: artifact.url)
         }
         .task {
             await workspace.refreshEnvironment()
@@ -125,6 +130,10 @@ struct CoreAIConversionWorkspaceView: View {
 
     private func revealInFinder(_ artifact: CoreAIConversionArtifact) {
         NSWorkspace.shared.activateFileViewerSelecting([artifact.url])
+    }
+
+    private func chooseProject(for artifact: CoreAIConversionArtifact) {
+        artifactToStore = artifact
     }
 }
 #else

@@ -72,6 +72,10 @@ The next step is therefore not “add another model tab.” It is to extract the
 The first platform slice is now represented in the repository:
 
 - A native `NavigationSplitView` shell with Apple Models, Chatterbox, Asset Inspector, and Runtime surfaces.
+- A SwiftData-backed Lab Project library with atomic, streamed SHA-256 artifact
+  imports, cross-project deduplication, safe last-reference cleanup, corruption
+  checks, and direct Inspector/Workbench handoff. Completed conversion outputs
+  can be promoted into projects without depending on their original folder.
 - A generated, pinned snapshot of all 33 presets in Apple’s open-source `coreai-models` registry.
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
