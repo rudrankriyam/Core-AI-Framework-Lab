@@ -86,10 +86,15 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
     var isRunnableInLab: Bool {
         (runtimeSupport == .objectDetection && shortName == "yolos-tiny")
             || segmentationExample != nil
+            || languageExample != nil
     }
 
     var segmentationExample: AppleSegmentationExample? {
         AppleSegmentationExample(shortName: shortName)
+    }
+
+    var languageExample: AppleLanguageExample? {
+        AppleLanguageExample(shortName: shortName)
     }
 
     var recipePath: String {
