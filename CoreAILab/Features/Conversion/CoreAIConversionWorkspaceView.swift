@@ -42,7 +42,7 @@ struct CoreAIConversionWorkspaceView: View {
         }
         .navigationTitle("Convert")
         .navigationDestination(for: CoreAIConversionArtifact.self) { artifact in
-            CoreAIAssetInspectorView(initialURL: artifact.url)
+            CoreAIConversionArtifactDestinationView(artifact: artifact)
         }
         .fileImporter(
             isPresented: $isChoosingRepository,

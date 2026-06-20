@@ -65,6 +65,9 @@ struct AppleCoreAIModelCatalogTests {
         let efficientSAM = try #require(
             models.first { $0.shortName == "efficient-sam-vitt" }
         )
+        let sam3 = try #require(
+            models.first { $0.shortName == "sam3" }
+        )
 
         #expect(yolosTiny.runtimeSupport == .objectDetection)
         #expect(yolosTiny.runtimeSupport.productName == "CoreAIObjectDetection")
@@ -76,6 +79,11 @@ struct AppleCoreAIModelCatalogTests {
         #expect(!yolosBase.isRunnableInLab)
         #expect(qwen.runtimeSupport == .languageModel)
         #expect(efficientSAM.runtimeSupport == .segmentation)
+        #expect(efficientSAM.segmentationExample == .efficientSAM)
+        #expect(efficientSAM.isRunnableInLab)
+        #expect(sam3.runtimeSupport == .segmentation)
+        #expect(sam3.segmentationExample == .sam3)
+        #expect(sam3.isRunnableInLab)
     }
 
     private func loadCatalog() throws -> AppleCoreAIModelCatalogDocument {
