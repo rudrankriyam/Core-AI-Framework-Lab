@@ -22,7 +22,7 @@ struct AppleSegmentationWorkspaceView: View {
                 LabeledContent("Image", value: workspace.imageName ?? "Not loaded")
                 Label(
                     workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "checkmark.circle"
+                    systemImage: statusSystemImage
                 )
                     .foregroundStyle(workspace.isBusy ? .primary : .secondary)
             } header: {
@@ -77,6 +77,19 @@ struct AppleSegmentationWorkspaceView: View {
 
     private func importModel() {
         isImportingModel = true
+    }
+
+    private var statusSystemImage: String {
+        if workspace.isBusy {
+            return "hourglass"
+        }
+        if workspace.isShowingError {
+            return "exclamationmark.triangle"
+        }
+        if workspace.modelName != nil, workspace.sourceImage != nil {
+            return "checkmark.circle"
+        }
+        return "info.circle"
     }
 
     private func importImage() {
