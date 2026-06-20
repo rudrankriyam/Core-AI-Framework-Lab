@@ -21,19 +21,28 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     private(set) var benchmarkStatusMessage: String?
     private(set) var contractLoadFailureMessage: String?
     private(set) var phase: CoreAIFunctionWorkbenchPhase = .idle
+    private(set) var exportStatusMessage: String?
+    private(set) var exportedPackageURL: URL?
 
     @ObservationIgnored
     private let runtimeService: any CoreAIFunctionRuntimeServicing
     @ObservationIgnored
+    private let integrationExporter: CoreAIIntegrationExporter
+    @ObservationIgnored
     private var contractOperationID = UUID()
     @ObservationIgnored
     private var benchmarkTask: Task<Void, Never>?
+    private var exportTask: Task<Void, Never>?
+    @ObservationIgnored
+    private var exportOperationID = UUID()
 
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
-        runtimeService: any CoreAIFunctionRuntimeServicing = CoreAISpecializationService()
+        runtimeService: any CoreAIFunctionRuntimeServicing = CoreAISpecializationService(),
+        integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter()
     ) {
         self.runtimeService = runtimeService
+        self.integrationExporter = integrationExporter
         assetWorkspace = CoreAIAssetWorkspaceModel(
             inspectionService: inspectionService,
             specializationService: runtimeService
@@ -48,6 +57,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         selectedContract?.isRunnable == true
             && !phase.isBusy
             && !assetWorkspace.phase.isBusy
+            && exportTask == nil
             && inputDrafts.count == selectedContract?.inputs.count
     }
 
@@ -55,8 +65,20 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         canRun
     }
 
+    var canExportIntegration: Bool {
+        assetWorkspace.report?.isValid == true
+            && !contracts.isEmpty
+            && !phase.isBusy
+            && !assetWorkspace.phase.isBusy
+            && exportTask == nil
+    }
+
+    var isExportingIntegration: Bool {
+        exportTask != nil
+    }
+
     func loadAsset(from url: URL) async {
-        guard !phase.isBusy else { return }
+        guard !phase.isBusy, exportTask == nil else { return }
         phase = .loadingAsset
         let didReplaceAsset = await assetWorkspace.inspect(url: url)
         if didReplaceAsset {
@@ -170,11 +192,53 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         assetWorkspace.presentImportError(error)
     }
 
+    func startIntegrationExport(to destinationParentURL: URL) {
+        guard canExportIntegration,
+              let report = assetWorkspace.report else { return }
+        let contracts = contracts
+        let specializationConfiguration = assetWorkspace.selectedConfiguration
+        let operationID = UUID()
+        exportOperationID = operationID
+        exportStatusMessage = "Exporting model, manifest, and Swift runtime…"
+        exportedPackageURL = nil
+        exportTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if exportOperationID == operationID {
+                    exportTask = nil
+                }
+            }
+            do {
+                let result = try await integrationExporter.export(
+                    report: report,
+                    contracts: contracts,
+                    specializationConfiguration: specializationConfiguration,
+                    destinationParentURL: destinationParentURL
+                )
+                guard exportOperationID == operationID else { return }
+                exportedPackageURL = result.packageURL
+                exportStatusMessage = "Created \(result.packageURL.lastPathComponent)."
+            } catch is CancellationError {
+                exportStatusMessage = "Integration export canceled."
+            } catch {
+                exportStatusMessage = nil
+                assetWorkspace.presentImportError(error)
+            }
+        }
+    }
+
+    func cancelIntegrationExport() {
+        exportTask?.cancel()
+    }
+
     private func rebuildInputDrafts() {
         inputDrafts = selectedContract?.inputs.compactMap(CoreAIFunctionInputDraft.init) ?? []
     }
 
     private func clearRuntimeState(resetBenchmarkHistory: Bool = true) {
+        exportOperationID = UUID()
+        exportTask?.cancel()
+        exportTask = nil
         benchmarkTask?.cancel()
         benchmarkTask = nil
         contractOperationID = UUID()
@@ -187,6 +251,8 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         }
         benchmarkStatusMessage = nil
         contractLoadFailureMessage = nil
+        exportStatusMessage = nil
+        exportedPackageURL = nil
     }
 
     private func performBenchmark(

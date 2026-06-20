@@ -88,6 +88,13 @@ The first platform slice is now represented in the repository:
   identity, one excluded warmup and five measured runs by default, raw trial
   visibility, robust summaries, environment and thermal metadata, Release-build
   guidance, session comparisons, and cancellation between Core AI calls.
+- Deterministic standalone-asset integration export from the function
+  workbench, including the original model, a versioned contract manifest,
+  streamed SHA-256 evidence, and generated Swift invocation code for stateless
+  NDArray functions. A generated `coreai-build` script exposes optional iOS and
+  macOS 27 ahead-of-time compilation without running it implicitly. Stateful
+  and image-input functions remain explicitly manifest-only until a semantic
+  adapter owns their lifecycle.
 - A checked-in two-function Core AI fixture proving real Float32 and Int32
   specialization and inference rather than only mocked orchestration.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.

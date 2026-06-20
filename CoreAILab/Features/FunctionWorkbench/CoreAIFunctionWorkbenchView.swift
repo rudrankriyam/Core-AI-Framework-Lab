@@ -3,6 +3,7 @@ import SwiftUI
 struct CoreAIFunctionWorkbenchView: View {
     @State private var workspace = CoreAIFunctionWorkbenchWorkspaceModel()
     @State private var isImportingModel = false
+    @State private var isChoosingExportDestination = false
     let initialURL: URL?
 
     init(initialURL: URL? = nil) {
@@ -28,6 +29,7 @@ struct CoreAIFunctionWorkbenchView: View {
                     CoreAISpecializationControlsView(
                         workspace: workspace.assetWorkspace,
                         isInteractionDisabled: workspace.phase.isBusy
+                            || workspace.isExportingIntegration
                     )
 
                     if workspace.assetWorkspace.specializationResult == nil {
@@ -113,6 +115,11 @@ struct CoreAIFunctionWorkbenchView: View {
                                 reports: workspace.benchmarkHistory
                             )
                         }
+
+                        CoreAIIntegrationExportSection(
+                            workspace: workspace,
+                            chooseDestination: chooseExportDestination
+                        )
                     }
                 }
             } else if workspace.phase == .loadingAsset
@@ -141,7 +148,11 @@ struct CoreAIFunctionWorkbenchView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
-                    .disabled(workspace.phase.isBusy || workspace.assetWorkspace.phase.isBusy)
+                    .disabled(
+                        workspace.phase.isBusy
+                            || workspace.assetWorkspace.phase.isBusy
+                            || workspace.isExportingIntegration
+                    )
             }
         }
         .fileImporter(
@@ -149,6 +160,12 @@ struct CoreAIFunctionWorkbenchView: View {
             allowedContentTypes: [.coreAIModelAsset, .folder]
         ) { result in
             handleModelImport(result)
+        }
+        .fileImporter(
+            isPresented: $isChoosingExportDestination,
+            allowedContentTypes: [.folder]
+        ) { result in
+            handleExportDestination(result)
         }
         .background {
             CoreAIFunctionWorkbenchErrorPresenter(
@@ -165,7 +182,10 @@ struct CoreAIFunctionWorkbenchView: View {
                 workspace.assetWorkspace.specializationResult
             )
         }
-        .onDisappear(perform: workspace.cancelBenchmark)
+        .onDisappear {
+            workspace.cancelBenchmark()
+            workspace.cancelIntegrationExport()
+        }
     }
 
     private func openModelPicker() {
@@ -188,6 +208,21 @@ struct CoreAIFunctionWorkbenchView: View {
     private func runFunction() {
         Task {
             await workspace.runSelectedFunction()
+        }
+    }
+
+    private func chooseExportDestination() {
+        isChoosingExportDestination = true
+    }
+
+    private func handleExportDestination(_ result: Result<URL, any Error>) {
+        switch result {
+        case .success(let url):
+            workspace.startIntegrationExport(to: url)
+        case .failure(let error):
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.presentImportError(error)
+            }
         }
     }
 
