@@ -143,6 +143,11 @@ final class CoreAIConversionWorkspaceModel {
     }
 
     func refreshEnvironment() async {
+        guard conversionTask == nil else { return }
+        await refreshEnvironment(keepingWorkspaceBusy: false)
+    }
+
+    private func refreshEnvironment(keepingWorkspaceBusy: Bool) async {
         guard !isCheckingEnvironment, !phase.isActive else { return }
         let checkID = UUID()
         environmentCheckID = checkID
@@ -173,10 +178,17 @@ final class CoreAIConversionWorkspaceModel {
             return
         }
         environmentReport = report
-        phase = report.canConvert ? .ready : .idle
-        statusMessage = report.canConvert
-            ? "The environment is ready. Starting conversion may download model weights."
-            : "Resolve the failed checks before starting conversion."
+        phase = CoreAIConversionPhase.afterEnvironmentCheck(
+            canConvert: report.canConvert,
+            conversionIsStarting: keepingWorkspaceBusy
+        )
+        if report.canConvert {
+            statusMessage = keepingWorkspaceBusy
+                ? "The environment was revalidated. Starting conversion…"
+                : "The environment is ready. Starting conversion may download model weights."
+        } else {
+            statusMessage = "Resolve the failed checks before starting conversion."
+        }
     }
 
     func selectRepository(_ url: URL) {
@@ -229,7 +241,7 @@ final class CoreAIConversionWorkspaceModel {
         }
 
         do {
-            await refreshEnvironment()
+            await refreshEnvironment(keepingWorkspaceBusy: true)
             try Task.checkCancellation()
             guard environmentReport?.canConvert == true,
                   let command = exportCommand,

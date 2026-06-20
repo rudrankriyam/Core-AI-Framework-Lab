@@ -63,4 +63,14 @@ enum CoreAIConversionPhase: Equatable, Sendable {
     var allowsStartingConversion: Bool {
         !isBusy
     }
+
+    static func afterEnvironmentCheck(
+        canConvert: Bool,
+        conversionIsStarting: Bool
+    ) -> Self {
+        if conversionIsStarting {
+            return .checking
+        }
+        return canConvert ? .ready : .idle
+    }
 }

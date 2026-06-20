@@ -16,6 +16,34 @@ struct CoreAIConversionPlannerTests {
     }
 
     @Test
+    func conversionRevalidationKeepsTheWorkspaceBusyUntilLaunch() {
+        #expect(
+            CoreAIConversionPhase.afterEnvironmentCheck(
+                canConvert: true,
+                conversionIsStarting: true
+            ) == .checking
+        )
+        #expect(
+            CoreAIConversionPhase.afterEnvironmentCheck(
+                canConvert: false,
+                conversionIsStarting: true
+            ) == .checking
+        )
+        #expect(
+            CoreAIConversionPhase.afterEnvironmentCheck(
+                canConvert: true,
+                conversionIsStarting: false
+            ) == .ready
+        )
+        #expect(
+            CoreAIConversionPhase.afterEnvironmentCheck(
+                canConvert: false,
+                conversionIsStarting: false
+            ) == .idle
+        )
+    }
+
+    @Test
     func yolosPlanUsesTypedArgumentsAndRecommendedPrecision() throws {
         let model = try #require(
             try loadCatalog().models.first { $0.shortName == "yolos-tiny" }
