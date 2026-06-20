@@ -47,7 +47,7 @@ struct AppleModelDetailView: View {
                     LabeledContent("Swift product", value: productName)
                 }
 
-                if model.runtimeSupport.isRunnableInLab {
+                if model.isRunnableInLab {
                     NavigationLink(
                         "Open Object Detection Playground",
                         value: AppleModelLibraryRoute.objectDetection

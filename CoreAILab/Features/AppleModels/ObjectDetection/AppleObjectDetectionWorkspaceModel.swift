@@ -17,7 +17,11 @@ final class AppleObjectDetectionWorkspaceModel {
     var isShowingError = false
 
     @ObservationIgnored
-    private let engine = AppleObjectDetectorEngine()
+    private let engine: any AppleObjectDetecting
+
+    init(engine: any AppleObjectDetecting = AppleObjectDetectorEngine()) {
+        self.engine = engine
+    }
 
     var canRun: Bool {
         modelName != nil && sourceImage != nil && !isLoadingModel && !isRunning
@@ -35,7 +39,6 @@ final class AppleObjectDetectionWorkspaceModel {
             errorMessage = nil
             statusMessage = "Model ready. Choose an image to run object detection."
         } catch {
-            modelName = nil
             present(error)
         }
     }

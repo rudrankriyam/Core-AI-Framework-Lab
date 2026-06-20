@@ -51,8 +51,4 @@ enum AppleCoreAIRuntimeSupport: String, Hashable, Sendable {
             "Apple's CoreAIObjectDetection package loads YOLOS exports and performs preprocessing and COCO post-processing."
         }
     }
-
-    var isRunnableInLab: Bool {
-        self == .objectDetection
-    }
 }

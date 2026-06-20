@@ -91,6 +91,10 @@ struct AppleCoreAIModel: Codable, Hashable, Identifiable, Sendable {
         return "\(exportCommand) --dtype float16"
     }
 
+    var isRunnableInLab: Bool {
+        runtimeSupport == .objectDetection && shortName == "yolos-tiny"
+    }
+
     var recipePath: String {
         if let exportScript {
             return String(exportScript.dropLast("/export.py".count))

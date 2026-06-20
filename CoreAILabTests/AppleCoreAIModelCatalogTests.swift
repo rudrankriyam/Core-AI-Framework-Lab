@@ -68,6 +68,12 @@ struct AppleCoreAIModelCatalogTests {
 
         #expect(yolosTiny.runtimeSupport == .objectDetection)
         #expect(yolosTiny.runtimeSupport.productName == "CoreAIObjectDetection")
+        #expect(yolosTiny.isRunnableInLab)
+
+        let yolosBase = try #require(
+            models.first { $0.shortName == "yolos-base" }
+        )
+        #expect(!yolosBase.isRunnableInLab)
         #expect(qwen.runtimeSupport == .languageModel)
         #expect(efficientSAM.runtimeSupport == .segmentation)
     }

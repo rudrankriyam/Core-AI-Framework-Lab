@@ -2,7 +2,12 @@ import CoreAIObjectDetector
 import CoreGraphics
 import Foundation
 
-actor AppleObjectDetectorEngine {
+protocol AppleObjectDetecting: Sendable {
+    func loadModel(at url: URL) async throws
+    func detect(in image: CGImage) async throws -> [AppleObjectDetection]
+}
+
+actor AppleObjectDetectorEngine: AppleObjectDetecting {
     private var detector: SendableObjectDetector?
 
     func loadModel(at url: URL) async throws {

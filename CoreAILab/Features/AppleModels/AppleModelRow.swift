@@ -28,6 +28,6 @@ struct AppleModelRow: View {
     }
 
     private var runtimeSystemImage: String {
-        model.runtimeSupport.isRunnableInLab ? "play.circle.fill" : "shippingbox"
+        model.isRunnableInLab ? "play.circle.fill" : "shippingbox"
     }
 }
