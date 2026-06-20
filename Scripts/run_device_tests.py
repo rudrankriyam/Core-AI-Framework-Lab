@@ -503,6 +503,54 @@ def xcresult_summary_command(result_bundle: Path) -> list[str]:
     ]
 
 
+def validate_xcresult_summary(
+    document: Mapping[str, Any],
+    *,
+    expected_device_identifier: str,
+) -> None:
+    expected_counts = {
+        "totalTestCount": 1,
+        "passedTests": 1,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+    }
+    actual_counts = {key: document.get(key) for key in expected_counts}
+    if document.get("result") != "Passed" or actual_counts != expected_counts:
+        raise DeviceTestHarnessError(
+            "xcresult did not prove exactly one passed fixture test: "
+            f"result={document.get('result')!r}, counts={actual_counts}"
+        )
+
+    configurations = document.get("devicesAndConfigurations")
+    if not isinstance(configurations, list) or len(configurations) != 1:
+        raise DeviceTestHarnessError(
+            "xcresult did not report exactly one device configuration"
+        )
+    configuration = _mapping(configurations[0])
+    device = _mapping(configuration.get("device"))
+    configuration_counts = {
+        key: configuration.get(key)
+        for key in ("passedTests", "failedTests", "skippedTests", "expectedFailures")
+    }
+    if (
+        device.get("platform") != "iOS"
+        or device.get("deviceId") != expected_device_identifier
+        or configuration_counts
+        != {
+            "passedTests": 1,
+            "failedTests": 0,
+            "skippedTests": 0,
+            "expectedFailures": 0,
+        }
+    ):
+        raise DeviceTestHarnessError(
+            "xcresult did not attribute one passing test to the selected physical "
+            f"iOS device {expected_device_identifier}: device={dict(device)}, "
+            f"counts={configuration_counts}"
+        )
+
+
 def validate_team_identifier(value: str) -> str:
     normalized = value.upper()
     if not TEAM_IDENTIFIER_PATTERN.fullmatch(normalized):
@@ -595,27 +643,50 @@ def main(arguments: Sequence[str] | None = None) -> int:
 
         result_bundle.parent.mkdir(parents=True, exist_ok=True)
         completed = subprocess.run(command, cwd=REPOSITORY_ROOT, check=False)
-        if result_bundle.exists():
-            summary = subprocess.run(
-                xcresult_summary_command(result_bundle),
-                cwd=REPOSITORY_ROOT,
-                capture_output=True,
-                text=True,
-                check=False,
+        if not result_bundle.exists():
+            if completed.returncode != 0:
+                return completed.returncode
+            raise DeviceTestHarnessError(
+                "xcodebuild succeeded without an xcresult bundle"
             )
-            if summary.returncode == 0:
-                try:
-                    document = json.loads(summary.stdout)
-                    print(json.dumps(document, indent=2, sort_keys=True))
-                except json.JSONDecodeError:
-                    print(summary.stdout.rstrip())
-            else:
+
+        summary = subprocess.run(
+            xcresult_summary_command(result_bundle),
+            cwd=REPOSITORY_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if summary.returncode != 0:
+            detail = summary.stderr.strip() or summary.stdout.strip()
+            if completed.returncode != 0:
                 print(
-                    "xcresulttool could not summarize the result bundle: "
-                    + (summary.stderr.strip() or summary.stdout.strip()),
+                    "xcresulttool could not summarize the failed run: " + detail,
                     file=sys.stderr,
                 )
-        return completed.returncode
+                return completed.returncode
+            raise DeviceTestHarnessError(
+                "xcodebuild succeeded but xcresulttool could not summarize its result: "
+                + detail
+            )
+        try:
+            document = json.loads(summary.stdout)
+        except json.JSONDecodeError as error:
+            if completed.returncode != 0:
+                print(summary.stdout.rstrip())
+                return completed.returncode
+            raise DeviceTestHarnessError(
+                "xcodebuild succeeded but xcresulttool returned invalid JSON"
+            ) from error
+
+        print(json.dumps(document, indent=2, sort_keys=True))
+        if completed.returncode != 0:
+            return completed.returncode
+        validate_xcresult_summary(
+            _mapping(document),
+            expected_device_identifier=device.destination_identifier,
+        )
+        return 0
     except DeviceTestHarnessError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

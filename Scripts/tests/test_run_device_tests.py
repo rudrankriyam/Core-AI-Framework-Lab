@@ -260,6 +260,88 @@ class CommandConstructionTests(unittest.TestCase):
             ],
         )
 
+    def test_xcresult_requires_exactly_one_pass_on_the_selected_ios_device(self) -> None:
+        summary = {
+            "result": "Passed",
+            "totalTestCount": 1,
+            "passedTests": 1,
+            "failedTests": 0,
+            "skippedTests": 0,
+            "expectedFailures": 0,
+            "devicesAndConfigurations": [
+                {
+                    "device": {
+                        "platform": "iOS",
+                        "deviceId": "00008140-TEST",
+                    },
+                    "passedTests": 1,
+                    "failedTests": 0,
+                    "skippedTests": 0,
+                    "expectedFailures": 0,
+                }
+            ],
+        }
+
+        harness.validate_xcresult_summary(
+            summary,
+            expected_device_identifier="00008140-TEST",
+        )
+
+    def test_xcresult_rejects_an_empty_filtered_run(self) -> None:
+        summary = {
+            "result": "Passed",
+            "totalTestCount": 0,
+            "passedTests": 0,
+            "failedTests": 0,
+            "skippedTests": 0,
+            "expectedFailures": 0,
+            "devicesAndConfigurations": [],
+        }
+
+        with self.assertRaisesRegex(
+            harness.DeviceTestHarnessError,
+            "exactly one passed fixture test",
+        ):
+            harness.validate_xcresult_summary(
+                summary,
+                expected_device_identifier="00008140-TEST",
+            )
+
+    def test_xcresult_rejects_a_different_or_non_ios_device(self) -> None:
+        for platform, identifier in (
+            ("macOS", "00008140-TEST"),
+            ("iOS", "00008140-OTHER"),
+        ):
+            with self.subTest(platform=platform, identifier=identifier):
+                summary = {
+                    "result": "Passed",
+                    "totalTestCount": 1,
+                    "passedTests": 1,
+                    "failedTests": 0,
+                    "skippedTests": 0,
+                    "expectedFailures": 0,
+                    "devicesAndConfigurations": [
+                        {
+                            "device": {
+                                "platform": platform,
+                                "deviceId": identifier,
+                            },
+                            "passedTests": 1,
+                            "failedTests": 0,
+                            "skippedTests": 0,
+                            "expectedFailures": 0,
+                        }
+                    ],
+                }
+                with self.assertRaisesRegex(
+                    harness.DeviceTestHarnessError,
+                    "selected physical iOS device",
+                ):
+                    harness.validate_xcresult_summary(
+                        summary,
+                        expected_device_identifier="00008140-TEST",
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

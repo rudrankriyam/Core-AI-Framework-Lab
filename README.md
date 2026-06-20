@@ -411,7 +411,9 @@ python3 Scripts/run_device_tests.py \
 exists. Use `--dry-run` to validate device and signing discovery and print the
 exact command without building, signing, installing, or launching anything.
 Each real run writes a new ignored result bundle below `TestResults/` and prints
-the JSON test summary produced by `xcresulttool`.
+the JSON test summary produced by `xcresulttool`. Success requires that summary
+to attribute exactly one passed, unskipped test to the selected physical iOS
+device; an empty or misrouted filtered run fails the harness.
 
 ## Current Limitations
 
