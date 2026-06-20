@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CoreAISpecializationControlsView: View {
     @Bindable var workspace: CoreAIAssetWorkspaceModel
+    var isInteractionDisabled = false
 
     var body: some View {
         Section("Specialization & Cache") {
@@ -12,7 +13,7 @@ struct CoreAISpecializationControlsView: View {
                         .disabled(!profile.isAvailable)
                 }
             }
-            .disabled(workspace.phase.isBusy)
+            .disabled(workspace.phase.isBusy || isInteractionDisabled)
             .onChange(of: workspace.selectedProfile) {
                 refreshCacheStatus()
             }
@@ -74,7 +75,7 @@ struct CoreAISpecializationControlsView: View {
                     Text(workspace.cacheRemovalMessage)
                 }
             }
-            .disabled(workspace.phase.isBusy)
+            .disabled(workspace.phase.isBusy || isInteractionDisabled)
 
             if workspace.phase.isBusy {
                 Label("Core AI operation in progress", systemImage: "hourglass")

@@ -1,0 +1,7 @@
+{
+  "assetVersion" : "2.0",
+  "license" : "MIT",
+  "description" : "Tiny deterministic tensor fixture for the generic function workbench.",
+  "creationDate" : "20240621T000000Z",
+  "author" : "Core AI Lab"
+}
