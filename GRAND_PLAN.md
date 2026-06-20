@@ -84,6 +84,10 @@ The first platform slice is now represented in the repository:
   with dynamic-shape editing, zero or seeded-random generation, bounded tensor
   allocation, fresh function loading, timed inference, and sampled numeric
   output summaries.
+- A first generic benchmark lab with full compute/reshape specialization cache
+  identity, one excluded warmup and five measured runs by default, raw trial
+  visibility, robust summaries, environment and thermal metadata, Release-build
+  guidance, session comparisons, and cancellation between Core AI calls.
 - A checked-in two-function Core AI fixture proving real Float32 and Int32
   specialization and inference rather than only mocked orchestration.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
@@ -512,6 +516,11 @@ Done bar:
 - The current 725-line Chatterbox engine is reduced to generic pipeline execution plus a small bounded set of reusable host operators.
 
 ### Milestone 5 — Optimization and evidence lab (4–5 weeks)
+
+Initial slice: the generic function workbench now provides a stable in-session
+benchmark protocol for deterministic NDArray inputs and selected specialization
+configurations. Persistent evidence, generated variants, quality gates, and
+promotion rules remain part of this milestone.
 
 Deliverables:
 

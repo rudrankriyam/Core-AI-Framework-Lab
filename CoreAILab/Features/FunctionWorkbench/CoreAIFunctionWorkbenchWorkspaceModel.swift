@@ -16,6 +16,9 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
     private(set) var inputDrafts: [CoreAIFunctionInputDraft] = []
     private(set) var runResult: CoreAIFunctionRunResult?
+    var benchmarkConfiguration = CoreAIFunctionBenchmarkConfiguration()
+    private(set) var benchmarkHistory: [CoreAIFunctionBenchmarkReport] = []
+    private(set) var benchmarkStatusMessage: String?
     private(set) var contractLoadFailureMessage: String?
     private(set) var phase: CoreAIFunctionWorkbenchPhase = .idle
 
@@ -23,6 +26,8 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     private let runtimeService: any CoreAIFunctionRuntimeServicing
     @ObservationIgnored
     private var contractOperationID = UUID()
+    @ObservationIgnored
+    private var benchmarkTask: Task<Void, Never>?
 
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
@@ -46,6 +51,10 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             && inputDrafts.count == selectedContract?.inputs.count
     }
 
+    var canBenchmark: Bool {
+        canRun
+    }
+
     func loadAsset(from url: URL) async {
         guard !phase.isBusy else { return }
         phase = .loadingAsset
@@ -63,7 +72,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         contractOperationID = operationID
         guard assetWorkspace.specializationResult == result else { return }
         guard let result else {
-            clearRuntimeState()
+            clearRuntimeState(resetBenchmarkHistory: false)
             if phase != .loadingAsset {
                 phase = assetWorkspace.report == nil ? .idle : .ready
             }
@@ -109,6 +118,54 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         }
     }
 
+    func startBenchmark() {
+        guard let selectedFunctionName,
+              let asset = assetWorkspace.report,
+              let specialization = assetWorkspace.specializationResult,
+              canBenchmark else {
+            return
+        }
+
+        let plans: [CoreAIFunctionInputPlan]
+        do {
+            try benchmarkConfiguration.validate()
+            plans = try inputDrafts.map { try $0.plan() }
+        } catch {
+            assetWorkspace.presentImportError(error)
+            return
+        }
+
+        benchmarkStatusMessage = nil
+        phase = .benchmarking
+        let configuration = benchmarkConfiguration
+        benchmarkTask = Task { [weak self] in
+            guard let self else { return }
+            await self.performBenchmark(
+                functionName: selectedFunctionName,
+                assetName: asset.url.lastPathComponent,
+                specialization: specialization,
+                plans: plans,
+                configuration: configuration
+            )
+        }
+    }
+
+    func stopBenchmarkAfterCurrentInference() {
+        guard phase == .benchmarking else { return }
+        benchmarkStatusMessage = "Stopping after the current Core AI inference finishes…"
+        benchmarkTask?.cancel()
+    }
+
+    func cancelBenchmark() {
+        benchmarkTask?.cancel()
+    }
+
+    func clearBenchmarkHistory() {
+        guard phase != .benchmarking else { return }
+        benchmarkHistory = []
+        benchmarkStatusMessage = nil
+    }
+
     func presentImportError(_ error: any Error) {
         assetWorkspace.presentImportError(error)
     }
@@ -117,13 +174,61 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         inputDrafts = selectedContract?.inputs.compactMap(CoreAIFunctionInputDraft.init) ?? []
     }
 
-    private func clearRuntimeState() {
+    private func clearRuntimeState(resetBenchmarkHistory: Bool = true) {
+        benchmarkTask?.cancel()
+        benchmarkTask = nil
         contractOperationID = UUID()
         contracts = []
         selectedFunctionName = nil
         inputDrafts = []
         runResult = nil
+        if resetBenchmarkHistory {
+            benchmarkHistory = []
+        }
+        benchmarkStatusMessage = nil
         contractLoadFailureMessage = nil
+    }
+
+    private func performBenchmark(
+        functionName: String,
+        assetName: String,
+        specialization: CoreAISpecializationResult,
+        plans: [CoreAIFunctionInputPlan],
+        configuration: CoreAIFunctionBenchmarkConfiguration
+    ) async {
+        defer {
+            benchmarkTask = nil
+            if phase == .benchmarking {
+                phase = .ready
+            }
+        }
+
+        do {
+            let result = try await runtimeService.benchmarkFunction(
+                named: functionName,
+                inputs: plans,
+                configuration: configuration
+            )
+            guard assetWorkspace.specializationResult == specialization else { return }
+            benchmarkHistory.insert(
+                CoreAIFunctionBenchmarkReport(
+                    assetName: assetName,
+                    specializationConfiguration: specialization.configuration,
+                    specializationDuration: specialization.duration,
+                    loadedFromCache: specialization.loadedFromCache,
+                    inputPlans: plans,
+                    result: result
+                ),
+                at: 0
+            )
+            benchmarkStatusMessage = result.stoppedEarly
+                ? "Stopped after \(result.trials.count) measured runs; completed evidence was retained."
+                : nil
+        } catch is CancellationError {
+            benchmarkStatusMessage = "Benchmark stopped before a measured trial completed."
+        } catch {
+            assetWorkspace.presentImportError(error)
+        }
     }
 
     private func isCurrentContractOperation(

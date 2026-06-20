@@ -28,7 +28,11 @@ struct CoreAICacheControlsTests {
         workspace.prepareCacheRemoval(.selectedProfile)
         await workspace.removePreparedCacheEntry()
         let removal = await cache.removalSnapshot()
-        #expect(removal.profiles == [.cpuOnly])
+        #expect(
+            removal.configurations == [
+                CoreAISpecializationConfiguration(profile: .cpuOnly)
+            ]
+        )
         #expect(removal.profileURLs == [assetURL])
         #expect(removal.assetCount == 0)
         #expect(workspace.cacheStatus == .notCached)
@@ -70,7 +74,7 @@ struct CoreAICacheControlsTests {
         await workspace.removePreparedCacheEntry()
 
         let removal = await cache.removalSnapshot()
-        #expect(removal.profiles.isEmpty)
+        #expect(removal.configurations.isEmpty)
         #expect(removal.assetCount == 1)
         #expect(removal.assetURLs == [assetURL])
     }
@@ -112,7 +116,7 @@ struct CoreAICacheControlsTests {
         await workspace.removePreparedCacheEntry()
 
         let removal = await cache.removalSnapshot()
-        #expect(removal.profiles.isEmpty)
+        #expect(removal.configurations.isEmpty)
         #expect(removal.profileURLs.isEmpty)
     }
 

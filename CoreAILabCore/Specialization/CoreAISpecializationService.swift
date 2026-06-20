@@ -5,7 +5,7 @@ import Foundation
 actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     private var model: AIModel?
     private var modelURL: URL?
-    private var profile: CoreAISpecializationProfile?
+    private var configuration: CoreAISpecializationConfiguration?
     private var specializationGeneration = UUID()
     private var activeSpecializationGeneration: UUID?
     private var hasActiveRun = false
@@ -16,21 +16,24 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         activeSpecializationGeneration = nil
         model = nil
         modelURL = nil
-        profile = nil
+        configuration = nil
     }
 
     func isCached(
         at url: URL,
-        profile: CoreAISpecializationProfile
+        configuration: CoreAISpecializationConfiguration
     ) throws -> Bool {
         try withSecurityScopedAccess(to: url) {
-            try AIModelCache.default.model(for: url, options: profile.options) != nil
+            try AIModelCache.default.model(
+                for: url,
+                options: configuration.options
+            ) != nil
         }
     }
 
     func specialize(
         at url: URL,
-        profile: CoreAISpecializationProfile,
+        configuration: CoreAISpecializationConfiguration,
         cachePolicy: CoreAICachePolicyChoice
     ) async throws -> CoreAISpecializationResult {
         guard !hasActiveRun else {
@@ -55,7 +58,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         let startedAt = clock.now
         let cachedModel = try AIModelCache.default.model(
             for: url,
-            options: profile.options
+            options: configuration.options
         )
         let loadedFromCache = cachedModel != nil
         let specializedModel: AIModel
@@ -64,7 +67,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         } else {
             specializedModel = try await AIModel.specialize(
                 contentsOf: url,
-                options: profile.options,
+                options: configuration.options,
                 cache: .default,
                 cachePolicy: cachePolicy.policy
             )
@@ -75,8 +78,9 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         }
         model = specializedModel
         modelURL = url
-        self.profile = profile
+        self.configuration = configuration
         return CoreAISpecializationResult(
+            configuration: configuration,
             duration: startedAt.duration(to: clock.now),
             loadedFromCache: loadedFromCache,
             functionNames: specializedModel.functionNames.sorted(),
@@ -86,16 +90,19 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
 
     func removeCachedEntry(
         at url: URL,
-        profile: CoreAISpecializationProfile
+        configuration: CoreAISpecializationConfiguration
     ) throws {
         guard !hasActiveRun else {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
         }
         specializationGeneration = UUID()
         activeSpecializationGeneration = nil
-        releaseLoadedModel(ifMatching: url, profile: profile)
+        releaseLoadedModel(ifMatching: url, configuration: configuration)
         try withSecurityScopedAccess(to: url) {
-            try AIModelCache.default.deleteEntry(for: url, options: profile.options)
+            try AIModelCache.default.deleteEntry(
+                for: url,
+                options: configuration.options
+            )
         }
     }
 
@@ -133,6 +140,123 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         guard activeSpecializationGeneration == nil else {
             throw CoreAIFunctionWorkbenchError.modelPreparationInProgress
         }
+        let function = try loadValidatedFunction(named: functionName)
+
+        hasActiveRun = true
+        defer { hasActiveRun = false }
+
+        let descriptor = function.descriptor
+        let inputs = try makeInputs(for: descriptor, plans: inputPlans)
+
+        let clock = ContinuousClock()
+        let startedAt = clock.now
+        var rawOutputs = try await function.run(inputs: inputs)
+        let duration = startedAt.duration(to: clock.now)
+        let summaries = try summarizeOutputs(
+            &rawOutputs,
+            descriptor: descriptor
+        )
+        return CoreAIFunctionRunResult(
+            functionName: functionName,
+            duration: duration,
+            outputs: summaries
+        )
+    }
+
+    func benchmarkFunction(
+        named functionName: String,
+        inputs inputPlans: [CoreAIFunctionInputPlan],
+        configuration benchmarkConfiguration: CoreAIFunctionBenchmarkConfiguration
+    ) async throws -> CoreAIFunctionBenchmarkResult {
+        try benchmarkConfiguration.validate()
+        guard !hasActiveRun else {
+            throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
+        }
+        guard activeSpecializationGeneration == nil else {
+            throw CoreAIFunctionWorkbenchError.modelPreparationInProgress
+        }
+
+        let startedThermalState = CoreAIThermalState.current
+        let clock = SuspendingClock()
+        let model = try validatedModel(forFunctionNamed: functionName)
+        let loadStartedAt = clock.now
+        guard let function = try model.loadFunction(named: functionName) else {
+            throw CoreAIFunctionWorkbenchError.functionUnavailable(functionName)
+        }
+        let functionLoadDuration = loadStartedAt.duration(to: clock.now)
+        let descriptor = function.descriptor
+        let inputPreparationStartedAt = clock.now
+        let inputs = try makeInputs(for: descriptor, plans: inputPlans)
+        let inputPreparationDuration = inputPreparationStartedAt.duration(to: clock.now)
+
+        hasActiveRun = true
+        defer { hasActiveRun = false }
+
+        var warmupDurations: [Duration] = []
+        warmupDurations.reserveCapacity(benchmarkConfiguration.warmupRuns)
+        for _ in 0..<benchmarkConfiguration.warmupRuns {
+            try Task.checkCancellation()
+            let startedAt = clock.now
+            _ = try await function.run(inputs: inputs)
+            warmupDurations.append(startedAt.duration(to: clock.now))
+            try Task.checkCancellation()
+        }
+
+        var trials: [CoreAIBenchmarkTrial] = []
+        trials.reserveCapacity(benchmarkConfiguration.measuredRuns)
+        var summaries: [CoreAIFunctionOutputSummary] = []
+        var stoppedEarly = false
+        for index in 0..<benchmarkConfiguration.measuredRuns {
+            if Task.isCancelled {
+                guard !trials.isEmpty else { throw CancellationError() }
+                stoppedEarly = true
+                break
+            }
+            let startedAt = clock.now
+            var rawOutputs = try await function.run(inputs: inputs)
+            let duration = startedAt.duration(to: clock.now)
+            trials.append(CoreAIBenchmarkTrial(index: index + 1, duration: duration))
+            summaries = try summarizeOutputs(
+                &rawOutputs,
+                descriptor: descriptor
+            )
+            if Task.isCancelled {
+                stoppedEarly = trials.count < benchmarkConfiguration.measuredRuns
+                break
+            }
+        }
+
+        let statistics = try CoreAIBenchmarkStatistics(trials: trials)
+        let endedThermalState = CoreAIThermalState.current
+        return CoreAIFunctionBenchmarkResult(
+            functionName: functionName,
+            functionLoadDuration: functionLoadDuration,
+            inputPreparationDuration: inputPreparationDuration,
+            warmupDurations: warmupDurations,
+            trials: trials,
+            stoppedEarly: stoppedEarly,
+            statistics: statistics,
+            outputs: summaries,
+            environment: .current(
+                startedThermalState: startedThermalState,
+                endedThermalState: endedThermalState
+            )
+        )
+    }
+
+    private func loadValidatedFunction(
+        named functionName: String
+    ) throws -> InferenceFunction {
+        let model = try validatedModel(forFunctionNamed: functionName)
+        guard let function = try model.loadFunction(named: functionName) else {
+            throw CoreAIFunctionWorkbenchError.functionUnavailable(functionName)
+        }
+        return function
+    }
+
+    private func validatedModel(
+        forFunctionNamed functionName: String
+    ) throws -> AIModel {
         guard let model else {
             throw CoreAIFunctionWorkbenchError.modelNotPrepared
         }
@@ -143,14 +267,13 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         if let unsupportedReason = contract.unsupportedReason {
             throw CoreAIFunctionWorkbenchError.unsupportedFunction(unsupportedReason)
         }
-        guard let function = try model.loadFunction(named: functionName) else {
-            throw CoreAIFunctionWorkbenchError.functionUnavailable(functionName)
-        }
+        return model
+    }
 
-        hasActiveRun = true
-        defer { hasActiveRun = false }
-
-        let descriptor = function.descriptor
+    private func makeInputs(
+        for descriptor: InferenceFunctionDescriptor,
+        plans inputPlans: [CoreAIFunctionInputPlan]
+    ) throws -> [String: NDArray] {
         var inputs: [String: NDArray] = [:]
         for inputName in descriptor.inputNames {
             guard let inputPlan = inputPlans.first(where: { $0.name == inputName }) else {
@@ -168,11 +291,13 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
                 plan: inputPlan
             )
         }
+        return inputs
+    }
 
-        let clock = ContinuousClock()
-        let startedAt = clock.now
-        var rawOutputs = try await function.run(inputs: inputs)
-        let duration = startedAt.duration(to: clock.now)
+    private func summarizeOutputs(
+        _ rawOutputs: inout InferenceFunction.Outputs,
+        descriptor: InferenceFunctionDescriptor
+    ) throws -> [CoreAIFunctionOutputSummary] {
         let returnedNames = Array(rawOutputs.names)
         let orderedNames = descriptor.outputNames + returnedNames.filter {
             !descriptor.outputNames.contains($0)
@@ -219,18 +344,14 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
                 )
             }
         }
-        return CoreAIFunctionRunResult(
-            functionName: functionName,
-            duration: duration,
-            outputs: summaries
-        )
+        return summaries
     }
 
     private func releaseLoadedModel(
         ifMatching url: URL,
-        profile: CoreAISpecializationProfile
+        configuration: CoreAISpecializationConfiguration
     ) {
-        guard modelURL == url, self.profile == profile else { return }
+        guard modelURL == url, self.configuration == configuration else { return }
         reset()
     }
 

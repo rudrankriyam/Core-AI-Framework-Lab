@@ -22,7 +22,22 @@ struct CoreAISpecializationControlsView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            LabeledContent("Selected profile") {
+            Toggle(
+                "Expect frequent input reshapes",
+                isOn: $workspace.expectFrequentReshapes
+            )
+            .disabled(workspace.phase.isBusy || isInteractionDisabled)
+            .onChange(of: workspace.expectFrequentReshapes) {
+                refreshCacheStatus()
+            }
+
+            Text(
+                "This Core AI specialization option is part of the cache identity. Measure both settings for dynamic-shape workloads instead of assuming one is faster."
+            )
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+
+            LabeledContent("Selected configuration") {
                 Label(
                     workspace.cacheStatus.title,
                     systemImage: workspace.cacheStatus.systemImage
@@ -47,7 +62,7 @@ struct CoreAISpecializationControlsView: View {
 
                 Menu("Remove Cache", systemImage: "trash") {
                     Button(
-                        "Selected Profile",
+                        "Selected Configuration",
                         systemImage: "minus.circle",
                         role: .destructive,
                         action: prepareSelectedProfileRemoval
@@ -55,7 +70,7 @@ struct CoreAISpecializationControlsView: View {
                     .disabled(workspace.cacheStatus != .cached)
 
                     Button(
-                        "All Profiles for This Asset",
+                        "All Configurations for This Asset",
                         systemImage: "trash",
                         role: .destructive,
                         action: prepareAssetRemoval

@@ -98,9 +98,10 @@ authoring, and content-addressed artifact storage remain later milestones.
 
 Open any `.aimodel` in **Asset Inspector** to choose automatic, CPU-only, GPU-
 preferred, or Neural-Engine-preferred specialization. Core AI Lab checks the
-default `AIModelCache` for that exact asset and profile, specializes with the
-standard reclaimable policy, and can remove one profile or every cached
-profile for the selected source asset.
+default `AIModelCache` for that exact asset, profile, and frequent-reshape
+setting, specializes with the standard reclaimable policy, and can remove one
+configuration or every cached profile for the selected source asset. Compute
+selection is a preference, not proof that inference ran on one unit.
 
 These controls use only Apple's public cache APIs. Core AI does not expose a
 cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
@@ -130,6 +131,25 @@ packed or specialized scalar formats are disabled with an explicit reason;
 they still belong in task adapters such as Apple's YOLOS runtime. A fresh Core
 AI function instance is loaded for every run while the specialized model stays
 cached.
+
+### Repeatable Benchmarks
+
+The Workbench can run a bounded benchmark using the same generated input plans.
+The default protocol performs one excluded warmup followed by five sequential
+measured runs on one loaded function and one deterministic input set. Every
+trial remains visible alongside function-load, input-setup, and warmup timing;
+the summary reports minimum, median, mean, maximum, standard deviation, and
+runs per second. P95 appears only for 20 or more measured runs.
+
+Each in-memory report captures the asset, function, shapes, generators, seeds,
+full specialization configuration, cache state, Core AI device architecture,
+OS, available compute units, build configuration, and start/end thermal state.
+Use a Release build for comparisons. **Stop After Current Inference** cancels
+between Core AI calls because an active generic inference cannot be interrupted
+by the Lab, while retaining every measured trial that completed. The history
+supports honest A/B checks across shapes and compute or
+reshape preferences without claiming hardware placement, energy, or memory
+measurements that Core AI did not report.
 
 ## Run Apple's YOLOS Tiny Example
 
@@ -363,8 +383,8 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 - Imported assets are session-scoped. A content-addressed persistent artifact
   library is planned but not included yet.
 - The generic function workbench currently generates NDArray inputs only.
-  Stateful execution, image-input adaptation, imported fixtures, repeated
-  benchmarks, and raw-output export remain later Runtime Studio work.
+  Stateful execution, image-input adaptation, imported fixtures, persisted
+  benchmark evidence, and raw-output export remain later Runtime Studio work.
 - The app ships one fixed Chatterbox Turbo voice prepared from Resemble AI's
   official `ivr_female_01` demo reference. The raw reference recording is not
   bundled, and runtime voice selection or reference-voice cloning is not

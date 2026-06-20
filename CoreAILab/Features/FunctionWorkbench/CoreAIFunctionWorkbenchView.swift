@@ -102,8 +102,16 @@ struct CoreAIFunctionWorkbenchView: View {
                             )
                         }
 
+                        CoreAIFunctionBenchmarkControlsView(workspace: workspace)
+
                         if let result = workspace.runResult {
                             CoreAIFunctionResultsView(result: result)
+                        }
+
+                        if !workspace.benchmarkHistory.isEmpty {
+                            CoreAIFunctionBenchmarkResultsView(
+                                reports: workspace.benchmarkHistory
+                            )
                         }
                     }
                 }
@@ -157,6 +165,7 @@ struct CoreAIFunctionWorkbenchView: View {
                 workspace.assetWorkspace.specializationResult
             )
         }
+        .onDisappear(perform: workspace.cancelBenchmark)
     }
 
     private func openModelPicker() {
