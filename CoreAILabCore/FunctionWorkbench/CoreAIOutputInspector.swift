@@ -88,7 +88,7 @@ enum CoreAIOutputInspector {
             typeDescription: "image, pixel format \(pixelFormatType)",
             shape: [height, width],
             strides: [],
-            elementCount: width * height,
+            elementCount: safeProduct([height, width]),
             sampledElementCount: 0,
             minimum: nil,
             maximum: nil,
@@ -119,7 +119,11 @@ enum CoreAIOutputInspector {
             for sampleIndex in 0..<sampledElementCount {
                 let flatIndex = sampledElementCount == elementCount
                     ? sampleIndex
-                    : sampleIndex * elementCount / sampledElementCount
+                    : distributedIndex(
+                        sampleIndex,
+                        count: elementCount,
+                        sampleCount: sampledElementCount
+                    )
                 let value = transform(
                     pointer[offset(for: flatIndex, shape: shape, strides: viewStrides)]
                 )
@@ -157,6 +161,16 @@ enum CoreAIOutputInspector {
             let (product, overflow) = result.multipliedReportingOverflow(by: value)
             return overflow ? Int.max : product
         }
+    }
+
+    private static func distributedIndex(
+        _ sampleIndex: Int,
+        count: Int,
+        sampleCount: Int
+    ) -> Int {
+        let quotient = count / sampleCount
+        let remainder = count % sampleCount
+        return sampleIndex * quotient + sampleIndex * remainder / sampleCount
     }
 
     private static func offset(

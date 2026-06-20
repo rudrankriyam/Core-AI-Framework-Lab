@@ -40,6 +40,42 @@ struct CoreAIFunctionWorkbenchView: View {
                                 )
                             )
                         }
+                    } else if workspace.phase == .preparingContracts {
+                        Section("Function Workbench") {
+                            ContentUnavailableView {
+                                Label("Reading Function Contracts", systemImage: "list.bullet.rectangle")
+                            } description: {
+                                Text("Loading input, state, and output descriptors from the specialized model.")
+                            } actions: {
+                                ProgressView()
+                            }
+                        }
+                    } else if workspace.contracts.isEmpty {
+                        Section("Function Workbench") {
+                            ContentUnavailableView {
+                                Label(
+                                    workspace.contractLoadFailureMessage == nil
+                                        ? "No Functions"
+                                        : "Unable to Load Functions",
+                                    systemImage: workspace.contractLoadFailureMessage == nil
+                                        ? "function"
+                                        : "exclamationmark.triangle"
+                                )
+                            } description: {
+                                Text(
+                                    workspace.contractLoadFailureMessage
+                                        ?? "Core AI returned no function descriptors for this specialized model."
+                                )
+                            } actions: {
+                                if workspace.contractLoadFailureMessage != nil {
+                                    Button(
+                                        "Reload Contracts",
+                                        systemImage: "arrow.clockwise",
+                                        action: reloadContracts
+                                    )
+                                }
+                            }
+                        }
                     } else if !workspace.contracts.isEmpty {
                         CoreAIFunctionContractView(workspace: workspace)
                         CoreAIFunctionInputsView(
@@ -116,10 +152,10 @@ struct CoreAIFunctionWorkbenchView: View {
                 await workspace.loadAsset(from: initialURL)
             }
         }
-        .onChange(of: workspace.assetWorkspace.specializationResult) { _, result in
-            Task {
-                await workspace.specializationChanged(result)
-            }
+        .task(id: workspace.assetWorkspace.specializationResult) {
+            await workspace.specializationChanged(
+                workspace.assetWorkspace.specializationResult
+            )
         }
     }
 
@@ -143,6 +179,12 @@ struct CoreAIFunctionWorkbenchView: View {
     private func runFunction() {
         Task {
             await workspace.runSelectedFunction()
+        }
+    }
+
+    private func reloadContracts() {
+        Task {
+            await workspace.reloadContracts()
         }
     }
 }

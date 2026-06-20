@@ -16,10 +16,13 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
     private(set) var inputDrafts: [CoreAIFunctionInputDraft] = []
     private(set) var runResult: CoreAIFunctionRunResult?
+    private(set) var contractLoadFailureMessage: String?
     private(set) var phase: CoreAIFunctionWorkbenchPhase = .idle
 
     @ObservationIgnored
     private let runtimeService: any CoreAIFunctionRuntimeServicing
+    @ObservationIgnored
+    private var contractOperationID = UUID()
 
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
@@ -46,30 +49,48 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     func loadAsset(from url: URL) async {
         guard !phase.isBusy else { return }
         phase = .loadingAsset
-        clearRuntimeState()
-        await assetWorkspace.inspect(url: url)
+        let didReplaceAsset = await assetWorkspace.inspect(url: url)
+        if didReplaceAsset {
+            clearRuntimeState()
+        }
         phase = assetWorkspace.report == nil ? .idle : .ready
     }
 
     func specializationChanged(
         _ result: CoreAISpecializationResult?
     ) async {
-        guard result != nil else {
+        let operationID = UUID()
+        contractOperationID = operationID
+        guard assetWorkspace.specializationResult == result else { return }
+        guard let result else {
             clearRuntimeState()
-            phase = assetWorkspace.report == nil ? .idle : .ready
+            if phase != .loadingAsset {
+                phase = assetWorkspace.report == nil ? .idle : .ready
+            }
             return
         }
-        guard !phase.isBusy else { return }
+
         phase = .preparingContracts
+        contractLoadFailureMessage = nil
         do {
-            contracts = try await runtimeService.functionContracts()
-            selectedFunctionName = contracts.first?.name
+            let refreshedContracts = try await runtimeService.functionContracts()
+            guard isCurrentContractOperation(operationID, result: result) else { return }
+            contracts = refreshedContracts
+            selectedFunctionName = refreshedContracts.first?.name
             runResult = nil
             phase = .ready
         } catch {
+            guard isCurrentContractOperation(operationID, result: result) else { return }
+            contracts = []
+            selectedFunctionName = nil
+            contractLoadFailureMessage = error.localizedDescription
             phase = .ready
             assetWorkspace.presentImportError(error)
         }
+    }
+
+    func reloadContracts() async {
+        await specializationChanged(assetWorkspace.specializationResult)
     }
 
     func runSelectedFunction() async {
@@ -97,9 +118,20 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
 
     private func clearRuntimeState() {
+        contractOperationID = UUID()
         contracts = []
         selectedFunctionName = nil
         inputDrafts = []
         runResult = nil
+        contractLoadFailureMessage = nil
+    }
+
+    private func isCurrentContractOperation(
+        _ operationID: UUID,
+        result: CoreAISpecializationResult
+    ) -> Bool {
+        !Task.isCancelled
+            && contractOperationID == operationID
+            && assetWorkspace.specializationResult == result
     }
 }

@@ -16,6 +16,7 @@ struct CoreAIFunctionOutputSummaryView: View {
             LabeledContent("Elements", value: output.elementCount, format: .number)
             if output.sampledElementCount > 0 {
                 LabeledContent("Sampled", value: output.sampledElementCount, format: .number)
+                LabeledContent("NaN or infinity", value: output.nonFiniteCount, format: .number)
             }
             if let minimum = output.minimum,
                let maximum = output.maximum,
@@ -29,7 +30,6 @@ struct CoreAIFunctionOutputSummaryView: View {
                 LabeledContent("Mean") {
                     Text(mean, format: .number.precision(.significantDigits(6)))
                 }
-                LabeledContent("NaN or infinity", value: output.nonFiniteCount, format: .number)
             }
             if !output.preview.isEmpty {
                 LabeledContent("Preview") {

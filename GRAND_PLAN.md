@@ -76,8 +76,10 @@ The first platform slice is now represented in the repository:
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
 - Full function input/state/output contract inspection, exact public
-  specialization-cache hit/miss checks, four compute profiles, standard versus
-  persistent cache policy, and scoped cache removal.
+  specialization-cache hit/miss checks, four compute profiles, standard
+  reclaimable cache policy, and scoped cache removal. Persistent policy stays
+  gated until Lab Projects retain Core AI bookmarks and can delete entries after
+  source removal.
 - A generic function workbench for supported stateless NDArray-input functions,
   with dynamic-shape editing, zero or seeded-random generation, bounded tensor
   allocation, fresh function loading, timed inference, and sampled numeric

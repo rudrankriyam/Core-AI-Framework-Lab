@@ -54,6 +54,110 @@ struct CoreAIFunctionWorkbenchTests {
         #expect(CoreAIFunctionInputDraft(contract: contract) == nil)
     }
 
+    @MainActor
+    @Test
+    func newestSpecializationWinsWhenContractLoadsOverlap() async throws {
+        let firstContract = contract(named: "first")
+        let secondContract = contract(named: "second")
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[firstContract], [secondContract]],
+            delayedContractLookup: 1
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime
+        )
+        await workspace.loadAsset(from: URL(filePath: "/tmp/valid.aimodel"))
+        await workspace.assetWorkspace.specialize()
+        let firstResult = try #require(workspace.assetWorkspace.specializationResult)
+
+        let staleLoad = Task {
+            await workspace.specializationChanged(firstResult)
+        }
+        while workspace.phase != .preparingContracts {
+            await Task.yield()
+        }
+
+        workspace.assetWorkspace.selectedProfile = .cpuOnly
+        await workspace.specializationChanged(nil)
+        await workspace.assetWorkspace.specialize()
+        let secondResult = try #require(workspace.assetWorkspace.specializationResult)
+        await workspace.specializationChanged(secondResult)
+        await staleLoad.value
+
+        #expect(workspace.contracts == [secondContract])
+        #expect(workspace.selectedFunctionName == "second")
+        #expect(workspace.phase == .ready)
+    }
+
+    @MainActor
+    @Test
+    func failedReplacementPreservesTheRunnableWorkbench() async throws {
+        let validURL = URL(filePath: "/tmp/valid.aimodel")
+        let validContract = contract(named: "main")
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[validContract]]
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime
+        )
+        await workspace.loadAsset(from: validURL)
+        await workspace.assetWorkspace.specialize()
+        let result = try #require(workspace.assetWorkspace.specializationResult)
+        await workspace.specializationChanged(result)
+        #expect(workspace.canRun)
+
+        await workspace.loadAsset(from: URL(filePath: "/tmp/invalid.aimodel"))
+
+        #expect(workspace.assetWorkspace.report?.url == validURL)
+        #expect(workspace.contracts == [validContract])
+        #expect(workspace.selectedFunctionName == "main")
+        #expect(workspace.canRun)
+        #expect(workspace.assetWorkspace.isShowingError)
+    }
+
+    @MainActor
+    @Test
+    func failedContractLoadExposesRetryAndCanRecover() async throws {
+        let recoveredContract = contract(named: "recovered")
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[recoveredContract]],
+            failingContractLookups: [1]
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime
+        )
+        await workspace.loadAsset(from: URL(filePath: "/tmp/valid.aimodel"))
+        await workspace.assetWorkspace.specialize()
+        let result = try #require(workspace.assetWorkspace.specializationResult)
+
+        await workspace.specializationChanged(result)
+        #expect(workspace.contracts.isEmpty)
+        #expect(workspace.contractLoadFailureMessage != nil)
+
+        await workspace.reloadContracts()
+        #expect(workspace.contracts == [recoveredContract])
+        #expect(workspace.contractLoadFailureMessage == nil)
+        #expect(workspace.selectedFunctionName == "recovered")
+    }
+
+    @Test
+    func allNonFiniteOutputKeepsItsDiagnosticCount() {
+        let array = NDArray(
+            scalars: [Float.nan, Float.infinity, -Float.infinity],
+            shape: [3]
+        )
+        let summary = CoreAIOutputInspector.summarize(name: "values", array: array)
+
+        #expect(summary.sampledElementCount == 3)
+        #expect(summary.nonFiniteCount == 3)
+        #expect(summary.minimum == nil)
+        #expect(summary.maximum == nil)
+        #expect(summary.mean == nil)
+    }
+
     @Test
     func realCoreAIFixtureRunsFloatAndIntegerFunctions() async throws {
         let service = CoreAISpecializationService()
@@ -131,5 +235,15 @@ struct CoreAIFunctionWorkbenchTests {
             try? await service.removeCachedEntries(at: fixtureURL)
             throw error
         }
+    }
+
+    private func contract(named name: String) -> CoreAIFunctionContract {
+        CoreAIFunctionContract(
+            name: name,
+            inputs: [],
+            states: [],
+            outputs: [],
+            unsupportedReason: nil
+        )
     }
 }

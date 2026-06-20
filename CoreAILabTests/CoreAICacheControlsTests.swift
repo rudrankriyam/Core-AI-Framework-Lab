@@ -44,7 +44,7 @@ struct CoreAICacheControlsTests {
         let fastURL = URL(filePath: "/tmp/fast.aimodel")
 
         let slowTask = Task {
-            await workspace.inspect(url: slowURL)
+            _ = await workspace.inspect(url: slowURL)
         }
         try await Task.sleep(for: .milliseconds(10))
         await workspace.inspect(url: fastURL)

@@ -7,11 +7,13 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     private var modelURL: URL?
     private var profile: CoreAISpecializationProfile?
     private var specializationGeneration = UUID()
+    private var activeSpecializationGeneration: UUID?
     private var hasActiveRun = false
 
     func reset() {
         guard !hasActiveRun else { return }
         specializationGeneration = UUID()
+        activeSpecializationGeneration = nil
         model = nil
         modelURL = nil
         profile = nil
@@ -36,6 +38,12 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         }
         let generation = UUID()
         specializationGeneration = generation
+        activeSpecializationGeneration = generation
+        defer {
+            if activeSpecializationGeneration == generation {
+                activeSpecializationGeneration = nil
+            }
+        }
         let isAccessing = url.startAccessingSecurityScopedResource()
         defer {
             if isAccessing {
@@ -84,6 +92,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
         }
         specializationGeneration = UUID()
+        activeSpecializationGeneration = nil
         releaseLoadedModel(ifMatching: url, profile: profile)
         try withSecurityScopedAccess(to: url) {
             try AIModelCache.default.deleteEntry(for: url, options: profile.options)
@@ -95,6 +104,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
         }
         specializationGeneration = UUID()
+        activeSpecializationGeneration = nil
         if modelURL == url {
             reset()
         }
@@ -104,6 +114,9 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     }
 
     func functionContracts() throws -> [CoreAIFunctionContract] {
+        guard activeSpecializationGeneration == nil else {
+            throw CoreAIFunctionWorkbenchError.modelPreparationInProgress
+        }
         guard let model else {
             throw CoreAIFunctionWorkbenchError.modelNotPrepared
         }
@@ -116,6 +129,9 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     ) async throws -> CoreAIFunctionRunResult {
         guard !hasActiveRun else {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
+        }
+        guard activeSpecializationGeneration == nil else {
+            throw CoreAIFunctionWorkbenchError.modelPreparationInProgress
         }
         guard let model else {
             throw CoreAIFunctionWorkbenchError.modelNotPrepared

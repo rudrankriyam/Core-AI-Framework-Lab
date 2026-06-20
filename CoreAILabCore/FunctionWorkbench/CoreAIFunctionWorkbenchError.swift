@@ -4,6 +4,7 @@ enum CoreAIFunctionWorkbenchError: LocalizedError {
     case modelNotPrepared
     case functionUnavailable(String)
     case functionAlreadyRunning
+    case modelPreparationInProgress
     case unsupportedFunction(String)
     case missingInput(String)
     case invalidShape(name: String, reason: String)
@@ -19,6 +20,8 @@ enum CoreAIFunctionWorkbenchError: LocalizedError {
             "The Core AI function \(name) could not be loaded."
         case .functionAlreadyRunning:
             "A Core AI function is already running."
+        case .modelPreparationInProgress:
+            "Wait for Core AI model specialization to finish."
         case .unsupportedFunction(let reason):
             reason
         case .missingInput(let name):
