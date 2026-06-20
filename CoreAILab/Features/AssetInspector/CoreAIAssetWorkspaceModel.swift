@@ -19,6 +19,7 @@ final class CoreAIAssetWorkspaceModel {
         do {
             report = try await inspectionService.inspect(url: url)
             errorMessage = nil
+            isShowingError = false
         } catch {
             report = nil
             errorMessage = error.localizedDescription

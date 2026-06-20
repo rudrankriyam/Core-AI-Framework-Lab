@@ -36,7 +36,7 @@ final class AppleObjectDetectionWorkspaceModel {
             try await engine.loadModel(at: url)
             modelName = url.lastPathComponent
             detections = []
-            errorMessage = nil
+            clearError()
             statusMessage = "Model ready. Choose an image to run object detection."
         } catch {
             present(error)
@@ -60,7 +60,7 @@ final class AppleObjectDetectionWorkspaceModel {
         sourceImage = image
         imageName = url.lastPathComponent
         detections = []
-        errorMessage = nil
+        clearError()
         statusMessage = modelName == nil
             ? "Image ready. Import a YOLOS model to continue."
             : "Image and model ready."
@@ -82,7 +82,7 @@ final class AppleObjectDetectionWorkspaceModel {
 
         do {
             detections = try await engine.detect(in: sourceImage)
-            errorMessage = nil
+            clearError()
             statusMessage = detections.isEmpty
                 ? "No objects met the default confidence threshold."
                 : detections.count == 1
@@ -101,5 +101,10 @@ final class AppleObjectDetectionWorkspaceModel {
         errorMessage = error.localizedDescription
         statusMessage = error.localizedDescription
         isShowingError = true
+    }
+
+    private func clearError() {
+        errorMessage = nil
+        isShowingError = false
     }
 }

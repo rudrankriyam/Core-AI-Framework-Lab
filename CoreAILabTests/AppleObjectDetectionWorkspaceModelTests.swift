@@ -20,6 +20,18 @@ struct AppleObjectDetectionWorkspaceModelTests {
         #expect(workspace.modelName == "valid.aimodel")
         #expect(workspace.isShowingError)
     }
+
+    @Test
+    func successfulLoadClearsAnEarlierErrorAlert() async {
+        let workspace = AppleObjectDetectionWorkspaceModel(engine: ObjectDetectorStub())
+
+        await workspace.loadModel(from: URL(filePath: "/tmp/invalid.aimodel"))
+        #expect(workspace.isShowingError)
+
+        await workspace.loadModel(from: URL(filePath: "/tmp/valid.aimodel"))
+        #expect(!workspace.isShowingError)
+        #expect(workspace.errorMessage == nil)
+    }
 }
 
 private actor ObjectDetectorStub: AppleObjectDetecting {
