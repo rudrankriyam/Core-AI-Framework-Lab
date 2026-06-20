@@ -457,7 +457,6 @@ def xcodebuild_command(
     *,
     device: Device,
     team_identifier: str,
-    profile: SigningProfile,
     result_bundle: Path,
     derived_data: Path,
 ) -> list[str]:
@@ -485,10 +484,9 @@ def xcodebuild_command(
         str(result_bundle),
         "CODE_SIGNING_ALLOWED=YES",
         "CODE_SIGNING_REQUIRED=YES",
-        "CODE_SIGN_STYLE=Manual",
+        "CODE_SIGN_STYLE=Automatic",
         f"DEVELOPMENT_TEAM={team_identifier}",
         "CODE_SIGN_IDENTITY=Apple Development",
-        f"PROVISIONING_PROFILE={profile.uuid}",
     ]
 
 
@@ -583,7 +581,6 @@ def main(arguments: Sequence[str] | None = None) -> int:
         command = xcodebuild_command(
             device=device,
             team_identifier=options.team,
-            profile=profile,
             result_bundle=result_bundle,
             derived_data=REPOSITORY_ROOT / "build/DeviceTests",
         )
@@ -591,7 +588,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
             f"Device: {device.name} ({device.destination_identifier}), "
             f"iOS {device.os_version}"
         )
-        print(f"Profile: {profile.name} ({profile.uuid})")
+        print(f"Validated local profile: {profile.name} ({profile.uuid})")
         print(shlex.join(command))
         if options.dry_run:
             return 0

@@ -391,10 +391,12 @@ iOS 27 or newer. Simulators, Macs, disconnected devices, disabled Developer
 Mode, stale developer services, and ambiguous device choices fail before
 `xcodebuild` starts.
 
-The project keeps code signing disabled by default. The runner temporarily uses
-manual signing from an already-installed development profile and private key;
-it never passes `-allowProvisioningUpdates` or registers a device. The profile
-must include the selected device and cover both `com.rudrank.CoreAILab` and
+The project keeps code signing disabled by default. The runner first validates
+an already-installed development profile and matching private key, then enables
+Xcode's automatic selection from local signing assets. It never passes
+`-allowProvisioningUpdates` or registers a device, and it does not force a
+profile UUID globally onto Swift package targets. The validated profile must
+include the selected device and cover both `com.rudrank.CoreAILab` and
 `com.rudrank.CoreAILabTests`. A wildcard development profile is sufficient.
 
 ```bash

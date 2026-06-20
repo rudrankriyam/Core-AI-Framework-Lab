@@ -223,13 +223,11 @@ class SigningProfileTests(unittest.TestCase):
 
 
 class CommandConstructionTests(unittest.TestCase):
-    def test_command_is_filtered_manual_and_never_updates_provisioning(self) -> None:
+    def test_command_is_filtered_local_automatic_and_never_updates_provisioning(self) -> None:
         device = harness.Device.from_document(device_document())
-        profile = signing_profile()
         command = harness.xcodebuild_command(
             device=device,
             team_identifier="ABCDEFGHIJ",
-            profile=profile,
             result_bundle=Path("/tmp/result.xcresult"),
             derived_data=Path("/tmp/DerivedData"),
         )
@@ -237,9 +235,12 @@ class CommandConstructionTests(unittest.TestCase):
         self.assertIn("platform=iOS,id=00008140-TEST", command)
         self.assertIn("-only-testing:" + harness.REAL_FIXTURE_TEST, command)
         self.assertTrue(harness.REAL_FIXTURE_TEST.endswith("()"))
-        self.assertIn("CODE_SIGN_STYLE=Manual", command)
+        self.assertIn("CODE_SIGN_STYLE=Automatic", command)
         self.assertIn("DEVELOPMENT_TEAM=ABCDEFGHIJ", command)
-        self.assertIn("PROVISIONING_PROFILE=PROFILE-UUID", command)
+        self.assertIn("CODE_SIGN_IDENTITY=Apple Development", command)
+        self.assertFalse(
+            any(item.startswith("PROVISIONING_PROFILE=") for item in command)
+        )
         self.assertIn("CODE_SIGNING_ALLOWED=YES", command)
         self.assertNotIn("-allowProvisioningUpdates", command)
         self.assertNotIn("-allowProvisioningDeviceRegistration", command)
