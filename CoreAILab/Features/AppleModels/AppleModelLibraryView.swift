@@ -62,6 +62,8 @@ struct AppleModelLibraryView: View {
                 switch route {
                 case .objectDetection:
                     AppleObjectDetectionWorkspaceView()
+                case .conversion(let modelID):
+                    CoreAIConversionWorkspaceView(initialModelID: modelID)
                 }
             }
         }

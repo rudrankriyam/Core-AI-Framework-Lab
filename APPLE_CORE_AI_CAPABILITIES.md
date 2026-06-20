@@ -53,6 +53,14 @@ These commands belong behind visible, reproducible jobs. Their full command,
 Xcode build, target architecture, input checksum, output checksum, and logs
 should be persisted with the project.
 
+The first in-app conversion slice begins applying that evidence rule to Apple's
+recipe exporters. It validates a clean checkout at the pinned revision, embeds
+the environment checks and typed command in the evidence log, preserves streamed
+output, supports cancellation, and discovers only packages created or updated
+by the run. Input/output checksums, signed manifests, and packaged project
+history remain later milestones. A successful process exit alone does not prove
+model parity.
+
 ## What `apple/coreai-models` contains
 
 Apple’s repository provides:

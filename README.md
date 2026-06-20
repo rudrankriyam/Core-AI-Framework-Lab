@@ -41,6 +41,8 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
 - `CoreAILabCore/AppleModels/` - pinned Apple registry models, recipe metadata, and the YOLOS runtime adapter
 - `CoreAILab/Features/AppleModels/` - searchable model library and object-detection playground
+- `CoreAILab/Features/Conversion/` - visual recipe configuration, environment checks, live logs, cancellation, and artifact handoff
+- `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
@@ -64,9 +66,30 @@ python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
 xcodegen generate
 ```
 
-Model weights are never fetched by the app. Their original licenses,
-authentication requirements, and source revisions remain independent of
-Apple's BSD-3-Clause recipe repository.
+Model weights are not bundled or redistributed by the app. When you start a
+conversion, the selected upstream recipe may fetch its original model weights;
+their licenses, authentication requirements, and source revisions remain
+independent of Apple's BSD-3-Clause recipe repository.
+
+## Visual Conversion Workbench
+
+On macOS, open **Convert** or choose **Convert This Recipe** from any Apple
+model detail. The workbench lets you:
+
+- choose a pinned Apple recipe, local `apple/coreai-models` clone, output folder, and `uv` executable;
+- verify Apple silicon, the selected Core AI Xcode toolchain, pinned revision, clean recipe worktree, write access, and available storage;
+- review the exact export arguments and utility-model precision before starting;
+- stream the original Python/PyTorch output, cancel the child process, and preserve a timestamped evidence log;
+- inspect generated `.aimodel` and `.aimodelc` packages directly in Core AI Lab.
+
+The app passes a typed executable URL and argument array to Foundation
+`Process`; the displayed command is never evaluated by a shell. The first run
+can create a `uv` environment and download large upstream checkpoints. Gated
+models still require the user's own source authentication and license access.
+
+This first conversion slice deliberately uses a local Apple repository clone.
+Automatic cloning, resumable jobs across app launches, custom PyTorch recipe
+authoring, and content-addressed artifact storage remain later milestones.
 
 ## Run Apple's YOLOS Tiny Example
 

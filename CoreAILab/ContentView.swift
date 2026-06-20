@@ -14,6 +14,13 @@ struct ContentView: View {
                         )
                     }
 
+                    NavigationLink(value: CoreAILabSection.conversion) {
+                        Label(
+                            CoreAILabSection.conversion.title,
+                            systemImage: CoreAILabSection.conversion.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.chatterbox) {
                         Label(
                             CoreAILabSection.chatterbox.title,
@@ -44,6 +51,10 @@ struct ContentView: View {
             switch selection ?? .appleModels {
             case .appleModels:
                 AppleModelLibraryView()
+            case .conversion:
+                NavigationStack {
+                    CoreAIConversionWorkspaceView()
+                }
             case .chatterbox:
                 ChatterboxWorkspaceView()
             case .assetInspector:

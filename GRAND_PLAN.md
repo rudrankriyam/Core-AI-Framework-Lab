@@ -76,9 +76,10 @@ The first platform slice is now represented in the repository:
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
+- A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
-This proves the Library -> Recipe -> Export -> Import -> Run loop without pretending that Apple distributes converted weights. The next vertical slices should add artifact persistence, EfficientSAM, Qwen3 0.6B, and then the multi-model SAM3 plus Qwen composition shown in Apple’s Core AI material.
+This proves the Library -> Recipe -> Convert -> Inspect -> Run loop without pretending that Apple distributes converted weights. The next vertical slices should add persistent projects and restart-safe jobs, then EfficientSAM, Qwen3 0.6B, and the multi-model SAM3 plus Qwen composition shown in Apple’s Core AI material.
 
 ## 4. Product boundary
 

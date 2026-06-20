@@ -3,6 +3,11 @@ import SwiftUI
 struct CoreAIAssetInspectorView: View {
     @State private var workspace = CoreAIAssetWorkspaceModel()
     @State private var isImportingModel = false
+    let initialURL: URL?
+
+    init(initialURL: URL? = nil) {
+        self.initialURL = initialURL
+    }
 
     var body: some View {
         Group {
@@ -42,6 +47,11 @@ struct CoreAIAssetInspectorView: View {
         .alert("Unable to Inspect Model", isPresented: $workspace.isShowingError) {
         } message: {
             Text(workspace.errorMessage ?? "The model could not be inspected.")
+        }
+        .task(id: initialURL) {
+            if let initialURL {
+                await workspace.inspect(url: initialURL)
+            }
         }
     }
 
