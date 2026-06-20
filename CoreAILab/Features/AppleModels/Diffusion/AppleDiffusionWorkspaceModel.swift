@@ -43,7 +43,7 @@ final class AppleDiffusionWorkspaceModel {
     func loadPipeline(from url: URL) async {
         guard !isBusy else { return }
         isLoadingModel = true
-        statusMessage = "Loading (url.lastPathComponent) and its pipeline components…"
+        statusMessage = "Loading \(url.lastPathComponent) and its pipeline components…"
         defer { isLoadingModel = false }
 
         do {
@@ -52,7 +52,7 @@ final class AppleDiffusionWorkspaceModel {
             modelInfo = loadedInfo
             result = nil
             clearError()
-            statusMessage = "(loadedInfo.pipelineName) is ready at (loadedInfo.width) × (loadedInfo.height)."
+            statusMessage = "\(loadedInfo.pipelineName) is ready at \(loadedInfo.width) × \(loadedInfo.height)."
         } catch {
             present(error)
         }
@@ -69,7 +69,7 @@ final class AppleDiffusionWorkspaceModel {
         )
         result = nil
         isGenerating = true
-        statusMessage = "Generating locally with (modelInfo?.pipelineName ?? example.title)…"
+        statusMessage = "Generating locally with \(modelInfo?.pipelineName ?? example.title)…"
         generationTask = Task { [weak self] in
             await self?.performGeneration(request)
         }
@@ -100,7 +100,7 @@ final class AppleDiffusionWorkspaceModel {
             try Task.checkCancellation()
             result = generated
             clearError()
-            statusMessage = "Generated on device in (generated.durationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds."
+            statusMessage = "Generated on device in \(generated.durationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds."
         } catch is CancellationError {
             result = nil
             statusMessage = "Image generation canceled."

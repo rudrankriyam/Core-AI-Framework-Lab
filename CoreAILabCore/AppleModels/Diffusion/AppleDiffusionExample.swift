@@ -53,6 +53,6 @@ enum AppleDiffusionExample: String, Hashable, Sendable {
     }
 
     var playgroundButtonTitle: String {
-        "Open (title) Playground"
+        "Open \(title) Playground"
     }
 }

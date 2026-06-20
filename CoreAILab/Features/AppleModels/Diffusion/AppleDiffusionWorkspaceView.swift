@@ -20,7 +20,7 @@ struct AppleDiffusionWorkspaceView: View {
                 LabeledContent("Bundle", value: workspace.modelName ?? "Not loaded")
                 if let info = workspace.modelInfo {
                     LabeledContent("Pipeline", value: info.pipelineName)
-                    LabeledContent("Output", value: "(info.width) × (info.height)")
+                    LabeledContent("Output", value: "\(info.width) × \(info.height)")
                 }
                 Label(
                     workspace.statusMessage,
@@ -47,9 +47,9 @@ struct AppleDiffusionWorkspaceView: View {
                 TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
                     .lineLimit(2...5)
 
-                Stepper("Seed: (workspace.seed)", value: $workspace.seed, in: 0...Int(UInt32.max))
-                Stepper("Steps: (workspace.stepCount)", value: $workspace.stepCount, in: 1...100)
-                LabeledContent("Guidance: (workspace.guidanceScale.formatted(.number.precision(.fractionLength(1))))") {
+                Stepper("Seed: \(workspace.seed)", value: $workspace.seed, in: 0...Int(UInt32.max))
+                Stepper("Steps: \(workspace.stepCount)", value: $workspace.stepCount, in: 1...100)
+                LabeledContent("Guidance: \(workspace.guidanceScale.formatted(.number.precision(.fractionLength(1))))") {
                     Slider(value: $workspace.guidanceScale, in: 0...20, step: 0.5)
                         .frame(minWidth: 160)
                 }

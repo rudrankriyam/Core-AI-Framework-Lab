@@ -13,7 +13,7 @@ struct AppleDiffusionResultView: View {
                     .accessibilityLabel("Locally generated diffusion image")
                 LabeledContent(
                     "Inference",
-                    value: "(result.durationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds"
+                    value: "\(result.durationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds"
                 )
             } else {
                 ContentUnavailableView(
