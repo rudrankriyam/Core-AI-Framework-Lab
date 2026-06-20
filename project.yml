@@ -9,6 +9,9 @@ settings:
     SWIFT_VERSION: "6.0"
     GENERATE_INFOPLIST_FILE: YES
 packages:
+  coreai-models:
+    url: https://github.com/apple/coreai-models
+    revision: e358c8435679c904687f8070eb95150e36e4b76d
   swift-transformers:
     url: https://github.com/huggingface/swift-transformers
     from: 1.1.0
@@ -20,8 +23,13 @@ targets:
       - path: CoreAILab
         excludes:
           - Resources
+      - path: CoreAILab/Resources/AppleModels
+        type: folder
+        buildPhase: resources
       - CoreAILabCore
     dependencies:
+      - package: coreai-models
+        product: CoreAIObjectDetection
       - package: swift-transformers
         product: Transformers
     settings:
@@ -49,10 +57,15 @@ targets:
         excludes:
           - Resources
       - CoreAILabCore
+      - path: CoreAILab/Resources/AppleModels
+        type: folder
+        buildPhase: resources
       - path: CoreAILab/Resources/Chatterbox
         type: folder
         buildPhase: resources
     dependencies:
+      - package: coreai-models
+        product: CoreAIObjectDetection
       - package: swift-transformers
         product: Transformers
     settings:

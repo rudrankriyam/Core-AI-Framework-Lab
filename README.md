@@ -5,12 +5,13 @@
 [![Platforms](https://img.shields.io/badge/platforms-iOS%2027%20%7C%20macOS%2027-lightgrey)](https://developer.apple.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A hands-on lab for Apple's `CoreAI.framework` in Xcode 27 beta.
+A native workbench for Apple's `CoreAI.framework` in Xcode 27 beta.
 
-The main experiment is a native Chatterbox Turbo text-to-speech workspace. The
-app bundles the converted model, tokenizes text in Swift, and runs the complete
-T3 -> S3Gen -> HiFT pipeline through Core AI. It does not use MLX, Python, a
-server, or a model-download step at runtime.
+Core AI Lab now has three connected paths: a searchable snapshot of Apple's
+open-source model recipes, a generic `.aimodel` inspector, and runnable model
+workspaces. Chatterbox Turbo remains the custom end-to-end stress test. YOLOS
+Tiny is the first official Apple-repository example, exported locally and run
+through Apple's own `CoreAIObjectDetection` Swift package.
 
 CoreAI currently looks like a lower-level model runtime and asset framework:
 
@@ -38,9 +39,61 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/` - small reusable helpers for Core AI API discovery
 - `CoreAILabCore/Chatterbox/` - Core AI model storage, specialization, and function-contract code
 - `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
+- `CoreAILabCore/AppleModels/` - pinned Apple registry models, recipe metadata, and the YOLOS runtime adapter
+- `CoreAILab/Features/AppleModels/` - searchable model library and object-detection playground
+- `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
+- `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
+- `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
+- `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `project.yml` - XcodeGen project definition
+
+## Apple Model Library
+
+The app includes all 33 presets from Apple [`coreai-models`](https://github.com/apple/coreai-models)
+revision `e358c8435679c904687f8070eb95150e36e4b76d`. These are conversion recipes,
+not downloadable `.aimodel` binaries. Each entry shows its source model,
+platform, compression/context defaults, exact export command, pinned recipe,
+and the matching Apple Swift runtime when one exists.
+
+Refresh the checked-in snapshot from a local Apple repository clone:
+
+```bash
+python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
+xcodegen generate
+```
+
+Model weights are never fetched by the app. Their original licenses,
+authentication requirements, and source revisions remain independent of
+Apple's BSD-3-Clause recipe repository.
+
+## Run Apple's YOLOS Tiny Example
+
+From a clone of Apple's repository at the pinned revision:
+
+```bash
+uv run models/yolo/export.py \
+  --model hustvl/yolos-tiny \
+  --dtype float16
+```
+
+Open **Apple Models -> yolos-tiny -> Object Detection Playground**, import the
+generated `yolos-tiny_float16_static.aimodel`, choose an image, and run
+detection. The app uses Apple's `ObjectDetector` for image preprocessing,
+Core AI inference, COCO post-processing, labels, and confidence scores.
+
+The verified export is a 63.4 MB FP16 asset with a static Float16
+`[1, 3, 512, 512]` input, `logits [1, 100, 92]`, and
+`pred_boxes [1, 100, 4]`. On the tested Mac, warm inference took 23.7-49 ms.
+The generated asset reports the upstream YOLOS Apache-2.0 license.
+
+## Asset Inspector
+
+Open any `.aimodel` package to inspect validity, author, license, description,
+function names, and compute types without adding the asset to the app bundle.
+This works with standalone Apple recipe outputs and individual assets inside
+language, diffusion, or segmentation resource folders.
 
 ## Chatterbox Workspace
 
@@ -162,6 +215,13 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 
 ## Current Limitations
 
+- Apple's repository ships export code and runtime utilities, not converted
+  model weights. Export remains a local `uv` workflow in this first slice.
+- YOLOS object detection is the first Apple-runtime playground. Apple's
+  language, diffusion, and segmentation products are catalogued but their
+  task-specific Lab surfaces are future milestones.
+- Imported assets are session-scoped. A content-addressed persistent artifact
+  library is planned but not included yet.
 - The app ships one fixed Chatterbox Turbo voice prepared from Resemble AI's
   official `ivr_female_01` demo reference. The raw reference recording is not
   bundled, and runtime voice selection or reference-voice cloning is not
