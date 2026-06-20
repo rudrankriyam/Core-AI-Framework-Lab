@@ -1,7 +1,7 @@
 import Foundation
 @testable import CoreAILab
 
-actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
+actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
     private var cachedProfiles: Set<CoreAISpecializationProfile>
     private var removedProfiles: [CoreAISpecializationProfile] = []
     private var removedProfileURLs: [URL] = []
@@ -10,15 +10,25 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
     private var cacheLookupCount = 0
     private let delayedCacheLookup: Int?
     private let failingCacheLookups: Set<Int>
+    private var contractLookupCount = 0
+    private let contractResponses: [[CoreAIFunctionContract]]
+    private let delayedContractLookup: Int?
+    private let failingContractLookups: Set<Int>
 
     init(
         cachedProfiles: Set<CoreAISpecializationProfile> = [],
         delayedCacheLookup: Int? = nil,
-        failingCacheLookups: Set<Int> = []
+        failingCacheLookups: Set<Int> = [],
+        contractResponses: [[CoreAIFunctionContract]] = [[]],
+        delayedContractLookup: Int? = nil,
+        failingContractLookups: Set<Int> = []
     ) {
         self.cachedProfiles = cachedProfiles
         self.delayedCacheLookup = delayedCacheLookup
         self.failingCacheLookups = failingCacheLookups
+        self.contractResponses = contractResponses
+        self.delayedContractLookup = delayedContractLookup
+        self.failingContractLookups = failingContractLookups
     }
 
     func reset() {}
@@ -48,7 +58,7 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
             duration: .milliseconds(25),
             loadedFromCache: false,
             functionNames: ["main"],
-            bookmarkData: Data([0xCA, 0xFE])
+            bookmarkData: Data(profile.rawValue.utf8)
         )
     }
 
@@ -65,6 +75,30 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
         cachedProfiles.removeAll()
         removedAssetCount += 1
         removedAssetURLs.append(url)
+    }
+
+    func functionContracts() async throws -> [CoreAIFunctionContract] {
+        contractLookupCount += 1
+        let lookup = contractLookupCount
+        if delayedContractLookup == lookup {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        if failingContractLookups.contains(lookup) {
+            throw CocoaError(.fileReadUnknown)
+        }
+        guard !contractResponses.isEmpty else { return [] }
+        return contractResponses[min(lookup - 1, contractResponses.count - 1)]
+    }
+
+    func runFunction(
+        named functionName: String,
+        inputs: [CoreAIFunctionInputPlan]
+    ) -> CoreAIFunctionRunResult {
+        CoreAIFunctionRunResult(
+            functionName: functionName,
+            duration: .zero,
+            outputs: []
+        )
     }
 
     func removalSnapshot() -> (

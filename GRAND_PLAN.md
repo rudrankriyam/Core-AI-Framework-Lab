@@ -67,7 +67,7 @@ The limiting architecture is also clear:
 
 The next step is therefore not “add another model tab.” It is to extract the system hiding inside Chatterbox.
 
-### Implementation checkpoint — June 19, 2026
+### Implementation checkpoint — June 20, 2026
 
 The first platform slice is now represented in the repository:
 
@@ -75,11 +75,27 @@ The first platform slice is now represented in the repository:
 - A generated, pinned snapshot of all 33 presets in Apple’s open-source `coreai-models` registry.
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
+- Full function input/state/output contract inspection, exact public
+  specialization-cache hit/miss checks, four compute profiles, standard
+  reclaimable cache policy, and scoped cache removal. Persistent policy stays
+  gated until Lab Projects retain Core AI bookmarks and can delete entries after
+  source removal.
+- A generic function workbench for supported stateless NDArray-input functions,
+  with dynamic-shape editing, zero or seeded-random generation, bounded tensor
+  allocation, fresh function loading, timed inference, and sampled numeric
+  output summaries.
+- A checked-in two-function Core AI fixture proving real Float32 and Int32
+  specialization and inference rather than only mocked orchestration.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
-This proves the Library -> Recipe -> Convert -> Inspect -> Run loop without pretending that Apple distributes converted weights. The next vertical slices should add persistent projects and restart-safe jobs, then EfficientSAM, Qwen3 0.6B, and the multi-model SAM3 plus Qwen composition shown in Apple’s Core AI material.
+This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
+loop without pretending that Apple distributes converted weights. Milestone 1
+is still incomplete until imports, provenance, and outputs live in persistent
+Lab Projects. The next vertical slices should add that persistence and
+restart-safe jobs, then EfficientSAM, Qwen3 0.6B, and the multi-model SAM3 plus
+Qwen composition shown in Apple’s Core AI material.
 
 ## 4. Product boundary
 

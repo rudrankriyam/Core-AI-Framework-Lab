@@ -59,27 +59,30 @@ final class CoreAIAssetWorkspaceModel {
             ?? "The model will need to be specialized again."
     }
 
-    func inspect(url: URL) async {
+    @discardableResult
+    func inspect(url: URL) async -> Bool {
         cancelPendingCacheRemoval()
         let operationID = begin(.inspecting)
         cacheStatus = .unchecked
 
         do {
             let inspectedReport = try await inspectionService.inspect(url: url)
-            guard self.operationID == operationID else { return }
+            guard self.operationID == operationID else { return false }
             await specializationService.reset()
-            guard self.operationID == operationID else { return }
+            guard self.operationID == operationID else { return false }
             report = inspectedReport
             cacheStatus = .unchecked
             specializationResult = nil
             clearError()
             phase = .checkingCache
             await refreshCacheStatus(expectedOperationID: operationID)
+            return self.operationID == operationID
         } catch {
-            guard self.operationID == operationID else { return }
+            guard self.operationID == operationID else { return false }
             phase = report == nil ? .idle : .ready
             errorMessage = error.localizedDescription
             isShowingError = true
+            return false
         }
     }
 

@@ -7,11 +7,12 @@
 
 A native workbench for Apple's `CoreAI.framework` in Xcode 27 beta.
 
-Core AI Lab now has three connected paths: a searchable snapshot of Apple's
-open-source model recipes, a generic `.aimodel` inspector, and runnable model
-workspaces. Chatterbox Turbo remains the custom end-to-end stress test. YOLOS
-Tiny is the first official Apple-repository example, exported locally and run
-through Apple's own `CoreAIObjectDetection` Swift package.
+Core AI Lab connects a searchable snapshot of Apple's open-source model
+recipes, visual conversion, generic `.aimodel` inspection, a descriptor-driven
+function workbench, and task-specific model playgrounds. Chatterbox Turbo
+remains the custom end-to-end stress test. YOLOS Tiny is the first official
+Apple-repository example, exported locally and run through Apple's own
+`CoreAIObjectDetection` Swift package.
 
 CoreAI currently looks like a lower-level model runtime and asset framework:
 
@@ -44,6 +45,8 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Features/Conversion/` - visual recipe configuration, environment checks, live logs, cancellation, and artifact handoff
 - `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
+- `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
+- `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
@@ -107,6 +110,26 @@ Persistent cache policy is intentionally not offered for session-scoped
 imports: Core AI requires the app to retain its opaque model bookmark to load
 or remove such an entry after the source disappears. That option belongs with
 the planned persistent project library rather than a disposable file picker.
+
+## Generic Function Workbench
+
+Open **Workbench**, choose any `.aimodel`, and specialize it with one of the
+same cache and compute profiles. The Lab then lists every function contract and
+can run supported stateless functions without a model-specific SwiftUI screen.
+
+The first generic runtime slice supports fixed or dynamic NDArray inputs using
+zeros or repeatable seeded random values across Bool, signed and unsigned
+integers, Float16, Float32, and Float64. Input allocation is capped at 256 MiB
+per tensor. Results include shape, strides, element count, a value preview, and
+sampled minimum, maximum, mean, and non-finite counts. Large outputs sample at
+most 65,536 elements so inspection does not copy the entire tensor.
+
+All input, state, and output descriptors remain visible when a function cannot
+run generically. Stateful functions, image inputs, unknown descriptors, and
+packed or specialized scalar formats are disabled with an explicit reason;
+they still belong in task adapters such as Apple's YOLOS runtime. A fresh Core
+AI function instance is loaded for every run while the specialized model stays
+cached.
 
 ## Run Apple's YOLOS Tiny Example
 
@@ -262,6 +285,9 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
   task-specific Lab surfaces are future milestones.
 - Imported assets are session-scoped. A content-addressed persistent artifact
   library is planned but not included yet.
+- The generic function workbench currently generates NDArray inputs only.
+  Stateful execution, image-input adaptation, imported fixtures, repeated
+  benchmarks, and raw-output export remain later Runtime Studio work.
 - The app ships one fixed Chatterbox Turbo voice prepared from Resemble AI's
   official `ivr_female_01` demo reference. The raw reference recording is not
   bundled, and runtime voice selection or reference-voice cloning is not
