@@ -17,9 +17,9 @@ enum AppleSegmentationExample: String, Hashable, Sendable {
 
     init?(resourceBundleURL: URL) {
         let name = resourceBundleURL.lastPathComponent.lowercased()
-        if name.contains("efficient") && name.contains("sam") {
+        if name.hasPrefix("efficient_sam_vitt_") {
             self = .efficientSAM
-        } else if name.contains("sam3") || name.contains("sam_3") {
+        } else if name.hasPrefix("sam3_") {
             self = .sam3
         } else {
             return nil

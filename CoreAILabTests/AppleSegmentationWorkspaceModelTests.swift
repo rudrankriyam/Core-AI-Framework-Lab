@@ -11,6 +11,21 @@ struct AppleSegmentationWorkspaceModelTests {
         #expect(AppleSegmentationExample(shortName: "efficient-sam-vitt") == .efficientSAM)
         #expect(AppleSegmentationExample(shortName: "sam3") == .sam3)
         #expect(AppleSegmentationExample(shortName: "yolos-tiny") == nil)
+        #expect(
+            AppleSegmentationExample(
+                resourceBundleURL: URL(filePath: "/tmp/efficient_sam_vitt_float16_static")
+            ) == .efficientSAM
+        )
+        #expect(
+            AppleSegmentationExample(
+                resourceBundleURL: URL(filePath: "/tmp/sam3_float16")
+            ) == .sam3
+        )
+        #expect(
+            AppleSegmentationExample(
+                resourceBundleURL: URL(filePath: "/tmp/non_efficient_sam_export")
+            ) == nil
+        )
     }
 
     @Test
