@@ -383,6 +383,38 @@ xcodebuild -project CoreAIFrameworkLab.xcodeproj \
 
 The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app remains available through the `CoreAILab` scheme for device builds.
 
+## Run the Real Fixture Test on an iPhone
+
+`Scripts/run_device_tests.py` runs only the bundled, deterministic Core AI
+function-workbench fixture. It accepts one connected, unlocked physical iPhone
+or iPad on iOS 27 or newer. Simulators, Macs, locked or disconnected devices,
+disabled Developer Mode, stale developer services, and ambiguous device choices
+fail before `xcodebuild` starts.
+
+The project keeps code signing disabled by default. The runner first validates
+an already-installed development profile and matching private key, then enables
+Xcode's automatic selection from local signing assets. It never passes
+`-allowProvisioningUpdates` or registers a device, and it does not force a
+profile UUID globally onto Swift package targets. The validated profile must
+include the selected device and cover both `com.rudrank.CoreAILab` and
+`com.rudrank.CoreAILabTests`. A wildcard development profile is sufficient.
+
+```bash
+DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
+python3 Scripts/run_device_tests.py \
+  --team YOUR_TEAM_ID \
+  --device YOUR_PHYSICAL_DEVICE_UDID \
+  --profile YOUR_INSTALLED_PROFILE_UUID
+```
+
+`--device` and `--profile` are optional when exactly one eligible local choice
+exists. Use `--dry-run` to validate device and signing discovery and print the
+exact command without building, signing, installing, or launching anything.
+Each real run writes a new ignored result bundle below `TestResults/` and prints
+the JSON test summary produced by `xcresulttool`. Success requires that summary
+to attribute exactly one passed, unskipped test to the selected physical iOS
+device; an empty or misrouted filtered run fails the harness.
+
 ## Current Limitations
 
 - Apple's repository ships export code and runtime utilities, not converted

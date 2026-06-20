@@ -24,11 +24,17 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         configuration: CoreAISpecializationConfiguration
     ) throws -> Bool {
         try withSecurityScopedAccess(to: url) {
-            try AIModelCache.default.model(
-                for: url,
-                options: configuration.options
+            try cachedModel(
+                at: url,
+                configuration: configuration
             ) != nil
         }
+    }
+
+    nonisolated static func isMissingCacheEntry(_ error: any Error) -> Bool {
+        let cocoaError = error as NSError
+        return cocoaError.domain == NSPOSIXErrorDomain
+            && cocoaError.code == Int(POSIXError.Code.ENOENT.rawValue)
     }
 
     func specialize(
@@ -56,9 +62,9 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
 
         let clock = ContinuousClock()
         let startedAt = clock.now
-        let cachedModel = try AIModelCache.default.model(
-            for: url,
-            options: configuration.options
+        let cachedModel = try cachedModel(
+            at: url,
+            configuration: configuration
         )
         let loadedFromCache = cachedModel != nil
         let specializedModel: AIModel
@@ -353,6 +359,21 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     ) {
         guard modelURL == url, self.configuration == configuration else { return }
         reset()
+    }
+
+    private func cachedModel(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) throws -> AIModel? {
+        do {
+            return try AIModelCache.default.model(
+                for: url,
+                options: configuration.options
+            )
+        } catch {
+            guard Self.isMissingCacheEntry(error) else { throw error }
+            return nil
+        }
     }
 
     private func withSecurityScopedAccess<Result>(

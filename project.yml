@@ -116,7 +116,12 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - CoreAILabTests
+      - path: CoreAILabTests
+        excludes:
+          - Fixtures
+      - path: CoreAILabTests/Fixtures
+        type: folder
+        buildPhase: resources
     dependencies:
       - target: CoreAILab
     settings:
@@ -129,7 +134,12 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - CoreAILabTests
+      - path: CoreAILabTests
+        excludes:
+          - Fixtures
+      - path: CoreAILabTests/Fixtures
+        type: folder
+        buildPhase: resources
     dependencies:
       - target: CoreAILabMac
     settings:

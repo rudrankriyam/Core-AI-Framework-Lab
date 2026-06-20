@@ -92,7 +92,7 @@ struct CoreAIIntegrationExportTests {
 
     @Test
     func exportIsDeterministicAndCollisionLeavesNoTemporaryPackage() async throws {
-        let sourceURL = fixtureURL()
+        let sourceURL = try fixtureURL()
         let firstParent = temporaryDirectory()
         let secondParent = temporaryDirectory()
         defer {
@@ -191,7 +191,7 @@ struct CoreAIIntegrationExportTests {
         let task = Task {
             _ = await gate.first(where: { _ in true })
             return try await CoreAIIntegrationExporter().export(
-                report: report(at: fixtureURL()),
+                report: report(at: try fixtureURL()),
                 contracts: [tensorContract(named: "main")],
                 specializationConfiguration: .init(profile: .automatic),
                 destinationParentURL: destinationParent
@@ -367,10 +367,8 @@ struct CoreAIIntegrationExportTests {
         )
     }
 
-    private func fixtureURL() -> URL {
-        URL(filePath: #filePath)
-            .deletingLastPathComponent()
-            .appending(path: "Fixtures/CoreAILabTensorFixture.aimodel", directoryHint: .isDirectory)
+    private func fixtureURL() throws -> URL {
+        try CoreAITestFixtures.tensorModelURL()
     }
 
     private func temporaryDirectory() -> URL {

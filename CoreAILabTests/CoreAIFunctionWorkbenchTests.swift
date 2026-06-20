@@ -161,9 +161,7 @@ struct CoreAIFunctionWorkbenchTests {
     @Test
     func realCoreAIFixtureRunsFloatAndIntegerFunctions() async throws {
         let service = CoreAISpecializationService()
-        let fixtureURL = URL(filePath: #filePath)
-            .deletingLastPathComponent()
-            .appending(path: "Fixtures/CoreAILabTensorFixture.aimodel")
+        let fixtureURL = try CoreAITestFixtures.tensorModelURL()
         try? await service.removeCachedEntries(at: fixtureURL)
 
         do {

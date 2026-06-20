@@ -5,6 +5,21 @@ import Testing
 @MainActor
 struct CoreAICacheControlsTests {
     @Test
+    func missingCacheEntryIsReportedAsNotCached() {
+        let missingEntry = NSError(
+            domain: NSPOSIXErrorDomain,
+            code: Int(POSIXError.Code.ENOENT.rawValue)
+        )
+        let unrelatedFailure = NSError(
+            domain: NSPOSIXErrorDomain,
+            code: Int(POSIXError.Code.EACCES.rawValue)
+        )
+
+        #expect(CoreAISpecializationService.isMissingCacheEntry(missingEntry))
+        #expect(!CoreAISpecializationService.isMissingCacheEntry(unrelatedFailure))
+    }
+
+    @Test
     func selectedProfileDrivesLookupSpecializationAndRemoval() async {
         let assetURL = URL(filePath: "/tmp/fixture.aimodel")
         let cache = CoreAISpecializationServiceStub(cachedProfiles: [.automatic])
