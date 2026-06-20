@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C7012BB18CFA207768695515"
-               BuildableName = "CoreAILabMac.app"
+               BuildableName = "CoreAILab.app"
                BlueprintName = "CoreAILabMac"
                ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
             </BuildableReference>
@@ -25,15 +25,15 @@
    </BuildAction>
    <TestAction
       buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = ""
+      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       shouldUseLaunchSchemeArgsEnv = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "NO">
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7012BB18CFA207768695515"
-            BuildableName = "CoreAILabMac.app"
+            BuildableName = "CoreAILab.app"
             BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>
@@ -69,7 +69,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7012BB18CFA207768695515"
-            BuildableName = "CoreAILabMac.app"
+            BuildableName = "CoreAILab.app"
             BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>
@@ -88,7 +88,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7012BB18CFA207768695515"
-            BuildableName = "CoreAILabMac.app"
+            BuildableName = "CoreAILab.app"
             BlueprintName = "CoreAILabMac"
             ReferencedContainer = "container:CoreAIFrameworkLab.xcodeproj">
          </BuildableReference>

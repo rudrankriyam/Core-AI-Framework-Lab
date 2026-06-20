@@ -1,0 +1,419 @@
+{
+  "source_repository": "https://github.com/apple/coreai-models",
+  "source_revision": "e358c8435679c904687f8070eb95150e36e4b76d",
+  "generated_at": "2026-06-20T03:19:35.042899+00:00",
+  "models": [
+    {
+      "short_name": "qwen2.5-1.5b-instruct",
+      "hf_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "family": "qwen2.5",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 32768,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-0.6b",
+      "hf_id": "Qwen/Qwen3-0.6B",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 8192,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-4b",
+      "hf_id": "Qwen/Qwen3-4B",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 40960,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-8b",
+      "hf_id": "Qwen/Qwen3-8B",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 40960,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-coder-30b-a3b-instruct",
+      "hf_id": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 262144,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "gemma3-4b-it",
+      "hf_id": "google/gemma-3-4b-it",
+      "family": "gemma3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "bfloat16",
+      "max_context_length": 131072,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "gemma3-12b-it",
+      "hf_id": "google/gemma-3-12b-it",
+      "family": "gemma3",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "bfloat16",
+      "max_context_length": 131072,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "mistral-7b-instruct-v0.3",
+      "hf_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "family": "mistral",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 8192,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "mixtral-8x7b-instruct-v0.1",
+      "hf_id": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+      "family": "mixtral",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": 32768,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "gpt-oss-20b",
+      "hf_id": "openai/gpt-oss-20b",
+      "family": "gpt-oss",
+      "type": "llm",
+      "variant": "macOS",
+      "compression": "none",
+      "compute_precision": "bfloat16",
+      "max_context_length": 32768,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-0.6b",
+      "hf_id": "Qwen/Qwen3-0.6B",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "iOS",
+      "compression": "none",
+      "compute_precision": "float16",
+      "max_context_length": 4096,
+      "experimental": false,
+      "notes": null,
+      "compression_config": "models/qwen3/qwen3_0_6b_mixed_4bit_8bit.yaml"
+    },
+    {
+      "short_name": "qwen2.5-1.5b-instruct",
+      "hf_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "family": "qwen2.5",
+      "type": "llm",
+      "variant": "iOS",
+      "compression": "4bit_weight_palettized_group8",
+      "compute_precision": "float16",
+      "max_context_length": 4096,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "qwen3-4b",
+      "hf_id": "Qwen/Qwen3-4B",
+      "family": "qwen3",
+      "type": "llm",
+      "variant": "iOS",
+      "compression": "none",
+      "compute_precision": "float16",
+      "max_context_length": 4096,
+      "experimental": false,
+      "notes": null,
+      "compression_config": "models/qwen3/qwen3_4b_mixed_4bit_8bit.yaml"
+    },
+    {
+      "short_name": "sd-1.5",
+      "hf_id": "runwayml/stable-diffusion-v1-5",
+      "family": "stable-diffusion",
+      "type": "diffusion",
+      "variant": null,
+      "compression": "none",
+      "compute_precision": "float16",
+      "max_context_length": null,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "sd-2.1",
+      "hf_id": "sd2-community/stable-diffusion-2-1",
+      "family": "stable-diffusion",
+      "type": "diffusion",
+      "variant": null,
+      "compression": "none",
+      "compute_precision": "float16",
+      "max_context_length": null,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "sd-3.5-medium",
+      "hf_id": "stabilityai/stable-diffusion-3.5-medium",
+      "family": "stable-diffusion-3",
+      "type": "diffusion",
+      "variant": null,
+      "compression": "none",
+      "compute_precision": "float16",
+      "max_context_length": null,
+      "experimental": false,
+      "notes": null,
+      "compression_config": null
+    },
+    {
+      "short_name": "flux2-klein-4b",
+      "hf_id": "black-forest-labs/FLUX.2-klein-4B",
+      "family": "flux2",
+      "type": "diffusion",
+      "variant": null,
+      "compression": "4bit",
+      "compute_precision": "float16",
+      "max_context_length": null,
+      "experimental": false,
+      "notes": "4bit recommended; use --compression none for full precision",
+      "compression_config": null
+    },
+    {
+      "short_name": "clip-vit-b32",
+      "hf_id": "openai/clip-vit-base-patch32",
+      "model_type": "clip",
+      "task": "embedding",
+      "export_script": "models/clip/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "clap-htsat",
+      "hf_id": "laion/clap-htsat-unfused",
+      "model_type": "clap",
+      "task": "embedding",
+      "export_script": "models/clap/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "whisper-large-v3-turbo",
+      "hf_id": "openai/whisper-large-v3-turbo",
+      "model_type": "whisper",
+      "task": "asr",
+      "export_script": "models/whisper/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "whisper-large-v3",
+      "hf_id": "openai/whisper-large-v3",
+      "model_type": "whisper",
+      "task": "asr",
+      "export_script": "models/whisper/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "wav2vec2-base",
+      "hf_id": "wav2vec2_asr_base_960h",
+      "model_type": "wav2vec2",
+      "task": "asr",
+      "export_script": "models/wav2vec2/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "yolos-base",
+      "hf_id": "hustvl/yolos-base",
+      "model_type": "yolo",
+      "task": "detection",
+      "export_script": "models/yolo/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "yolos-tiny",
+      "hf_id": "hustvl/yolos-tiny",
+      "model_type": "yolo",
+      "task": "detection",
+      "export_script": "models/yolo/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "efficient-sam-vitt",
+      "hf_id": "efficient_sam_vitt",
+      "model_type": "efficient-sam",
+      "task": "segmentation",
+      "export_script": "models/efficient-sam/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "sam3",
+      "hf_id": "facebook/sam3",
+      "model_type": "sam3",
+      "task": "segmentation",
+      "export_script": "models/sam3/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "depth-anything-3-small",
+      "hf_id": "depth-anything/da3-small",
+      "model_type": "depth-anything",
+      "task": "depth",
+      "export_script": "models/depth-anything/export.py",
+      "platforms": [
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "edsr-x2",
+      "hf_id": "edsr_r16f64_x2",
+      "model_type": "edsr",
+      "task": "super-resolution",
+      "export_script": "models/edsr/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "roberta-base",
+      "hf_id": "roberta-base",
+      "model_type": "roberta",
+      "task": "encoding",
+      "export_script": "models/roberta/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "t5-small",
+      "hf_id": "google-t5/t5-small",
+      "model_type": "t5",
+      "task": "encoding",
+      "export_script": "models/t5/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "t5-base",
+      "hf_id": "google-t5/t5-base",
+      "model_type": "t5",
+      "task": "encoding",
+      "export_script": "models/t5/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "t5-large",
+      "hf_id": "google-t5/t5-large",
+      "model_type": "t5",
+      "task": "encoding",
+      "export_script": "models/t5/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    },
+    {
+      "short_name": "pvt-v2-b0",
+      "hf_id": "pvt_v2_b0",
+      "model_type": "pvt",
+      "task": "classification",
+      "export_script": "models/pvt/export.py",
+      "platforms": [
+        "iOS",
+        "macOS"
+      ],
+      "notes": null
+    }
+  ]
+}

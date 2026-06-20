@@ -8,10 +8,34 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     GENERATE_INFOPLIST_FILE: YES
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
 packages:
+  coreai-models:
+    url: https://github.com/apple/coreai-models
+    revision: e358c8435679c904687f8070eb95150e36e4b76d
   swift-transformers:
     url: https://github.com/huggingface/swift-transformers
     from: 1.1.0
+schemes:
+  CoreAILabMac:
+    build:
+      targets:
+        CoreAILabMac: all
+    run:
+      config: Debug
+      executable: CoreAILabMac
+    test:
+      config: Debug
+      debugEnabled: false
+      targets:
+        - CoreAILabMacTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
 targets:
   CoreAILab:
     type: application
@@ -20,8 +44,13 @@ targets:
       - path: CoreAILab
         excludes:
           - Resources
+      - path: CoreAILab/Resources/AppleModels
+        type: folder
+        buildPhase: resources
       - CoreAILabCore
     dependencies:
+      - package: coreai-models
+        product: CoreAIObjectDetection
       - package: swift-transformers
         product: Transformers
     settings:
@@ -44,15 +73,21 @@ targets:
   CoreAILabMac:
     type: application
     platform: macOS
+    productName: CoreAILab
     sources:
       - path: CoreAILab
         excludes:
           - Resources
       - CoreAILabCore
+      - path: CoreAILab/Resources/AppleModels
+        type: folder
+        buildPhase: resources
       - path: CoreAILab/Resources/Chatterbox
         type: folder
         buildPhase: resources
     dependencies:
+      - package: coreai-models
+        product: CoreAIObjectDetection
       - package: swift-transformers
         product: Transformers
     settings:
@@ -65,9 +100,6 @@ targets:
         CODE_SIGN_IDENTITY: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: Core AI Lab
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
-    scheme:
-      testTargets:
-        - CoreAILabMacTests
   CoreAILabTests:
     type: bundle.unit-test
     platform: iOS
