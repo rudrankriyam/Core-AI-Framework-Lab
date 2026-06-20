@@ -76,6 +76,7 @@ final class AppleObjectDetectionWorkspaceModel {
             return
         }
 
+        detections = []
         isRunning = true
         statusMessage = "Running YOLOS with Core AI…"
         defer { isRunning = false }

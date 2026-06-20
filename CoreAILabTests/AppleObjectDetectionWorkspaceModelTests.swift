@@ -34,6 +34,36 @@ struct AppleObjectDetectionWorkspaceModelTests {
     }
 }
 
+@MainActor
+struct CoreAIAssetWorkspaceModelTests {
+    @Test
+    func failedReplacementKeepsThePreviouslyInspectedReport() async {
+        let validURL = URL(filePath: "/tmp/valid.aimodel")
+        let validReport = CoreAIModelAssetReport(
+            url: validURL,
+            isValid: true,
+            author: "Core AI Lab",
+            license: "Test",
+            description: "Fixture",
+            functionNames: ["main"],
+            computeTypes: ["float16"]
+        )
+        let workspace = CoreAIAssetWorkspaceModel(
+            inspectionService: CoreAIAssetInspectorStub(report: validReport)
+        )
+
+        await workspace.inspect(url: validURL)
+        #expect(workspace.report == validReport)
+
+        await workspace.inspect(url: URL(filePath: "/tmp/invalid.aimodel"))
+        #expect(workspace.report == validReport)
+        #expect(workspace.isShowingError)
+
+        await workspace.inspect(url: validURL)
+        #expect(!workspace.isShowingError)
+    }
+}
+
 private actor ObjectDetectorStub: AppleObjectDetecting {
     func loadModel(at url: URL) async throws {
         if url.lastPathComponent == "invalid.aimodel" {
@@ -47,6 +77,29 @@ private actor ObjectDetectorStub: AppleObjectDetecting {
 }
 
 private enum ObjectDetectorStubError: LocalizedError {
+    case invalidModel
+
+    var errorDescription: String? {
+        "The replacement model is invalid."
+    }
+}
+
+private actor CoreAIAssetInspectorStub: CoreAIAssetInspecting {
+    let report: CoreAIModelAssetReport
+
+    init(report: CoreAIModelAssetReport) {
+        self.report = report
+    }
+
+    func inspect(url: URL) async throws -> CoreAIModelAssetReport {
+        guard url == report.url else {
+            throw CoreAIAssetInspectorStubError.invalidModel
+        }
+        return report
+    }
+}
+
+private enum CoreAIAssetInspectorStubError: LocalizedError {
     case invalidModel
 
     var errorDescription: String? {

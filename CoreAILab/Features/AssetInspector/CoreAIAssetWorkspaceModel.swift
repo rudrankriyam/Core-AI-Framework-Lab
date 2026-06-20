@@ -10,7 +10,11 @@ final class CoreAIAssetWorkspaceModel {
     var isShowingError = false
 
     @ObservationIgnored
-    private let inspectionService = CoreAIAssetInspectionService()
+    private let inspectionService: any CoreAIAssetInspecting
+
+    init(inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService()) {
+        self.inspectionService = inspectionService
+    }
 
     func inspect(url: URL) async {
         isInspecting = true
@@ -21,7 +25,6 @@ final class CoreAIAssetWorkspaceModel {
             errorMessage = nil
             isShowingError = false
         } catch {
-            report = nil
             errorMessage = error.localizedDescription
             isShowingError = true
         }
