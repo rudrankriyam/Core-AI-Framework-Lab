@@ -81,6 +81,13 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.languageModel(languageExample)
                     )
                 }
+
+                if let diffusionExample = model.diffusionExample {
+                    NavigationLink(
+                        diffusionExample.playgroundButtonTitle,
+                        value: AppleModelLibraryRoute.diffusion(diffusionExample)
+                    )
+                }
             }
 
             Section("Provenance") {

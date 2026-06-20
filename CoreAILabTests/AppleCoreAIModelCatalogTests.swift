@@ -86,6 +86,8 @@ struct AppleCoreAIModelCatalogTests {
         #expect(sam3.runtimeSupport == .segmentation)
         #expect(sam3.segmentationExample == .sam3)
         #expect(sam3.isRunnableInLab)
+        let diffusionModels = models.filter { $0.runtimeSupport == .diffusion }
+        #expect(diffusionModels.allSatisfy { $0.isRunnableInLab })
     }
 
     private func loadCatalog() throws -> AppleCoreAIModelCatalogDocument {

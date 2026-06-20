@@ -55,6 +55,8 @@ targets:
         product: CoreAISegmentation
       - package: coreai-models
         product: CoreAILM
+      - package: coreai-models
+        product: CoreAIDiffusion
       - package: swift-transformers
         product: Transformers
     settings:
@@ -96,6 +98,8 @@ targets:
         product: CoreAISegmentation
       - package: coreai-models
         product: CoreAILM
+      - package: coreai-models
+        product: CoreAIDiffusion
       - package: swift-transformers
         product: Transformers
     settings:
