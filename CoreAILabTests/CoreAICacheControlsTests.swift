@@ -29,6 +29,7 @@ struct CoreAICacheControlsTests {
         await workspace.removePreparedCacheEntry()
         let removal = await cache.removalSnapshot()
         #expect(removal.profiles == [.cpuOnly])
+        #expect(removal.profileURLs == [assetURL])
         #expect(removal.assetCount == 0)
         #expect(workspace.cacheStatus == .notCached)
     }
@@ -71,6 +72,48 @@ struct CoreAICacheControlsTests {
         let removal = await cache.removalSnapshot()
         #expect(removal.profiles.isEmpty)
         #expect(removal.assetCount == 1)
+        #expect(removal.assetURLs == [assetURL])
+    }
+
+    @Test
+    func importingAnotherAssetCancelsPreparedRemoval() async {
+        let originalURL = URL(filePath: "/tmp/original.aimodel")
+        let cache = CoreAISpecializationServiceStub()
+        let workspace = CoreAIAssetWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            specializationService: cache
+        )
+        await workspace.inspect(url: originalURL)
+        workspace.prepareCacheRemoval(.allProfilesForAsset)
+        #expect(workspace.isConfirmingCacheRemoval)
+
+        await workspace.inspect(url: URL(filePath: "/tmp/replacement.aimodel"))
+        #expect(!workspace.isConfirmingCacheRemoval)
+        await workspace.removePreparedCacheEntry()
+
+        let removal = await cache.removalSnapshot()
+        #expect(removal.assetCount == 0)
+        #expect(removal.assetURLs.isEmpty)
+    }
+
+    @Test
+    func changingProfileCancelsPreparedRemoval() async {
+        let cache = CoreAISpecializationServiceStub()
+        let workspace = CoreAIAssetWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            specializationService: cache
+        )
+        await workspace.inspect(url: URL(filePath: "/tmp/fixture.aimodel"))
+        workspace.prepareCacheRemoval(.selectedProfile)
+        #expect(workspace.isConfirmingCacheRemoval)
+
+        workspace.selectedProfile = .cpuOnly
+        #expect(!workspace.isConfirmingCacheRemoval)
+        await workspace.removePreparedCacheEntry()
+
+        let removal = await cache.removalSnapshot()
+        #expect(removal.profiles.isEmpty)
+        #expect(removal.profileURLs.isEmpty)
     }
 
     @Test

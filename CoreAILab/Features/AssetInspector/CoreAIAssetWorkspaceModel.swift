@@ -4,6 +4,12 @@ import Observation
 @MainActor
 @Observable
 final class CoreAIAssetWorkspaceModel {
+    private struct PendingCacheRemoval {
+        let scope: CoreAICacheRemovalScope
+        let assetURL: URL
+        let profile: CoreAISpecializationProfile
+    }
+
     private(set) var report: CoreAIModelAssetReport?
     private(set) var phase: CoreAIAssetWorkspacePhase = .idle
     private(set) var errorMessage: String?
@@ -12,11 +18,12 @@ final class CoreAIAssetWorkspaceModel {
     var selectedProfile: CoreAISpecializationProfile = .automatic {
         didSet {
             guard selectedProfile != oldValue else { return }
+            cancelPendingCacheRemoval()
             cacheStatus = .unchecked
             specializationResult = nil
         }
     }
-    var pendingCacheRemoval: CoreAICacheRemovalScope?
+    private var pendingCacheRemoval: PendingCacheRemoval?
     var isConfirmingCacheRemoval = false
     var isShowingError = false
 
@@ -44,14 +51,16 @@ final class CoreAIAssetWorkspaceModel {
     }
 
     var cacheRemovalTitle: String {
-        pendingCacheRemoval?.title ?? "Remove Cached Specialization"
+        pendingCacheRemoval?.scope.title ?? "Remove Cached Specialization"
     }
 
     var cacheRemovalMessage: String {
-        pendingCacheRemoval?.confirmationMessage ?? "The model will need to be specialized again."
+        pendingCacheRemoval?.scope.confirmationMessage
+            ?? "The model will need to be specialized again."
     }
 
     func inspect(url: URL) async {
+        cancelPendingCacheRemoval()
         let operationID = begin(.inspecting)
         cacheStatus = .unchecked
 
@@ -100,29 +109,34 @@ final class CoreAIAssetWorkspaceModel {
     }
 
     func prepareCacheRemoval(_ scope: CoreAICacheRemovalScope) {
-        guard report != nil, !phase.isBusy else { return }
-        pendingCacheRemoval = scope
+        guard let report, !phase.isBusy else { return }
+        pendingCacheRemoval = PendingCacheRemoval(
+            scope: scope,
+            assetURL: report.url,
+            profile: selectedProfile
+        )
         isConfirmingCacheRemoval = true
     }
 
     func removePreparedCacheEntry() async {
-        guard let report, let pendingCacheRemoval, !phase.isBusy else { return }
-        isConfirmingCacheRemoval = false
+        guard let pendingCacheRemoval, !phase.isBusy else { return }
+        cancelPendingCacheRemoval()
         let operationID = begin(.removingCache)
         do {
-            switch pendingCacheRemoval {
+            switch pendingCacheRemoval.scope {
             case .selectedProfile:
                 try await specializationService.removeCachedEntry(
-                    at: report.url,
-                    profile: selectedProfile
+                    at: pendingCacheRemoval.assetURL,
+                    profile: pendingCacheRemoval.profile
                 )
             case .allProfilesForAsset:
-                try await specializationService.removeCachedEntries(at: report.url)
+                try await specializationService.removeCachedEntries(
+                    at: pendingCacheRemoval.assetURL
+                )
             }
             guard self.operationID == operationID else { return }
             specializationResult = nil
             cacheStatus = .notCached
-            self.pendingCacheRemoval = nil
             clearError()
             phase = .ready
         } catch {
@@ -172,5 +186,10 @@ final class CoreAIAssetWorkspaceModel {
     private func clearError() {
         errorMessage = nil
         isShowingError = false
+    }
+
+    private func cancelPendingCacheRemoval() {
+        pendingCacheRemoval = nil
+        isConfirmingCacheRemoval = false
     }
 }

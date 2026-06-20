@@ -4,7 +4,9 @@ import Foundation
 actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
     private var cachedProfiles: Set<CoreAISpecializationProfile>
     private var removedProfiles: [CoreAISpecializationProfile] = []
+    private var removedProfileURLs: [URL] = []
     private var removedAssetCount = 0
+    private var removedAssetURLs: [URL] = []
     private var cacheLookupCount = 0
     private let delayedCacheLookup: Int?
     private let failingCacheLookups: Set<Int>
@@ -56,14 +58,21 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
     ) {
         cachedProfiles.remove(profile)
         removedProfiles.append(profile)
+        removedProfileURLs.append(url)
     }
 
     func removeCachedEntries(at url: URL) {
         cachedProfiles.removeAll()
         removedAssetCount += 1
+        removedAssetURLs.append(url)
     }
 
-    func removalSnapshot() -> (profiles: [CoreAISpecializationProfile], assetCount: Int) {
-        (removedProfiles, removedAssetCount)
+    func removalSnapshot() -> (
+        profiles: [CoreAISpecializationProfile],
+        assetCount: Int,
+        profileURLs: [URL],
+        assetURLs: [URL]
+    ) {
+        (removedProfiles, removedAssetCount, removedProfileURLs, removedAssetURLs)
     }
 }
