@@ -14,7 +14,7 @@ struct CoreAIConversionOutputsView: View {
             ForEach(artifacts) { artifact in
                 HStack {
                     NavigationLink(value: artifact) {
-                        Label(artifact.name, systemImage: "cube.transparent")
+                        Label(artifact.name, systemImage: artifact.systemImage)
                     }
 
                     Spacer()

@@ -53,9 +53,25 @@ struct AppleModelDetailView: View {
                 }
 
                 if model.isRunnableInLab {
+                    Text("The Lab includes this runtime adapter, not converted model weights. Export the model locally under its upstream license, then import the result.")
+                        .foregroundStyle(.secondary)
+                }
+
+                if model.runtimeSupport == .objectDetection, model.isRunnableInLab {
                     NavigationLink(
                         "Open Object Detection Playground",
                         value: AppleModelLibraryRoute.objectDetection
+                    )
+                }
+
+                if let segmentationExample = model.segmentationExample {
+                    if segmentationExample == .sam3 {
+                        Text("SAM 3 requires accepting Meta's gated Hugging Face license and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
+                            .foregroundStyle(.secondary)
+                    }
+                    NavigationLink(
+                        segmentationExample.playgroundButtonTitle,
+                        value: AppleModelLibraryRoute.segmentation(segmentationExample)
                     )
                 }
             }

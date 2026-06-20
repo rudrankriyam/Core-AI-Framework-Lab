@@ -87,6 +87,7 @@ The first platform slice is now represented in the repository:
 - A checked-in two-function Core AI fixture proving real Float32 and Int32
   specialization and inference rather than only mocked orchestration.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
+- Runnable EfficientSAM and SAM 3 playgrounds built on Apple’s `CoreAISegmentation` package, with point or text prompts, bundle-aware conversion handoff, mask overlays, and explicit gated-weight licensing boundaries.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 

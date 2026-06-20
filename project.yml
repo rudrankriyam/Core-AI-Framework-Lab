@@ -51,6 +51,8 @@ targets:
     dependencies:
       - package: coreai-models
         product: CoreAIObjectDetection
+      - package: coreai-models
+        product: CoreAISegmentation
       - package: swift-transformers
         product: Transformers
     settings:
@@ -88,6 +90,8 @@ targets:
     dependencies:
       - package: coreai-models
         product: CoreAIObjectDetection
+      - package: coreai-models
+        product: CoreAISegmentation
       - package: swift-transformers
         product: Transformers
     settings:

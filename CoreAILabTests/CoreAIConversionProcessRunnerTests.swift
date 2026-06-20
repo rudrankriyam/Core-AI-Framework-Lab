@@ -57,6 +57,97 @@ struct CoreAIConversionProcessRunnerTests {
     }
 
     @Test
+    func discovererPreservesResourceBundlesAlongsideNestedAssets() throws {
+        let outputURL = URL.temporaryDirectory.appending(
+            path: UUID().uuidString,
+            directoryHint: .isDirectory
+        )
+        let bundleURL = outputURL.appending(
+            path: "efficient_sam_vitt_float16_static",
+            directoryHint: .isDirectory
+        )
+        let modelURL = bundleURL.appending(
+            path: "efficient_sam_vitt.aimodel",
+            directoryHint: .isDirectory
+        )
+        defer {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+
+        try FileManager.default.createDirectory(
+            at: modelURL,
+            withIntermediateDirectories: true
+        )
+        let metadata = """
+            {
+              "metadata_version": "0.2",
+              "kind": "segmenter",
+              "name": "EfficientSAM ViT-T"
+            }
+            """
+        try metadata.write(
+            to: bundleURL.appending(path: "metadata.json"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let artifacts = CoreAIConversionArtifactDiscoverer.discover(in: outputURL)
+
+        #expect(artifacts.count == 2)
+        #expect(artifacts.contains {
+            $0.url.resolvingSymlinksInPath() == bundleURL.resolvingSymlinksInPath()
+                && $0.kind == .resourceBundle
+                && $0.resourceKind == "segmenter"
+        })
+        #expect(artifacts.contains {
+            $0.url.resolvingSymlinksInPath() == modelURL.resolvingSymlinksInPath()
+                && $0.kind == .modelAsset
+        })
+    }
+
+    @Test
+    func changedNestedAssetPromotesItsResourceBundle() throws {
+        let outputURL = URL.temporaryDirectory.appending(
+            path: UUID().uuidString,
+            directoryHint: .isDirectory
+        )
+        let bundleURL = outputURL.appending(path: "qwen-bundle", directoryHint: .isDirectory)
+        let modelURL = bundleURL.appending(path: "qwen.aimodel", directoryHint: .isDirectory)
+        defer {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+
+        try FileManager.default.createDirectory(at: modelURL, withIntermediateDirectories: true)
+        try """
+            {
+              "metadata_version": "0.2",
+              "kind": "llm",
+              "name": "Qwen fixture"
+            }
+            """.write(
+                to: bundleURL.appending(path: "metadata.json"),
+                atomically: true,
+                encoding: .utf8
+            )
+        let baseline = CoreAIConversionArtifactDiscoverer.snapshot(in: outputURL)
+
+        try Data([0xCA, 0xFE]).write(to: modelURL.appending(path: "main.mlirb"))
+        let changes = CoreAIConversionArtifactDiscoverer.discoverChanges(
+            in: outputURL,
+            comparedTo: baseline
+        )
+
+        #expect(changes.contains {
+            $0.url.resolvingSymlinksInPath() == bundleURL.resolvingSymlinksInPath()
+                && $0.kind == .resourceBundle
+        })
+        #expect(changes.contains {
+            $0.url.resolvingSymlinksInPath() == modelURL.resolvingSymlinksInPath()
+                && $0.kind == .modelAsset
+        })
+    }
+
+    @Test
     func runnerReportsOnlyArtifactsChangedByTheCurrentRun() async throws {
         let outputURL = URL.temporaryDirectory.appending(
             path: UUID().uuidString,

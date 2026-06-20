@@ -280,9 +280,12 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 
 - Apple's repository ships export code and runtime utilities, not converted
   model weights. Export remains a local `uv` workflow in this first slice.
-- YOLOS object detection is the first Apple-runtime playground. Apple's
-  language, diffusion, and segmentation products are catalogued but their
-  task-specific Lab surfaces are future milestones.
+- YOLOS object detection, EfficientSAM point segmentation, and SAM 3 text
+  segmentation have dedicated Apple-runtime playgrounds. Language, diffusion,
+  and additional audio adapters are the next runtime slices.
+- SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
+  and authenticate with `hf auth login` before export; the Lab never reads or
+  stores Hugging Face credentials.
 - Imported assets are session-scoped. A content-addressed persistent artifact
   library is planned but not included yet.
 - The generic function workbench currently generates NDArray inputs only.
