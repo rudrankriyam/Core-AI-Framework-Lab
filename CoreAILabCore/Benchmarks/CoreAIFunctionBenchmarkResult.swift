@@ -6,6 +6,7 @@ struct CoreAIFunctionBenchmarkResult: Sendable, Equatable {
     let inputPreparationDuration: Duration
     let warmupDurations: [Duration]
     let trials: [CoreAIBenchmarkTrial]
+    let stoppedEarly: Bool
     let statistics: CoreAIBenchmarkStatistics
     let outputs: [CoreAIFunctionOutputSummary]
     let environment: CoreAIBenchmarkEnvironment

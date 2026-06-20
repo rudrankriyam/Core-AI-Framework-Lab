@@ -35,7 +35,7 @@ struct CoreAIBenchmarkStatistics: Sendable, Equatable {
         mean = .seconds(meanSeconds)
         maximum = .seconds(sorted[sorted.count - 1])
         standardDeviation = .seconds(variance.squareRoot())
-        runsPerSecond = medianSeconds > 0 ? 1 / medianSeconds : 0
+        runsPerSecond = meanSeconds > 0 ? 1 / meanSeconds : 0
         if sorted.count >= 20 {
             let nearestRankIndex = Int(ceil(0.95 * count)) - 1
             p95 = .seconds(sorted[nearestRankIndex])
@@ -48,5 +48,14 @@ struct CoreAIBenchmarkStatistics: Sendable, Equatable {
         let components = duration.components
         return Double(components.seconds)
             + Double(components.attoseconds) / 1_000_000_000_000_000_000
+    }
+}
+
+extension Duration {
+    var coreAIMilliseconds: Double {
+        let components = components
+        let seconds = Double(components.seconds)
+            + Double(components.attoseconds) / 1_000_000_000_000_000_000
+        return seconds * 1_000
     }
 }

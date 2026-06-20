@@ -165,6 +165,7 @@ struct CoreAIFunctionWorkbenchView: View {
                 workspace.assetWorkspace.specializationResult
             )
         }
+        .onDisappear(perform: workspace.cancelBenchmark)
     }
 
     private func openModelPicker() {

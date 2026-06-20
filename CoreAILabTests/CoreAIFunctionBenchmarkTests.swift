@@ -52,6 +52,20 @@ struct CoreAIFunctionBenchmarkTests {
     }
 
     @Test
+    func throughputUsesTheWholeSequentialBatchRatherThanTheMedian() throws {
+        let trials = [1, 1, 100].enumerated().map { index, milliseconds in
+            CoreAIBenchmarkTrial(
+                index: index + 1,
+                duration: .milliseconds(milliseconds)
+            )
+        }
+
+        let statistics = try CoreAIBenchmarkStatistics(trials: trials)
+
+        #expect(abs(statistics.runsPerSecond - (3 / 0.102)) < 0.0001)
+    }
+
+    @Test
     func statisticsExposeNearestRankP95AtTwentyTrials() throws {
         let trials = (1...20).map {
             CoreAIBenchmarkTrial(index: $0, duration: .milliseconds($0))
@@ -143,7 +157,7 @@ struct CoreAIFunctionBenchmarkTests {
 
     @MainActor
     @Test
-    func stopWaitsForTheActiveRunAndDoesNotSavePartialHistory() async throws {
+    func stopWaitsForTheActiveRunAndRetainsCompletedTrials() async throws {
         let runtime = CoreAISpecializationServiceStub(
             contractResponses: [[contract(named: "main")]],
             benchmarkRunDelay: .milliseconds(50)
@@ -155,15 +169,47 @@ struct CoreAIFunctionBenchmarkTests {
         await prepare(workspace)
 
         workspace.startBenchmark()
-        try await Task.sleep(for: .milliseconds(10))
+        while await runtime.completedBenchmarkRunCount() < 2 {
+            await Task.yield()
+        }
         workspace.stopBenchmarkAfterCurrentInference()
         await waitForBenchmark(workspace)
 
         let completedRuns = await runtime.completedBenchmarkRunCount()
-        #expect(completedRuns > 0)
+        #expect(completedRuns >= 2)
         #expect(completedRuns < 6)
-        #expect(workspace.benchmarkHistory.isEmpty)
-        #expect(workspace.benchmarkStatusMessage?.contains("stopped") == true)
+        #expect(workspace.benchmarkHistory.count == 1)
+        #expect(workspace.benchmarkHistory[0].result.stoppedEarly)
+        #expect(workspace.benchmarkHistory[0].result.trials.isEmpty == false)
+        #expect(workspace.benchmarkHistory[0].result.trials.count < 5)
+        #expect(
+            workspace.benchmarkStatusMessage?.localizedCaseInsensitiveContains("stopped")
+                == true
+        )
+        #expect(workspace.phase == .ready)
+    }
+
+    @MainActor
+    @Test
+    func leavingTheWorkbenchStopsAfterTheActiveInference() async throws {
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[contract(named: "main")]],
+            benchmarkRunDelay: .milliseconds(50)
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime
+        )
+        await prepare(workspace)
+        workspace.startBenchmark()
+        while await runtime.completedBenchmarkRunCount() < 2 {
+            await Task.yield()
+        }
+
+        workspace.cancelBenchmark()
+        await waitForBenchmark(workspace)
+
+        #expect(await runtime.completedBenchmarkRunCount() < 6)
         #expect(workspace.phase == .ready)
     }
 
@@ -199,6 +245,7 @@ struct CoreAIFunctionBenchmarkTests {
 
             #expect(result.warmupDurations.count == 1)
             #expect(result.trials.count == 3)
+            #expect(!result.stoppedEarly)
             #expect(result.trials.allSatisfy { $0.duration > .zero })
             #expect(result.statistics.p95 == nil)
             #expect(result.environment.deviceArchitectureName.isEmpty == false)

@@ -156,6 +156,10 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         benchmarkTask?.cancel()
     }
 
+    func cancelBenchmark() {
+        benchmarkTask?.cancel()
+    }
+
     func clearBenchmarkHistory() {
         guard phase != .benchmarking else { return }
         benchmarkHistory = []
@@ -205,7 +209,6 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
                 inputs: plans,
                 configuration: configuration
             )
-            try Task.checkCancellation()
             guard assetWorkspace.specializationResult == specialization else { return }
             benchmarkHistory.insert(
                 CoreAIFunctionBenchmarkReport(
@@ -218,9 +221,11 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
                 ),
                 at: 0
             )
-            benchmarkStatusMessage = nil
+            benchmarkStatusMessage = result.stoppedEarly
+                ? "Stopped after \(result.trials.count) measured runs; completed evidence was retained."
+                : nil
         } catch is CancellationError {
-            benchmarkStatusMessage = "Benchmark stopped after the active inference finished. Partial trials were not saved."
+            benchmarkStatusMessage = "Benchmark stopped before a measured trial completed."
         } catch {
             assetWorkspace.presentImportError(error)
         }

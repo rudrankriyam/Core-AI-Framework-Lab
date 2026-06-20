@@ -19,29 +19,15 @@ struct CoreAIFunctionBenchmarkControlsView: View {
             )
             .disabled(workspace.phase.isBusy)
 
-            HStack {
-                Button(
-                    "Run Benchmark",
-                    systemImage: "gauge.with.dots.needle.67percent",
-                    action: workspace.startBenchmark
+            ViewThatFits(in: .horizontal) {
+                CoreAIFunctionBenchmarkActionsView(
+                    workspace: workspace,
+                    axis: .horizontal
                 )
-                .buttonStyle(.borderedProminent)
-                .disabled(!workspace.canBenchmark)
-
-                if workspace.phase == .benchmarking {
-                    Button(
-                        "Stop After Current Inference",
-                        systemImage: "stop.fill",
-                        action: workspace.stopBenchmarkAfterCurrentInference
-                    )
-                }
-
-                Button(
-                    "Clear History",
-                    systemImage: "trash",
-                    action: workspace.clearBenchmarkHistory
+                CoreAIFunctionBenchmarkActionsView(
+                    workspace: workspace,
+                    axis: .vertical
                 )
-                .disabled(workspace.phase.isBusy || workspace.benchmarkHistory.isEmpty)
             }
 
             if let message = workspace.benchmarkStatusMessage {

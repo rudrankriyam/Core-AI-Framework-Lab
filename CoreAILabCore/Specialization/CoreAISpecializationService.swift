@@ -205,18 +205,24 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         var trials: [CoreAIBenchmarkTrial] = []
         trials.reserveCapacity(benchmarkConfiguration.measuredRuns)
         var summaries: [CoreAIFunctionOutputSummary] = []
+        var stoppedEarly = false
         for index in 0..<benchmarkConfiguration.measuredRuns {
-            try Task.checkCancellation()
+            if Task.isCancelled {
+                guard !trials.isEmpty else { throw CancellationError() }
+                stoppedEarly = true
+                break
+            }
             let startedAt = clock.now
             var rawOutputs = try await function.run(inputs: inputs)
             let duration = startedAt.duration(to: clock.now)
-            try Task.checkCancellation()
             trials.append(CoreAIBenchmarkTrial(index: index + 1, duration: duration))
-            if index == benchmarkConfiguration.measuredRuns - 1 {
-                summaries = try summarizeOutputs(
-                    &rawOutputs,
-                    descriptor: descriptor
-                )
+            summaries = try summarizeOutputs(
+                &rawOutputs,
+                descriptor: descriptor
+            )
+            if Task.isCancelled {
+                stoppedEarly = trials.count < benchmarkConfiguration.measuredRuns
+                break
             }
         }
 
@@ -228,6 +234,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
             inputPreparationDuration: inputPreparationDuration,
             warmupDurations: warmupDurations,
             trials: trials,
+            stoppedEarly: stoppedEarly,
             statistics: statistics,
             outputs: summaries,
             environment: .current(

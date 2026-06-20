@@ -126,8 +126,13 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
             try Task.checkCancellation()
         }
         var trials: [CoreAIBenchmarkTrial] = []
+        var stoppedEarly = false
         for index in 0..<configuration.measuredRuns {
-            try Task.checkCancellation()
+            if Task.isCancelled {
+                guard !trials.isEmpty else { throw CancellationError() }
+                stoppedEarly = true
+                break
+            }
             await waitForBenchmarkRun()
             completedBenchmarkRuns += 1
             trials.append(
@@ -136,7 +141,10 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
                     duration: .milliseconds((index + 1) * 10)
                 )
             )
-            try Task.checkCancellation()
+            if Task.isCancelled {
+                stoppedEarly = trials.count < configuration.measuredRuns
+                break
+            }
         }
         return CoreAIFunctionBenchmarkResult(
             functionName: functionName,
@@ -144,6 +152,7 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
             inputPreparationDuration: .milliseconds(3),
             warmupDurations: warmupDurations,
             trials: trials,
+            stoppedEarly: stoppedEarly,
             statistics: try CoreAIBenchmarkStatistics(trials: trials),
             outputs: [],
             environment: CoreAIBenchmarkEnvironment(

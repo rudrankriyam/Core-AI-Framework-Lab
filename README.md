@@ -146,7 +146,8 @@ full specialization configuration, cache state, Core AI device architecture,
 OS, available compute units, build configuration, and start/end thermal state.
 Use a Release build for comparisons. **Stop After Current Inference** cancels
 between Core AI calls because an active generic inference cannot be interrupted
-by the Lab. The history supports honest A/B checks across shapes and compute or
+by the Lab, while retaining every measured trial that completed. The history
+supports honest A/B checks across shapes and compute or
 reshape preferences without claiming hardware placement, energy, or memory
 measurements that Core AI did not report.
 
