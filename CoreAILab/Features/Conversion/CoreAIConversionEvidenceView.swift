@@ -4,6 +4,7 @@ import SwiftUI
 struct CoreAIConversionEvidenceView: View {
     let workspace: CoreAIConversionWorkspaceModel
     let revealInFinder: (CoreAIConversionArtifact) -> Void
+    let storeInProject: (CoreAIConversionArtifact) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -30,7 +31,8 @@ struct CoreAIConversionEvidenceView: View {
                 CoreAIConversionOutputsView(
                     artifacts: workspace.artifacts,
                     logURL: workspace.logURL,
-                    revealInFinder: revealInFinder
+                    revealInFinder: revealInFinder,
+                    storeInProject: storeInProject
                 )
                 .padding()
             }

@@ -5,6 +5,7 @@ struct CoreAIConversionOutputsView: View {
     let artifacts: [CoreAIConversionArtifact]
     let logURL: URL?
     let revealInFinder: (CoreAIConversionArtifact) -> Void
+    let storeInProject: (CoreAIConversionArtifact) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -18,6 +19,14 @@ struct CoreAIConversionOutputsView: View {
                     }
 
                     Spacer()
+
+                    Button(
+                        "Store \(artifact.name) in Project",
+                        systemImage: "folder.badge.plus",
+                        action: { storeInProject(artifact) }
+                    )
+                    .labelStyle(.iconOnly)
+                    .help("Store in Project")
 
                     Button(
                         "Reveal \(artifact.name) in Finder",

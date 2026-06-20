@@ -1,12 +1,20 @@
+import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: CoreAILabSection? = .appleModels
+    @State private var selection: CoreAILabSection? = .projects
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section("Workspaces") {
+                    NavigationLink(value: CoreAILabSection.projects) {
+                        Label(
+                            CoreAILabSection.projects.title,
+                            systemImage: CoreAILabSection.projects.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.appleModels) {
                         Label(
                             CoreAILabSection.appleModels.title,
@@ -48,7 +56,9 @@ struct ContentView: View {
             .navigationTitle("Core AI Lab")
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
-            switch selection ?? .appleModels {
+            switch selection ?? .projects {
+            case .projects:
+                CoreAIProjectLibraryView()
             case .appleModels:
                 AppleModelLibraryView()
             case .conversion:
@@ -69,4 +79,12 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .modelContainer(
+            for: [
+                LabProject.self,
+                ModelArtifactRecord.self,
+                ProjectArtifactLink.self
+            ],
+            inMemory: true
+        )
 }
