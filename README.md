@@ -151,6 +151,21 @@ supports honest A/B checks across shapes and compute or
 reshape preferences without claiming hardware placement, energy, or memory
 measurements that Core AI did not report.
 
+### Integration Export
+
+After specialization, **Export Integration** packages the inspected standalone
+asset with a schema-versioned contract manifest, deterministic SHA-256 tree
+digest, README, and generated Swift runtime. Generated methods cover every
+stateless NDArray-input function and preserve exact Core AI function names.
+Stateful, image-input, and unknown contracts remain in the manifest with an
+explicit reason instead of receiving unsafe placeholder code. Large assets are
+streamed into a same-folder temporary package that appears atomically only
+after the complete export succeeds. Each package also includes a deterministic,
+non-executed `compile-model.sh` for optional iOS and macOS 27 ahead-of-time
+compilation with the selected GPU or Neural Engine preference and reshape hint.
+CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
+`coreai-build compile` does not expose a CPU-only flag.
+
 ## Run Apple's YOLOS Tiny Example
 
 From a clone of Apple's repository at the pinned revision:
@@ -385,6 +400,8 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 - The generic function workbench currently generates NDArray inputs only.
   Stateful execution, image-input adaptation, imported fixtures, persisted
   benchmark evidence, and raw-output export remain later Runtime Studio work.
+  Integration export generates invocation code, not task-specific
+  preprocessing or mutable-state orchestration.
 - The app ships one fixed Chatterbox Turbo voice prepared from Resemble AI's
   official `ivr_female_01` demo reference. The raw reference recording is not
   bundled, and runtime voice selection or reference-voice cloning is not
