@@ -31,14 +31,44 @@ struct CoreAIIntegrationExportTests {
     func generatorSanitizesReservedWordsAndDeterministicCollisions() {
         let generator = CoreAISwiftInvocationGenerator()
         let identifiers = generator.methodIdentifiers(
-            for: ["foo_bar", "class", "foo-bar", "2decode"]
+            for: ["foo_bar", "class", "foo-bar", "2decode", "precedencegroup"]
         )
 
         #expect(identifiers["class"] == "runClass")
         #expect(identifiers["2decode"] == "run2decode")
         #expect(identifiers["foo-bar"] == "fooBar")
         #expect(identifiers["foo_bar"] == "fooBar_2")
+        #expect(identifiers["precedencegroup"] == "runPrecedencegroup")
         #expect(generator.typeIdentifier(for: "42 strange-model.aimodel") == "Model42StrangeModel")
+    }
+
+    @Test
+    func destinationInsideTheSourceIsRejectedBeforeMutation() async throws {
+        let sourceParent = temporaryDirectory()
+        let sourceURL = sourceParent.appending(
+            path: "nested.aimodel",
+            directoryHint: .isDirectory
+        )
+        defer { try? FileManager.default.removeItem(at: sourceParent) }
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+        try Data("model".utf8).write(to: sourceURL.appending(path: "main.mlirb"))
+
+        do {
+            _ = try await CoreAIIntegrationExporter().export(
+                report: report(at: sourceURL),
+                contracts: [tensorContract(named: "main")],
+                specializationProfile: .automatic,
+                destinationParentURL: sourceURL
+            )
+            Issue.record("Expected a destination within the source to be rejected.")
+        } catch CoreAIIntegrationExportError.destinationInsideSource {
+            // Expected.
+        }
+
+        #expect(
+            try FileManager.default.contentsOfDirectory(atPath: sourceURL.path)
+                == ["main.mlirb"]
+        )
     }
 
     @Test
@@ -218,8 +248,20 @@ struct CoreAIIntegrationExportTests {
             specializationProfile: .preferGPU
         ).source
 
-        #expect(cpu.contains("options: SpecializationOptions = .cpuOnly"))
-        #expect(gpu.contains("options: SpecializationOptions = SpecializationOptions(preferredComputeUnitKind: .gpu)"))
+        #expect(cpu.contains("var options = .cpuOnly"))
+        #expect(gpu.contains("var options = SpecializationOptions(preferredComputeUnitKind: .gpu)"))
+        #expect(cpu.contains("options: SpecializationOptions? = nil"))
+    }
+
+    @Test
+    func generatedRuntimeCarriesTheFrequentReshapeDefault() {
+        let source = CoreAISwiftInvocationGenerator().generate(
+            assetName: "dynamic.aimodel",
+            contracts: [tensorContract(named: "main")],
+            expectFrequentReshapes: true
+        ).source
+
+        #expect(source.contains("options.expectFrequentReshapes = true"))
     }
 
     #if os(macOS)
@@ -246,7 +288,10 @@ struct CoreAIIntegrationExportTests {
     func generatedSourceTypeChecksAgainstTheInstalledCoreAISDK() throws {
         let source = CoreAISwiftInvocationGenerator().generate(
             assetName: "fixture.aimodel",
-            contracts: [tensorContract(named: "main")],
+            contracts: [
+                tensorContract(named: "main"),
+                tensorContract(named: "precedencegroup"),
+            ],
             specializationProfile: .preferGPU
         ).source
         let directory = temporaryDirectory()

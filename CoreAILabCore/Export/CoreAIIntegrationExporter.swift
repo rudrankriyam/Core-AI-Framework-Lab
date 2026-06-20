@@ -3,6 +3,7 @@ import Foundation
 
 enum CoreAIIntegrationExportError: LocalizedError, Equatable {
     case destinationExists(String)
+    case destinationInsideSource
     case symbolicLink(String)
     case unsupportedFile(String)
 
@@ -10,6 +11,8 @@ enum CoreAIIntegrationExportError: LocalizedError, Equatable {
         switch self {
         case .destinationExists(let name):
             "An integration export named \(name) already exists in that folder."
+        case .destinationInsideSource:
+            "Choose a destination outside the source model asset."
         case .symbolicLink(let path):
             "The model asset contains symbolic link \(path). Integration exports reject symbolic links."
         case .unsupportedFile(let path):
@@ -50,11 +53,19 @@ actor CoreAIIntegrationExporter {
             if sourceAccess { report.url.stopAccessingSecurityScopedResource() }
             if destinationAccess { destinationParentURL.stopAccessingSecurityScopedResource() }
         }
+        let resolvedSourceURL = report.url.resolvingSymlinksInPath().standardizedFileURL
+        let resolvedDestinationURL = destinationParentURL
+            .resolvingSymlinksInPath()
+            .standardizedFileURL
+        guard !isSameOrDescendant(resolvedDestinationURL, of: resolvedSourceURL) else {
+            throw CoreAIIntegrationExportError.destinationInsideSource
+        }
 
         let generated = generator.generate(
             assetName: report.url.lastPathComponent,
             contracts: contracts,
-            specializationProfile: specializationProfile
+            specializationProfile: specializationProfile,
+            expectFrequentReshapes: expectFrequentReshapes
         )
         let packageName = generated.typeName + "Integration"
         let finalURL = destinationParentURL.appending(
@@ -209,6 +220,13 @@ actor CoreAIIntegrationExporter {
         return String(path.dropFirst(root.count + 1))
     }
 
+    private func isSameOrDescendant(_ candidate: URL, of root: URL) -> Bool {
+        let rootComponents = root.pathComponents
+        let candidateComponents = candidate.pathComponents
+        guard candidateComponents.count >= rootComponents.count else { return false }
+        return candidateComponents.prefix(rootComponents.count).elementsEqual(rootComponents)
+    }
+
     private func update(_ hasher: inout SHA256, with value: String) {
         hasher.update(data: Data(value.utf8))
     }
@@ -232,7 +250,7 @@ actor CoreAIIntegrationExporter {
 
             Add `Sources/\(generated.fileName)` to an iOS 27 or macOS 27 target, copy the asset from `Resources`, and pass its URL to `\(generated.typeName).load(from:)`.
 
-            Run `./compile-model.sh` on a Mac to optionally create iOS and macOS ahead-of-time assets under `Compiled/`. The script is generated but never executed by Core AI Lab. Ahead-of-time output still requires device specialization.\(manifest.specialization.runtimeEnforcesCPUOnly ? " Core AI's build tool has no CPU-only flag; pass `.cpuOnly` to the generated runtime loader." : "")
+            Run `./compile-model.sh` on a Mac to optionally create iOS and macOS ahead-of-time assets under `Compiled/`. The script is generated but never executed by Core AI Lab. Ahead-of-time output still requires device specialization.\(manifest.specialization.runtimeDefaultsToCPUOnly ? " Core AI's build tool has no CPU-only flag; the generated runtime defaults to `.cpuOnly`, which callers may explicitly override." : "")
 
             The generated runtime accepts caller-created `[String: NDArray]` inputs. It does not generate preprocessing, mutable-state orchestration, or semantic postprocessing.
 

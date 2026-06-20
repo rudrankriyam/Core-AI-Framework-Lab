@@ -10,7 +10,8 @@ struct CoreAISwiftInvocationGenerator: Sendable {
     func generate(
         assetName: String,
         contracts: [CoreAIFunctionContract],
-        specializationProfile: CoreAISpecializationProfile = .automatic
+        specializationProfile: CoreAISpecializationProfile = .automatic,
+        expectFrequentReshapes: Bool = false
     ) -> Output {
         let typeName = typeIdentifier(for: assetName) + "CoreAIModel"
         let errorTypeName = typeName + "Error"
@@ -48,19 +49,25 @@ struct CoreAISwiftInvocationGenerator: Sendable {
             public actor \(typeName) {
                 private let model: AIModel
 
+                private static var defaultSpecializationOptions: SpecializationOptions {
+                    var options = \(specializationExpression(specializationProfile))
+                    options.expectFrequentReshapes = \(expectFrequentReshapes)
+                    return options
+                }
+
                 private init(model: AIModel) {
                     self.model = model
                 }
 
                 public static func load(
                     from modelURL: URL,
-                    options: SpecializationOptions = \(specializationExpression(specializationProfile)),
+                    options: SpecializationOptions? = nil,
                     cache: AIModelCache = .default,
                     cachePolicy: AIModelCache.Policy = .default
                 ) async throws -> \(typeName) {
                     let model = try await AIModel.specialize(
                         contentsOf: modelURL,
-                        options: options,
+                        options: options ?? defaultSpecializationOptions,
                         cache: cache,
                         cachePolicy: cachePolicy
                     )
@@ -169,9 +176,13 @@ struct CoreAISwiftInvocationGenerator: Sendable {
         "continue", "default", "defer", "deinit", "do", "else", "enum",
         "extension", "fallthrough", "false", "fileprivate", "for", "func",
         "guard", "if", "import", "in", "init", "inout", "internal", "is",
-        "let", "nil", "nonisolated", "open", "operator", "private", "protocol",
-        "public", "repeat", "rethrows", "return", "self", "Self", "static",
-        "struct", "subscript", "super", "switch", "throw", "throws", "true",
-        "try", "typealias", "var", "where", "while",
+        "any", "borrowing", "consuming", "convenience", "didSet", "distributed",
+        "dynamic", "get", "indirect", "infix", "isolated", "lazy", "let", "macro",
+        "mutating", "nil", "nonisolated", "nonmutating", "open", "operator",
+        "optional", "override", "package", "postfix", "precedencegroup", "prefix",
+        "private", "protocol", "public", "repeat", "required", "rethrows", "return",
+        "self", "Self", "sending", "set", "some", "static", "struct", "subscript",
+        "super", "switch", "throw", "throws", "true", "try", "typealias", "var",
+        "weak", "where", "while", "willSet",
     ]
 }

@@ -34,6 +34,8 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     @ObservationIgnored
     private var benchmarkTask: Task<Void, Never>?
     private var exportTask: Task<Void, Never>?
+    @ObservationIgnored
+    private var exportOperationID = UUID()
 
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
@@ -196,10 +198,17 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
               let report = assetWorkspace.report else { return }
         let contracts = contracts
         let profile = assetWorkspace.selectedProfile
+        let operationID = UUID()
+        exportOperationID = operationID
         exportStatusMessage = "Exporting model, manifest, and Swift runtime…"
         exportedPackageURL = nil
         exportTask = Task { [weak self] in
             guard let self else { return }
+            defer {
+                if exportOperationID == operationID {
+                    exportTask = nil
+                }
+            }
             do {
                 let result = try await integrationExporter.export(
                     report: report,
@@ -208,7 +217,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
                     expectFrequentReshapes: exportExpectFrequentReshapes,
                     destinationParentURL: destinationParentURL
                 )
-                guard !Task.isCancelled else { return }
+                guard exportOperationID == operationID else { return }
                 exportedPackageURL = result.packageURL
                 exportStatusMessage = "Created \(result.packageURL.lastPathComponent)."
             } catch is CancellationError {
@@ -217,7 +226,6 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
                 exportStatusMessage = nil
                 assetWorkspace.presentImportError(error)
             }
-            exportTask = nil
         }
     }
 
@@ -230,6 +238,9 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
 
     private func clearRuntimeState(resetBenchmarkHistory: Bool = true) {
+        exportOperationID = UUID()
+        exportTask?.cancel()
+        exportTask = nil
         benchmarkTask?.cancel()
         benchmarkTask = nil
         contractOperationID = UUID()
@@ -244,7 +255,6 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         contractLoadFailureMessage = nil
         exportStatusMessage = nil
         exportedPackageURL = nil
-        cancelIntegrationExport()
     }
 
     private func performBenchmark(

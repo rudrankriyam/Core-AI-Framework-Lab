@@ -48,12 +48,12 @@ struct CoreAIExportManifest: Codable, Equatable, Sendable {
         let profile: String
         let preferredCompute: String?
         let expectFrequentReshapes: Bool
-        let runtimeEnforcesCPUOnly: Bool
+        let runtimeDefaultsToCPUOnly: Bool
 
         init(profile: CoreAISpecializationProfile, expectFrequentReshapes: Bool) {
             self.profile = profile.rawValue
             self.expectFrequentReshapes = expectFrequentReshapes
-            runtimeEnforcesCPUOnly = profile == .cpuOnly
+            runtimeDefaultsToCPUOnly = profile == .cpuOnly
             switch profile {
             case .preferGPU:
                 preferredCompute = "gpu"
