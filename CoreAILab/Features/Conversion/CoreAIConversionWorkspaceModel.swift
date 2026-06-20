@@ -134,7 +134,7 @@ final class CoreAIConversionWorkspaceModel {
     var canStartConversion: Bool {
         environmentReport?.canConvert == true
             && exportCommand != nil
-            && phase == .ready
+            && phase.allowsStartingConversion
             && !isCheckingEnvironment
     }
 

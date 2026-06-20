@@ -59,4 +59,8 @@ enum CoreAIConversionPhase: Equatable, Sendable {
     var isBusy: Bool {
         self == .checking || isActive
     }
+
+    var allowsStartingConversion: Bool {
+        !isBusy
+    }
 }

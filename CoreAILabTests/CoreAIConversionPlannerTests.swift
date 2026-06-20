@@ -4,6 +4,18 @@ import Testing
 
 struct CoreAIConversionPlannerTests {
     @Test
+    func terminalPhasesAllowAnotherConversion() {
+        #expect(CoreAIConversionPhase.ready.allowsStartingConversion)
+        #expect(CoreAIConversionPhase.succeeded.allowsStartingConversion)
+        #expect(CoreAIConversionPhase.failed.allowsStartingConversion)
+        #expect(CoreAIConversionPhase.canceled.allowsStartingConversion)
+
+        #expect(!CoreAIConversionPhase.checking.allowsStartingConversion)
+        #expect(!CoreAIConversionPhase.running.allowsStartingConversion)
+        #expect(!CoreAIConversionPhase.canceling.allowsStartingConversion)
+    }
+
+    @Test
     func yolosPlanUsesTypedArgumentsAndRecommendedPrecision() throws {
         let model = try #require(
             try loadCatalog().models.first { $0.shortName == "yolos-tiny" }

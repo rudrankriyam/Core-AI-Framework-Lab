@@ -25,12 +25,8 @@ actor CoreAIConversionProcessRunner {
     }
 
     func cancel() async {
-        guard let currentProcess, currentProcess.isRunning else { return }
-        currentProcess.interrupt()
-        try? await Task.sleep(for: .seconds(1))
-        if currentProcess.isRunning {
-            currentProcess.terminate()
-        }
+        guard let currentProcess else { return }
+        await stop(currentProcess)
     }
 
     private func execute(
@@ -96,31 +92,48 @@ actor CoreAIConversionProcessRunner {
 
         let clock = ContinuousClock()
         let start = clock.now
-        try process.run()
-        await onEvent(.started(processIdentifier: process.processIdentifier))
+        do {
+            try process.run()
+            await onEvent(.started(processIdentifier: process.processIdentifier))
 
-        for try await line in pipe.fileHandleForReading.bytes.lines {
+            for try await line in pipe.fileHandleForReading.bytes.lines {
+                try Task.checkCancellation()
+                try write("\(line)\n", to: logHandle)
+                await onEvent(.output(line))
+            }
+
+            let exitCode = await terminationStream.first(where: { _ in true }) ?? -1
+            let duration = start.duration(to: clock.now)
             try Task.checkCancellation()
-            try write("\(line)\n", to: logHandle)
-            await onEvent(.output(line))
-        }
+            guard exitCode == 0 else {
+                throw CoreAIConversionError.processFailed(exitCode)
+            }
 
-        let exitCode = await terminationStream.first(where: { _ in true }) ?? -1
-        let duration = start.duration(to: clock.now)
-        try Task.checkCancellation()
-        guard exitCode == 0 else {
-            throw CoreAIConversionError.processFailed(exitCode)
+            return CoreAIConversionProcessResult(
+                exitCode: exitCode,
+                duration: duration,
+                artifacts: CoreAIConversionArtifactDiscoverer.discoverChanges(
+                    in: request.outputDirectoryURL,
+                    comparedTo: artifactBaseline
+                ),
+                logURL: logURL
+            )
+        } catch {
+            await stop(process)
+            throw error
         }
+    }
 
-        return CoreAIConversionProcessResult(
-            exitCode: exitCode,
-            duration: duration,
-            artifacts: CoreAIConversionArtifactDiscoverer.discoverChanges(
-                in: request.outputDirectoryURL,
-                comparedTo: artifactBaseline
-            ),
-            logURL: logURL
-        )
+    private func stop(_ process: Process) async {
+        guard process.isRunning else { return }
+        process.interrupt()
+        try? await Task.sleep(for: .seconds(1))
+        if process.isRunning {
+            process.terminate()
+        }
+        if process.isRunning {
+            process.waitUntilExit()
+        }
     }
 
     private func childEnvironment(for executableURL: URL) -> [String: String] {

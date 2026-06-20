@@ -1,4 +1,5 @@
 #if os(macOS)
+import Darwin
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -129,6 +130,54 @@ struct CoreAIConversionProcessRunnerTests {
         eventContinuation.finish()
 
         #expect(!FileManager.default.fileExists(atPath: markerURL.path))
+    }
+
+    @Test
+    func cancellationAfterLaunchStopsTheChildProcess() async throws {
+        let outputURL = URL.temporaryDirectory.appending(
+            path: UUID().uuidString,
+            directoryHint: .isDirectory
+        )
+        defer {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+
+        let runner = CoreAIConversionProcessRunner()
+        let (processStream, processContinuation) = AsyncStream.makeStream(of: Int32.self)
+        let task = Task {
+            try await runner.run(
+                request: CoreAIConversionRequest(
+                    modelName: "fixture",
+                    command: CoreAIConversionCommand(
+                        executableURL: URL(filePath: "/bin/sleep"),
+                        arguments: ["30"],
+                        workingDirectoryURL: URL(filePath: "/tmp", directoryHint: .isDirectory)
+                    ),
+                    outputDirectoryURL: outputURL
+                )
+            ) { event in
+                if case .started(let processIdentifier) = event {
+                    processContinuation.yield(processIdentifier)
+                }
+            }
+        }
+
+        let processIdentifier = try #require(
+            await processStream.first(where: { _ in true })
+        )
+        task.cancel()
+        do {
+            _ = try await task.value
+            Issue.record("Expected cancellation after process launch.")
+        } catch is CancellationError {
+            // Expected.
+        }
+        processContinuation.finish()
+
+        let processProbe = kill(processIdentifier, 0)
+        let processProbeError = errno
+        #expect(processProbe == -1)
+        #expect(processProbeError == ESRCH)
     }
 
     @Test
