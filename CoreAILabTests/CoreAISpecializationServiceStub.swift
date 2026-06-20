@@ -5,9 +5,18 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
     private var cachedProfiles: Set<CoreAISpecializationProfile>
     private var removedProfiles: [CoreAISpecializationProfile] = []
     private var removedAssetCount = 0
+    private var cacheLookupCount = 0
+    private let delayedCacheLookup: Int?
+    private let failingCacheLookups: Set<Int>
 
-    init(cachedProfiles: Set<CoreAISpecializationProfile> = []) {
+    init(
+        cachedProfiles: Set<CoreAISpecializationProfile> = [],
+        delayedCacheLookup: Int? = nil,
+        failingCacheLookups: Set<Int> = []
+    ) {
         self.cachedProfiles = cachedProfiles
+        self.delayedCacheLookup = delayedCacheLookup
+        self.failingCacheLookups = failingCacheLookups
     }
 
     func reset() {}
@@ -15,8 +24,16 @@ actor CoreAISpecializationServiceStub: CoreAISpecializationServicing {
     func isCached(
         at url: URL,
         profile: CoreAISpecializationProfile
-    ) -> Bool {
-        cachedProfiles.contains(profile)
+    ) async throws -> Bool {
+        cacheLookupCount += 1
+        let lookup = cacheLookupCount
+        if delayedCacheLookup == lookup {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        if failingCacheLookups.contains(lookup) {
+            throw CocoaError(.fileReadUnknown)
+        }
+        return cachedProfiles.contains(profile)
     }
 
     func specialize(

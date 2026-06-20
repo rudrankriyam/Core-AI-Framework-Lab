@@ -5,8 +5,10 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
     private var model: AIModel?
     private var modelURL: URL?
     private var profile: CoreAISpecializationProfile?
+    private var specializationGeneration = UUID()
 
     func reset() {
+        specializationGeneration = UUID()
         model = nil
         modelURL = nil
         profile = nil
@@ -26,6 +28,8 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
         profile: CoreAISpecializationProfile,
         cachePolicy: CoreAICachePolicyChoice
     ) async throws -> CoreAISpecializationResult {
+        let generation = UUID()
+        specializationGeneration = generation
         let isAccessing = url.startAccessingSecurityScopedResource()
         defer {
             if isAccessing {
@@ -33,13 +37,13 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
             }
         }
 
+        let clock = ContinuousClock()
+        let startedAt = clock.now
         let cachedModel = try AIModelCache.default.model(
             for: url,
             options: profile.options
         )
         let loadedFromCache = cachedModel != nil
-        let clock = ContinuousClock()
-        let startedAt = clock.now
         let specializedModel: AIModel
         if let cachedModel {
             specializedModel = cachedModel
@@ -52,6 +56,9 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
             )
         }
 
+        guard specializationGeneration == generation else {
+            throw CancellationError()
+        }
         model = specializedModel
         modelURL = url
         self.profile = profile
@@ -67,6 +74,7 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
         at url: URL,
         profile: CoreAISpecializationProfile
     ) throws {
+        specializationGeneration = UUID()
         releaseLoadedModel(ifMatching: url, profile: profile)
         try withSecurityScopedAccess(to: url) {
             try AIModelCache.default.deleteEntry(for: url, options: profile.options)
@@ -74,6 +82,7 @@ actor CoreAISpecializationService: CoreAISpecializationServicing {
     }
 
     func removeCachedEntries(at url: URL) throws {
+        specializationGeneration = UUID()
         if modelURL == url {
             reset()
         }

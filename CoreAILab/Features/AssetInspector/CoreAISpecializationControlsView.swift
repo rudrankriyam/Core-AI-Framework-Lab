@@ -21,17 +21,6 @@ struct CoreAISpecializationControlsView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Picker("New entry policy", selection: $workspace.selectedCachePolicy) {
-                ForEach(CoreAICachePolicyChoice.allCases) { policy in
-                    Text(policy.title).tag(policy)
-                }
-            }
-            .disabled(workspace.phase.isBusy)
-
-            Text(workspace.selectedCachePolicy.detail)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
             LabeledContent("Selected profile") {
                 Label(
                     workspace.cacheStatus.title,

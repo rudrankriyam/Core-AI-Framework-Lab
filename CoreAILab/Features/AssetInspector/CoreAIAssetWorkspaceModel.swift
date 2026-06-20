@@ -16,7 +16,6 @@ final class CoreAIAssetWorkspaceModel {
             specializationResult = nil
         }
     }
-    var selectedCachePolicy: CoreAICachePolicyChoice = .standard
     var pendingCacheRemoval: CoreAICacheRemovalScope?
     var isConfirmingCacheRemoval = false
     var isShowingError = false
@@ -54,6 +53,7 @@ final class CoreAIAssetWorkspaceModel {
 
     func inspect(url: URL) async {
         let operationID = begin(.inspecting)
+        cacheStatus = .unchecked
 
         do {
             let inspectedReport = try await inspectionService.inspect(url: url)
@@ -87,7 +87,7 @@ final class CoreAIAssetWorkspaceModel {
             let result = try await specializationService.specialize(
                 at: report.url,
                 profile: selectedProfile,
-                cachePolicy: selectedCachePolicy
+                cachePolicy: .standard
             )
             guard self.operationID == operationID else { return }
             specializationResult = result
@@ -137,6 +137,7 @@ final class CoreAIAssetWorkspaceModel {
 
     private func refreshCacheStatus(expectedOperationID: UUID) async {
         guard let report else { return }
+        guard operationID == expectedOperationID else { return }
         cacheStatus = .checking
         do {
             let isCached = try await specializationService.isCached(
@@ -148,6 +149,7 @@ final class CoreAIAssetWorkspaceModel {
             clearError()
             phase = .ready
         } catch {
+            guard operationID == expectedOperationID else { return }
             cacheStatus = .unchecked
             present(error, operationID: expectedOperationID)
         }

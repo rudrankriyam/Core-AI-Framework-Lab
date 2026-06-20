@@ -72,4 +72,57 @@ struct CoreAICacheControlsTests {
         #expect(removal.profiles.isEmpty)
         #expect(removal.assetCount == 1)
     }
+
+    @Test
+    func failedReplacementCannotLeaveASupersededCacheLookupChecking() async {
+        let originalURL = URL(filePath: "/tmp/original.aimodel")
+        let cache = CoreAISpecializationServiceStub(delayedCacheLookup: 2)
+        let workspace = CoreAIAssetWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            specializationService: cache
+        )
+        await workspace.inspect(url: originalURL)
+
+        let refresh = Task {
+            await workspace.refreshCacheStatus()
+        }
+        while workspace.cacheStatus != .checking {
+            await Task.yield()
+        }
+        await workspace.inspect(url: URL(filePath: "/tmp/invalid.aimodel"))
+        await refresh.value
+
+        #expect(workspace.report?.url == originalURL)
+        #expect(workspace.phase == .ready)
+        #expect(workspace.cacheStatus == .unchecked)
+        #expect(workspace.isShowingError)
+    }
+
+    @Test
+    func staleCacheFailureCannotOverwriteANewerSuccessfulInspection() async {
+        let cache = CoreAISpecializationServiceStub(
+            delayedCacheLookup: 2,
+            failingCacheLookups: [2]
+        )
+        let workspace = CoreAIAssetWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            specializationService: cache
+        )
+        await workspace.inspect(url: URL(filePath: "/tmp/original.aimodel"))
+
+        let staleRefresh = Task {
+            await workspace.refreshCacheStatus()
+        }
+        while workspace.cacheStatus != .checking {
+            await Task.yield()
+        }
+        let replacementURL = URL(filePath: "/tmp/replacement.aimodel")
+        await workspace.inspect(url: replacementURL)
+        await staleRefresh.value
+
+        #expect(workspace.report?.url == replacementURL)
+        #expect(workspace.phase == .ready)
+        #expect(workspace.cacheStatus == .notCached)
+        #expect(!workspace.isShowingError)
+    }
 }

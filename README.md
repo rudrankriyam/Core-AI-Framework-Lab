@@ -95,14 +95,18 @@ authoring, and content-addressed artifact storage remain later milestones.
 
 Open any `.aimodel` in **Asset Inspector** to choose automatic, CPU-only, GPU-
 preferred, or Neural-Engine-preferred specialization. Core AI Lab checks the
-default `AIModelCache` for that exact asset and profile, specializes with either
-the standard or persistent purge policy, and can remove one profile or every
-cached profile for the selected source asset.
+default `AIModelCache` for that exact asset and profile, specializes with the
+standard reclaimable policy, and can remove one profile or every cached
+profile for the selected source asset.
 
 These controls use only Apple's public cache APIs. Core AI does not expose a
 cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
 reports honest known-entry hit/miss state instead of guessing from private
 filesystem paths. Removing an entry means the model must specialize again.
+Persistent cache policy is intentionally not offered for session-scoped
+imports: Core AI requires the app to retain its opaque model bookmark to load
+or remove such an entry after the source disappears. That option belongs with
+the planned persistent project library rather than a disposable file picker.
 
 ## Run Apple's YOLOS Tiny Example
 

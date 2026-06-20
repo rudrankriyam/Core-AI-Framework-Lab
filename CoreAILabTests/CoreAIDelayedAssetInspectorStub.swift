@@ -3,6 +3,9 @@ import Foundation
 
 actor CoreAIDelayedAssetInspectorStub: CoreAIAssetInspecting {
     func inspect(url: URL) async throws -> CoreAIModelAssetReport {
+        if url.lastPathComponent == "invalid.aimodel" {
+            throw CocoaError(.fileReadCorruptFile)
+        }
         if url.lastPathComponent == "slow.aimodel" {
             try await Task.sleep(for: .milliseconds(100))
         }
