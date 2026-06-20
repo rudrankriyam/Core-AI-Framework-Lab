@@ -386,10 +386,10 @@ The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app rem
 ## Run the Real Fixture Test on an iPhone
 
 `Scripts/run_device_tests.py` runs only the bundled, deterministic Core AI
-function-workbench fixture. It accepts one connected physical iPhone or iPad on
-iOS 27 or newer. Simulators, Macs, disconnected devices, disabled Developer
-Mode, stale developer services, and ambiguous device choices fail before
-`xcodebuild` starts.
+function-workbench fixture. It accepts one connected, unlocked physical iPhone
+or iPad on iOS 27 or newer. Simulators, Macs, locked or disconnected devices,
+disabled Developer Mode, stale developer services, and ambiguous device choices
+fail before `xcodebuild` starts.
 
 The project keeps code signing disabled by default. The runner first validates
 an already-installed development profile and matching private key, then enables

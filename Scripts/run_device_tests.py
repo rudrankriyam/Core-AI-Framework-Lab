@@ -286,6 +286,62 @@ def devicectl_command(json_output: Path) -> list[str]:
     ]
 
 
+def devicectl_lock_state_command(
+    device_identifier: str,
+    json_output: Path,
+) -> list[str]:
+    return [
+        "xcrun",
+        "devicectl",
+        "device",
+        "info",
+        "lockState",
+        "--device",
+        device_identifier,
+        "--quiet",
+        "--json-output",
+        str(json_output),
+    ]
+
+
+def require_unlocked_device(device_identifier: str) -> None:
+    with tempfile.TemporaryDirectory(prefix="coreai-device-lock-state-") as directory:
+        output = Path(directory) / "lock-state.json"
+        completed = subprocess.run(
+            devicectl_lock_state_command(device_identifier, output),
+            cwd=REPOSITORY_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            detail = completed.stderr.strip() or completed.stdout.strip()
+            raise DeviceTestHarnessError(
+                "Unable to read the selected device lock state: " + detail
+            )
+        try:
+            document = _mapping(json.loads(output.read_text()))
+        except (FileNotFoundError, json.JSONDecodeError) as error:
+            raise DeviceTestHarnessError(
+                f"devicectl did not produce valid lock-state JSON: {error}"
+            ) from error
+
+    validate_unlocked_device_document(document)
+
+
+def validate_unlocked_device_document(document: Mapping[str, Any]) -> None:
+    result = _mapping(document.get("result"))
+    passcode_required = result.get("passcodeRequired")
+    if passcode_required is True:
+        raise DeviceTestHarnessError(
+            "Unlock the selected iOS device before starting physical XCTest."
+        )
+    if passcode_required is not False:
+        raise DeviceTestHarnessError(
+            "devicectl did not report a definitive unlocked device state"
+        )
+
+
 def load_device_document() -> Mapping[str, Any]:
     with tempfile.TemporaryDirectory(prefix="coreai-device-discovery-") as directory:
         output = Path(directory) / "devices.json"
@@ -641,6 +697,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
         if options.dry_run:
             return 0
 
+        require_unlocked_device(device.destination_identifier)
         result_bundle.parent.mkdir(parents=True, exist_ok=True)
         completed = subprocess.run(command, cwd=REPOSITORY_ROOT, check=False)
         if not result_bundle.exists():

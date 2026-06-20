@@ -168,6 +168,47 @@ class DeviceDiscoveryTests(unittest.TestCase):
             ],
         )
 
+    def test_lock_state_command_uses_the_selected_physical_udid(self) -> None:
+        command = harness.devicectl_lock_state_command(
+            "00008140-TEST",
+            Path("/tmp/lock-state.json"),
+        )
+
+        self.assertEqual(
+            command,
+            [
+                "xcrun",
+                "devicectl",
+                "device",
+                "info",
+                "lockState",
+                "--device",
+                "00008140-TEST",
+                "--quiet",
+                "--json-output",
+                "/tmp/lock-state.json",
+            ],
+        )
+
+    def test_lock_state_must_definitively_report_unlocked(self) -> None:
+        harness.validate_unlocked_device_document(
+            {"result": {"passcodeRequired": False}}
+        )
+
+        with self.assertRaisesRegex(
+            harness.DeviceTestHarnessError,
+            "Unlock the selected iOS device",
+        ):
+            harness.validate_unlocked_device_document(
+                {"result": {"passcodeRequired": True}}
+            )
+
+        with self.assertRaisesRegex(
+            harness.DeviceTestHarnessError,
+            "definitive unlocked device state",
+        ):
+            harness.validate_unlocked_device_document({"result": {}})
+
 
 class SigningProfileTests(unittest.TestCase):
     def test_selects_local_wildcard_profile_covering_both_bundles(self) -> None:
