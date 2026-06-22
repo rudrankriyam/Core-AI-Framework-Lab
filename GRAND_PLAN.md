@@ -549,6 +549,13 @@ Done bar:
 
 ### Milestone 6 — Integration export and code generation (4–6 weeks)
 
+Initial standalone-asset slice: Integration Export now emits a deterministic,
+dependency-free Swift package containing the model resource, typed manifest,
+whole-package checksums, reported third-party notices, generated runtime and bundled
+resource loader, plus a clean offline verifier that compiles with the installed
+SDK without invoking `coreai-build`. Stateless NDArray functions are generated;
+stateful and image-input functions remain truthfully manifest-only.
+
 Deliverables:
 
 - Resource-bundle packaging, checksums, notices, and metadata.
