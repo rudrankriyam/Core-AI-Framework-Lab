@@ -161,6 +161,33 @@ struct CoreAIRecipeBundleTests {
     }
 
     @Test
+    @MainActor
+    func completedImportDoesNotRemainStuckAfterLateCancellation() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let session = CoreAIRecipeBundleSession(
+            bundleRootURL: fixture.sourceRootURL,
+            manifest: fixture.draftManifest,
+            manifestSHA256: String(repeating: "0", count: 64)
+        )
+        let model = CoreAIRecipeCatalogWorkspaceModel { _ in
+            try? await Task.sleep(for: .milliseconds(20))
+            return session
+        }
+        let importTask = Task {
+            await model.importBundle(at: fixture.sourceRootURL)
+        }
+        importTask.cancel()
+
+        await importTask.value
+
+        #expect(model.phase == .imported)
+        #expect(model.importedSummary == session.summary)
+        #expect(model.codeApprovalState == .notRequired)
+        #expect(model.statusMessage.contains("Imported as untrusted"))
+    }
+
+    @Test
     func importRejectsPathTraversalBeforeReadingPayloads() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }

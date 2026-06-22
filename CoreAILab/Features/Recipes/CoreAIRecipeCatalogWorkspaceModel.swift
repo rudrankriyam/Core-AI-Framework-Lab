@@ -4,6 +4,8 @@ import Observation
 @MainActor
 @Observable
 final class CoreAIRecipeCatalogWorkspaceModel {
+    typealias ImportOperation = @Sendable (URL) async throws -> CoreAIRecipeBundleSession
+
     enum Phase: Equatable {
         case idle
         case importing
@@ -20,7 +22,7 @@ final class CoreAIRecipeCatalogWorkspaceModel {
     var isShowingError = false
 
     @ObservationIgnored
-    private let importer: CoreAIRecipeBundleImporter
+    private let importOperation: ImportOperation
     @ObservationIgnored
     private var importedSession: CoreAIRecipeBundleSession?
     @ObservationIgnored
@@ -32,7 +34,18 @@ final class CoreAIRecipeCatalogWorkspaceModel {
             managedRootURL: CoreAIStorageLocation.recipeBundleRootURL
         )
     ) {
-        self.importer = importer
+        importOperation = { url in
+            try await importer.importBundle(at: url)
+        }
+        do {
+            catalog = try CoreAIRecipeCatalog.loadCurated(bundle: bundle)
+        } catch {
+            catalogError = error.localizedDescription
+        }
+    }
+
+    init(bundle: Bundle = .main, importOperation: @escaping ImportOperation) {
+        self.importOperation = importOperation
         do {
             catalog = try CoreAIRecipeCatalog.loadCurated(bundle: bundle)
         } catch {
@@ -55,8 +68,8 @@ final class CoreAIRecipeCatalogWorkspaceModel {
         errorMessage = nil
 
         do {
-            let session = try await importer.importBundle(at: url)
-            guard activeImportID == importID, !Task.isCancelled else { return }
+            let session = try await importOperation(url)
+            guard activeImportID == importID else { return }
             importedSession = session
             importedSummary = session.summary
             codeApprovalState = await session.codeApprovalState
