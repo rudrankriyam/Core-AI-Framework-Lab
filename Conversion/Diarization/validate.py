@@ -24,6 +24,7 @@ AMI_SPEAKERS = ("A", "B", "C", "D")
 FRAME_SHIFT_SECONDS = 0.01
 FRAME_LENGTH_SECONDS = 0.025
 WINDOW_MARGIN_SECONDS = 0.2
+MIN_SAME_SPEAKER_WINDOW_GAP_SECONDS = 8.0
 MIN_PARITY_COSINE = 0.999
 MAX_RANDOM_ABSOLUTE_ERROR = 0.002
 MIN_SMOKE_SEPARATION_MARGIN = 0.1
@@ -93,7 +94,11 @@ def select_ami_windows(
             while end <= segment_end - WINDOW_MARGIN_SECONDS:
                 candidate = (start, end)
                 if not overlaps_other_speaker(candidate, speaker, segments):
-                    if not speaker_windows or start - speaker_windows[-1][1] >= 8:
+                    if (
+                        not speaker_windows
+                        or start - speaker_windows[-1][2]
+                        >= MIN_SAME_SPEAKER_WINDOW_GAP_SECONDS
+                    ):
                         speaker_windows.append((speaker, start, end))
                         break
                 start += 0.25

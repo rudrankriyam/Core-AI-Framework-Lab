@@ -33,6 +33,30 @@ struct SpeakerDiarizationLabTests {
     }
 
     @Test
+    func stubDiarizationNeverExtendsPastShortMedia() {
+        let duration = 0.25
+        let result = SpeakerDiarizationStubEngine.makeResult(
+            durationSeconds: duration
+        )
+
+        #expect(result.turns.count == 1)
+        #expect(result.turns.first?.startTime == 0)
+        #expect(result.turns.last?.endTime == duration)
+        #expect(result.turns.allSatisfy { $0.endTime <= duration })
+        #expect(
+            SpeakerDiarizationStubEngine.makeResult(durationSeconds: 0).turns.isEmpty
+        )
+    }
+
+    @Test
+    func timeFormatterPreservesPositiveSubsecondDurations() {
+        #expect(SpeakerDiarizationTimeFormatter.format(0) == "0:00")
+        #expect(SpeakerDiarizationTimeFormatter.format(0.25) == "0:00.25")
+        #expect(SpeakerDiarizationTimeFormatter.format(0.001) == "0:00.01")
+        #expect(SpeakerDiarizationTimeFormatter.format(1.9) == "0:01")
+    }
+
+    @Test
     func mediaAnalyzerBuildsNormalizedWaveformBuckets() async throws {
         let url = FileManager.default.temporaryDirectory
             .appending(path: "core-ai-diarization-\(UUID().uuidString).wav")

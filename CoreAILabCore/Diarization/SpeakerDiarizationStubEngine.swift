@@ -4,7 +4,7 @@ enum SpeakerDiarizationStubEngine {
     static let name = "Stub diarization engine"
 
     static func makeResult(durationSeconds: Double) -> SpeakerDiarizationResult {
-        let boundedDuration = max(durationSeconds, 1)
+        let boundedDuration = durationSeconds.isFinite ? max(durationSeconds, 0) : 0
         let speakerCount = boundedDuration > 90 ? 3 : 2
         let targetTurnLength = max(8, min(28, boundedDuration / 8))
         var turns: [SpeakerDiarizationTurn] = []
