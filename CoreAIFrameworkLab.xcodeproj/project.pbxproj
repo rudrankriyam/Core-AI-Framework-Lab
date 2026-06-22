@@ -7,6 +7,82 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000001 /* CoreAIRecipeCodec.swift */; };
+		C40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000001 /* CoreAIRecipeCodec.swift */; };
+		B40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift */; };
+		C40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift */; };
+		B40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000003 /* CoreAIRecipeExampleInput.swift */; };
+		C40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000003 /* CoreAIRecipeExampleInput.swift */; };
+		B40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift */; };
+		C40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift */; };
+		B40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift */; };
+		C40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift */; };
+		B40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift */; };
+		C40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift */; };
+		B40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift */; };
+		C40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift */; };
+		B40000000000000000000008 /* CoreAIRecipeModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000008 /* CoreAIRecipeModule.swift */; };
+		C40000000000000000000008 /* CoreAIRecipeModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000008 /* CoreAIRecipeModule.swift */; };
+		B40000000000000000000009 /* CoreAIRecipeRewrite.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000009 /* CoreAIRecipeRewrite.swift */; };
+		C40000000000000000000009 /* CoreAIRecipeRewrite.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000009 /* CoreAIRecipeRewrite.swift */; };
+		B4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift */; };
+		C4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift */; };
+		B4000000000000000000000B /* CoreAIRecipeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000B /* CoreAIRecipeSource.swift */; };
+		C4000000000000000000000B /* CoreAIRecipeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000B /* CoreAIRecipeSource.swift */; };
+		B4000000000000000000000C /* CoreAIRecipeStateBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000C /* CoreAIRecipeStateBinding.swift */; };
+		C4000000000000000000000C /* CoreAIRecipeStateBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000C /* CoreAIRecipeStateBinding.swift */; };
+		B4000000000000000000000D /* CoreAIRecipeStubGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000D /* CoreAIRecipeStubGenerator.swift */; };
+		C4000000000000000000000D /* CoreAIRecipeStubGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000D /* CoreAIRecipeStubGenerator.swift */; };
+		B4000000000000000000000E /* CoreAIRecipeValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000E /* CoreAIRecipeValidationError.swift */; };
+		C4000000000000000000000E /* CoreAIRecipeValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000E /* CoreAIRecipeValidationError.swift */; };
+		B4000000000000000000000F /* CoreAIRecipeValidationIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000F /* CoreAIRecipeValidationIssue.swift */; };
+		C4000000000000000000000F /* CoreAIRecipeValidationIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000000F /* CoreAIRecipeValidationIssue.swift */; };
+		B40000000000000000000010 /* CoreAIRecipeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000010 /* CoreAIRecipeValidator.swift */; };
+		C40000000000000000000010 /* CoreAIRecipeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000010 /* CoreAIRecipeValidator.swift */; };
+		B40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift */; };
+		C40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift */; };
+		B40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift */; };
+		C40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift */; };
+		B40000000000000000000013 /* CoreAIPipelinePortEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000013 /* CoreAIPipelinePortEditorView.swift */; };
+		C40000000000000000000013 /* CoreAIPipelinePortEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000013 /* CoreAIPipelinePortEditorView.swift */; };
+		B40000000000000000000014 /* CoreAIPipelineStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000014 /* CoreAIPipelineStudioView.swift */; };
+		C40000000000000000000014 /* CoreAIPipelineStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000014 /* CoreAIPipelineStudioView.swift */; };
+		B40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift */; };
+		C40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift */; };
+		B40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift */; };
+		C40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift */; };
+		B40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift */; };
+		C40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift */; };
+		B40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift */; };
+		C40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift */; };
+		B40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift */; };
+		C40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift */; };
+		B4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift */; };
+		C4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift */; };
+		B4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift */; };
+		C4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift */; };
+		B4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift */; };
+		C4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift */; };
+		B4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift */; };
+		C4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift */; };
+		B4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift */; };
+		C4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift */; };
+		B4000000000000000000001F /* CoreAIRecipeStateEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001F /* CoreAIRecipeStateEditorView.swift */; };
+		C4000000000000000000001F /* CoreAIRecipeStateEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4000000000000000000001F /* CoreAIRecipeStateEditorView.swift */; };
+		B40000000000000000000020 /* CoreAIRecipeStudioPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000020 /* CoreAIRecipeStudioPanel.swift */; };
+		C40000000000000000000020 /* CoreAIRecipeStudioPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000020 /* CoreAIRecipeStudioPanel.swift */; };
+		B40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift */; };
+		C40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift */; };
+		B40000000000000000000022 /* CoreAIRecipeStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000022 /* CoreAIRecipeStudioView.swift */; };
+		C40000000000000000000022 /* CoreAIRecipeStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000022 /* CoreAIRecipeStudioView.swift */; };
+		B40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift */; };
+		C40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift */; };
+		B40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift */; };
+		C40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift */; };
+		B40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift */; };
+		C40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift */; };
+		B40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000026 /* CoreAIRecipeStudioTests.swift */; };
+		C40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A40000000000000000000026 /* CoreAIRecipeStudioTests.swift */; };
 		008C2E2244C68BB92F88166F /* CoreAIRuntimeStudioModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6646EECE3889EEB08D15BCC1 /* CoreAIRuntimeStudioModel.swift */; };
 		00C33D9275EEC0397FB0AC36 /* CoreAIPipelineValidationCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DD766B2B50C78DD9E1250F /* CoreAIPipelineValidationCode.swift */; };
 		00E5D7EB25F93F1C68DC92DD /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */; };
@@ -740,6 +816,44 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A40000000000000000000001 /* CoreAIRecipeCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCodec.swift; sourceTree = "<group>"; };
+		A40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeDynamicDimension.swift; sourceTree = "<group>"; };
+		A40000000000000000000003 /* CoreAIRecipeExampleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeExampleInput.swift; sourceTree = "<group>"; };
+		A40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeExternalizationRule.swift; sourceTree = "<group>"; };
+		A40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeFunctionEntrypoint.swift; sourceTree = "<group>"; };
+		A40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeGeneratedArtifact.swift; sourceTree = "<group>"; };
+		A40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeAuthoringManifest.swift; sourceTree = "<group>"; };
+		A40000000000000000000008 /* CoreAIRecipeModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeModule.swift; sourceTree = "<group>"; };
+		A40000000000000000000009 /* CoreAIRecipeRewrite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeRewrite.swift; sourceTree = "<group>"; };
+		A4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeRewriteCatalog.swift; sourceTree = "<group>"; };
+		A4000000000000000000000B /* CoreAIRecipeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeSource.swift; sourceTree = "<group>"; };
+		A4000000000000000000000C /* CoreAIRecipeStateBinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStateBinding.swift; sourceTree = "<group>"; };
+		A4000000000000000000000D /* CoreAIRecipeStubGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStubGenerator.swift; sourceTree = "<group>"; };
+		A4000000000000000000000E /* CoreAIRecipeValidationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeValidationError.swift; sourceTree = "<group>"; };
+		A4000000000000000000000F /* CoreAIRecipeValidationIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeValidationIssue.swift; sourceTree = "<group>"; };
+		A40000000000000000000010 /* CoreAIRecipeValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeValidator.swift; sourceTree = "<group>"; };
+		A40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIUnsupportedOperationFinding.swift; sourceTree = "<group>"; };
+		A40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineNodeEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000013 /* CoreAIPipelinePortEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelinePortEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000014 /* CoreAIPipelineStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineStudioView.swift; sourceTree = "<group>"; };
+		A40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineValidationIssuesView.swift; sourceTree = "<group>"; };
+		A40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeDynamicDimensionsEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeExampleInputsEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeExternalizationEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeFunctionEntrypointsEditorView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeGeneratedArtifactsView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeOutputListEditorView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeReferenceListEditorView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeRewriteCatalogView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeSourceEditorView.swift; sourceTree = "<group>"; };
+		A4000000000000000000001F /* CoreAIRecipeStateEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStateEditorView.swift; sourceTree = "<group>"; };
+		A40000000000000000000020 /* CoreAIRecipeStudioPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStudioPanel.swift; sourceTree = "<group>"; };
+		A40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStudioPanelLink.swift; sourceTree = "<group>"; };
+		A40000000000000000000022 /* CoreAIRecipeStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStudioView.swift; sourceTree = "<group>"; };
+		A40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStudioWorkspaceModel.swift; sourceTree = "<group>"; };
+		A40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeValidationIssuesView.swift; sourceTree = "<group>"; };
+		A40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIUnsupportedOperationReportView.swift; sourceTree = "<group>"; };
+		A40000000000000000000026 /* CoreAIRecipeStudioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeStudioTests.swift; sourceTree = "<group>"; };
 		01DFB625E32BA95D22036801 /* AppleObjectDetectionWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleObjectDetectionWorkspaceView.swift; sourceTree = "<group>"; };
 		025B583E54E095690C6B231A /* AppleLanguageWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLanguageWorkspaceView.swift; sourceTree = "<group>"; };
 		02A1258CB05FFEA1BE68A3E1 /* AppleAudioWorkspaceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAudioWorkspaceModelTests.swift; sourceTree = "<group>"; };
@@ -1365,6 +1479,7 @@
 				449DCA0643FF48D65A69DDCE /* FunctionWorkbench */,
 				A53906FB126FDA40C9898F31 /* Manifests */,
 				7EB60B28EB9200E83DD6E742 /* Pipelines */,
+				D40000000000000000000001 /* Recipes */,
 				3ADD6C544755D90C43AC6892 /* Projects */,
 				3C6E513B5A0EEC2E6240023C /* RuntimeStudio */,
 				E5931FB122B8B661F87F6FC6 /* Specialization */,
@@ -1462,6 +1577,7 @@
 				89122E120954422207C162CF /* Diarization */,
 				021C66BA4A8657645A3D06E4 /* FunctionWorkbench */,
 				387E856DBAB7CA19614C7B0B /* Projects */,
+				D40000000000000000000002 /* RecipeStudio */,
 				4DDBEE15FDD3FD0E9BCE0E7A /* RuntimeStudio */,
 			);
 			path = Features;
@@ -1531,6 +1647,7 @@
 				1D4AAA279B34FF4E6DE2884F /* CoreAIFunctionWorkbenchTests.swift */,
 				D2E03061354DCABE5C7CD3EC /* CoreAIIntegrationExportTests.swift */,
 				ADA8FF45B2845DE9E39B8EB6 /* CoreAIPipelineManifestTests.swift */,
+				A40000000000000000000026 /* CoreAIRecipeStudioTests.swift */,
 				F439B7C4B57C36E94260EE23 /* CoreAIProjectLibraryMetadataTests.swift */,
 				06D88CBADAECF0BF7A81EBA7 /* CoreAIProjectPersistenceTests.swift */,
 				B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */,
@@ -1564,6 +1681,57 @@
 				7B8EC4EAF15A9AB5D04147E9 /* CoreAIPipelineValueKind.swift */,
 			);
 			path = Pipelines;
+			sourceTree = "<group>";
+		};
+		D40000000000000000000001 /* Recipes */ = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000001 /* CoreAIRecipeCodec.swift */,
+				A40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift */,
+				A40000000000000000000003 /* CoreAIRecipeExampleInput.swift */,
+				A40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift */,
+				A40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift */,
+				A40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift */,
+				A40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift */,
+				A40000000000000000000008 /* CoreAIRecipeModule.swift */,
+				A40000000000000000000009 /* CoreAIRecipeRewrite.swift */,
+				A4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift */,
+				A4000000000000000000000B /* CoreAIRecipeSource.swift */,
+				A4000000000000000000000C /* CoreAIRecipeStateBinding.swift */,
+				A4000000000000000000000D /* CoreAIRecipeStubGenerator.swift */,
+				A4000000000000000000000E /* CoreAIRecipeValidationError.swift */,
+				A4000000000000000000000F /* CoreAIRecipeValidationIssue.swift */,
+				A40000000000000000000010 /* CoreAIRecipeValidator.swift */,
+				A40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift */,
+			);
+			path = Recipes;
+			sourceTree = "<group>";
+		};
+		D40000000000000000000002 /* RecipeStudio */ = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift */,
+				A40000000000000000000013 /* CoreAIPipelinePortEditorView.swift */,
+				A40000000000000000000014 /* CoreAIPipelineStudioView.swift */,
+				A40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift */,
+				A40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift */,
+				A40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift */,
+				A40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift */,
+				A40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift */,
+				A4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift */,
+				A4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift */,
+				A4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift */,
+				A4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift */,
+				A4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift */,
+				A4000000000000000000001F /* CoreAIRecipeStateEditorView.swift */,
+				A40000000000000000000020 /* CoreAIRecipeStudioPanel.swift */,
+				A40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift */,
+				A40000000000000000000022 /* CoreAIRecipeStudioView.swift */,
+				A40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift */,
+				A40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift */,
+				A40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift */,
+			);
+			path = RecipeStudio;
 			sourceTree = "<group>";
 		};
 		837F0A5A5CF103B4832A2A60 /* CoreAILab */ = {
@@ -1963,6 +2131,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */,
 				9722B54F2398A0B4796C040B /* AppleAudioIntegrationTests.swift in Sources */,
 				0F688005292F07C334B44B74 /* AppleAudioWorkspaceModelTests.swift in Sources */,
 				355C9E64D5CE46F6E9596F8E /* AppleCoreAIModelCatalogTests.swift in Sources */,
@@ -2003,6 +2172,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */,
 				157B52F1DE52344905FB4F88 /* AppleAudioIntegrationTests.swift in Sources */,
 				EDFFBE2DCD7A4E9F54541E9B /* AppleAudioWorkspaceModelTests.swift in Sources */,
 				F3125446908511CCC51FDAE9 /* AppleCoreAIModelCatalogTests.swift in Sources */,
@@ -2043,6 +2213,43 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */,
+				B40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */,
+				B40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */,
+				B40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift in Sources */,
+				B40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift in Sources */,
+				B40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift in Sources */,
+				B40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift in Sources */,
+				B40000000000000000000008 /* CoreAIRecipeModule.swift in Sources */,
+				B40000000000000000000009 /* CoreAIRecipeRewrite.swift in Sources */,
+				B4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift in Sources */,
+				B4000000000000000000000B /* CoreAIRecipeSource.swift in Sources */,
+				B4000000000000000000000C /* CoreAIRecipeStateBinding.swift in Sources */,
+				B4000000000000000000000D /* CoreAIRecipeStubGenerator.swift in Sources */,
+				B4000000000000000000000E /* CoreAIRecipeValidationError.swift in Sources */,
+				B4000000000000000000000F /* CoreAIRecipeValidationIssue.swift in Sources */,
+				B40000000000000000000010 /* CoreAIRecipeValidator.swift in Sources */,
+				B40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift in Sources */,
+				B40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift in Sources */,
+				B40000000000000000000013 /* CoreAIPipelinePortEditorView.swift in Sources */,
+				B40000000000000000000014 /* CoreAIPipelineStudioView.swift in Sources */,
+				B40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift in Sources */,
+				B40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift in Sources */,
+				B40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift in Sources */,
+				B40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift in Sources */,
+				B40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift in Sources */,
+				B4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift in Sources */,
+				B4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift in Sources */,
+				B4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift in Sources */,
+				B4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift in Sources */,
+				B4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift in Sources */,
+				B4000000000000000000001F /* CoreAIRecipeStateEditorView.swift in Sources */,
+				B40000000000000000000020 /* CoreAIRecipeStudioPanel.swift in Sources */,
+				B40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift in Sources */,
+				B40000000000000000000022 /* CoreAIRecipeStudioView.swift in Sources */,
+				B40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift in Sources */,
+				B40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift in Sources */,
+				B40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift in Sources */,
 				76FC66CC0138E8139B0DB099 /* AppleAudioError.swift in Sources */,
 				6522E98465974B7D698B52BF /* AppleAudioExample.swift in Sources */,
 				95672842A77E2C7F636039B2 /* AppleAudioSampleLoader.swift in Sources */,
@@ -2364,6 +2571,43 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */,
+				C40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */,
+				C40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */,
+				C40000000000000000000004 /* CoreAIRecipeExternalizationRule.swift in Sources */,
+				C40000000000000000000005 /* CoreAIRecipeFunctionEntrypoint.swift in Sources */,
+				C40000000000000000000006 /* CoreAIRecipeGeneratedArtifact.swift in Sources */,
+				C40000000000000000000007 /* CoreAIRecipeAuthoringManifest.swift in Sources */,
+				C40000000000000000000008 /* CoreAIRecipeModule.swift in Sources */,
+				C40000000000000000000009 /* CoreAIRecipeRewrite.swift in Sources */,
+				C4000000000000000000000A /* CoreAIRecipeRewriteCatalog.swift in Sources */,
+				C4000000000000000000000B /* CoreAIRecipeSource.swift in Sources */,
+				C4000000000000000000000C /* CoreAIRecipeStateBinding.swift in Sources */,
+				C4000000000000000000000D /* CoreAIRecipeStubGenerator.swift in Sources */,
+				C4000000000000000000000E /* CoreAIRecipeValidationError.swift in Sources */,
+				C4000000000000000000000F /* CoreAIRecipeValidationIssue.swift in Sources */,
+				C40000000000000000000010 /* CoreAIRecipeValidator.swift in Sources */,
+				C40000000000000000000011 /* CoreAIUnsupportedOperationFinding.swift in Sources */,
+				C40000000000000000000012 /* CoreAIPipelineNodeEditorView.swift in Sources */,
+				C40000000000000000000013 /* CoreAIPipelinePortEditorView.swift in Sources */,
+				C40000000000000000000014 /* CoreAIPipelineStudioView.swift in Sources */,
+				C40000000000000000000015 /* CoreAIPipelineValidationIssuesView.swift in Sources */,
+				C40000000000000000000016 /* CoreAIRecipeDynamicDimensionsEditorView.swift in Sources */,
+				C40000000000000000000017 /* CoreAIRecipeExampleInputsEditorView.swift in Sources */,
+				C40000000000000000000018 /* CoreAIRecipeExternalizationEditorView.swift in Sources */,
+				C40000000000000000000019 /* CoreAIRecipeFunctionEntrypointsEditorView.swift in Sources */,
+				C4000000000000000000001A /* CoreAIRecipeGeneratedArtifactsView.swift in Sources */,
+				C4000000000000000000001B /* CoreAIRecipeOutputListEditorView.swift in Sources */,
+				C4000000000000000000001C /* CoreAIRecipeReferenceListEditorView.swift in Sources */,
+				C4000000000000000000001D /* CoreAIRecipeRewriteCatalogView.swift in Sources */,
+				C4000000000000000000001E /* CoreAIRecipeSourceEditorView.swift in Sources */,
+				C4000000000000000000001F /* CoreAIRecipeStateEditorView.swift in Sources */,
+				C40000000000000000000020 /* CoreAIRecipeStudioPanel.swift in Sources */,
+				C40000000000000000000021 /* CoreAIRecipeStudioPanelLink.swift in Sources */,
+				C40000000000000000000022 /* CoreAIRecipeStudioView.swift in Sources */,
+				C40000000000000000000023 /* CoreAIRecipeStudioWorkspaceModel.swift in Sources */,
+				C40000000000000000000024 /* CoreAIRecipeValidationIssuesView.swift in Sources */,
+				C40000000000000000000025 /* CoreAIUnsupportedOperationReportView.swift in Sources */,
 				BFD693FCE8C14C327F0FD71C /* AppleAudioError.swift in Sources */,
 				A4373E68B3759EE715D3039A /* AppleAudioExample.swift in Sources */,
 				C55E2FB5389A1320020B375C /* AppleAudioSampleLoader.swift in Sources */,
