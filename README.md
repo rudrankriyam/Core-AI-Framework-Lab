@@ -53,8 +53,6 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
-- `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
-- `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
 
