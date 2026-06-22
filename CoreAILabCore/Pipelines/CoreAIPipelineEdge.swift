@@ -4,8 +4,8 @@ struct CoreAIPipelineEdge: Codable, Hashable, Identifiable, Sendable {
         let destination: CoreAIPipelineEndpoint
     }
 
-    let source: CoreAIPipelineEndpoint
-    let destination: CoreAIPipelineEndpoint
+    var source: CoreAIPipelineEndpoint
+    var destination: CoreAIPipelineEndpoint
 
     var id: ID {
         ID(source: source, destination: destination)

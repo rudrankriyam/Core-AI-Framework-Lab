@@ -1,0 +1,147 @@
+import Foundation
+import Testing
+@testable import CoreAILab
+
+@MainActor
+struct CoreAIRecipeStudioTests {
+    @Test
+    func completeRecipeRoundTripsDeterministically() throws {
+        var recipe = CoreAIRecipeManifest.starter
+        recipe.source = CoreAIRecipeSource(
+            kind: .huggingFaceRepository,
+            location: "organization/model",
+            revision: "0123456789abcdef"
+        )
+        recipe.stateBindings = [
+            CoreAIRecipeStateBinding(
+                id: "kv_cache",
+                name: "kv_cache",
+                inputName: "kv_cache_input",
+                outputName: "kv_cache_output",
+                initialValueReference: "fixtures/empty-cache.safetensors",
+                isMutable: true
+            )
+        ]
+        recipe.externalizationRules = [
+            CoreAIRecipeExternalizationRule(
+                id: "transformer_weights",
+                modulePath: "model.transformer",
+                strategy: .separateWeights,
+                minimumBytes: 1_048_576,
+                resourceName: "transformer_weights"
+            )
+        ]
+        recipe.functionEntrypoints[0].stateNames = ["kv_cache"]
+        recipe.unsupportedOperations = [finding()]
+
+        let firstEncoding = try CoreAIRecipeCodec.encode(recipe)
+        let decoded = try CoreAIRecipeCodec.decode(firstEncoding)
+        let secondEncoding = try CoreAIRecipeCodec.encode(decoded)
+
+        #expect(decoded == recipe)
+        #expect(firstEncoding == secondEncoding)
+        #expect(String(decoding: firstEncoding, as: UTF8.self).contains("\"pipeline\""))
+    }
+
+    @Test
+    func unsupportedSchemaVersionStopsBeforePartialDecoding() {
+        let data = Data(#"{"schemaVersion":99}"#.utf8)
+
+        #expect(throws: CoreAIRecipeValidationError.self) {
+            try CoreAIRecipeCodec.decode(data)
+        }
+    }
+
+    @Test
+    func validationReportsDanglingAuthoringReferencesAndAttribution() {
+        var recipe = CoreAIRecipeManifest.starter
+        recipe.dynamicDimensions[0].inputName = "missing_input"
+        recipe.functionEntrypoints[0].stateNames = ["missing_state"]
+        recipe.unsupportedOperations = [
+            CoreAIUnsupportedOperationFinding(
+                id: "missing_attribution",
+                severity: .blocker,
+                operatorName: "aten.example",
+                modulePath: "",
+                sourceFile: "",
+                sourceLine: 0,
+                message: "Unsupported",
+                exampleShapes: [],
+                suggestedRewriteID: ""
+            )
+        ]
+
+        let issues = CoreAIRecipeValidator.issues(in: recipe)
+        let codes = Set(issues.map(\.code))
+
+        #expect(codes.contains(.unknownReference))
+        #expect(codes.contains(.incompleteAttribution))
+        #expect(issues.contains { $0.location.contains("dynamicDimensions") })
+        #expect(issues.contains { $0.location.contains("stateNames") })
+    }
+
+    @Test
+    func builtInRewriteCatalogHasStableUniqueEvidenceBackedEntries() {
+        let rewrites = CoreAIRecipeRewriteCatalog.builtIn
+
+        #expect(Set(rewrites.map(\.id)).count == rewrites.count)
+        #expect(rewrites.contains { $0.id == "fixed_filter_fourier" })
+        #expect(rewrites.contains { $0.strategy == .customLowering })
+        #expect(rewrites.allSatisfy { !$0.operatorNames.isEmpty && !$0.evidence.isEmpty })
+    }
+
+    @Test
+    func generatedEscapeHatchesFailUntilImplemented() throws {
+        let artifacts = CoreAIRecipeStubGenerator.artifacts(for: finding())
+        let lowering = try #require(artifacts.first { $0.kind == .customLowering })
+        let metal = try #require(artifacts.first { $0.kind == .metalKernel })
+
+        #expect(artifacts.count == 2)
+        #expect(!artifacts.contains { $0.relativePath.contains("..") })
+        #expect(lowering.contents.contains("register_torch_lowering"))
+        #expect(lowering.contents.contains("NotImplementedError"))
+        #expect(lowering.contents.contains("vocoder.fourier"))
+        #expect(lowering.contents.contains("vocoder.py:136"))
+        #expect(metal.contents.contains("#error"))
+        #expect(metal.contents.contains("thread_position_in_grid"))
+    }
+
+    @Test
+    func workspaceConnectsTypedNodesAndRemovesEdgesWithTheirNode() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        workspace.addPipelineNode(kind: .hostOperator)
+        let node = try #require(workspace.recipe.pipeline.nodes.last)
+        workspace.selectedSourceEndpoint = CoreAIPipelineEndpoint(
+            nodeID: "model_forward",
+            portName: "output"
+        )
+        workspace.selectedDestinationEndpoint = CoreAIPipelineEndpoint(
+            nodeID: node.id,
+            portName: "input"
+        )
+
+        #expect(workspace.canConnectSelectedEndpoints)
+        workspace.connectSelectedEndpoints()
+        #expect(workspace.pipelineIssues.isEmpty)
+
+        workspace.removePipelineNode(id: node.id)
+        #expect(!workspace.recipe.pipeline.edges.contains {
+            $0.source.nodeID == node.id || $0.destination.nodeID == node.id
+        })
+        #expect(workspace.pipelineIssues.isEmpty)
+    }
+
+    private func finding() -> CoreAIUnsupportedOperationFinding {
+        CoreAIUnsupportedOperationFinding(
+            id: "stft",
+            severity: .blocker,
+            operatorName: "aten.stft.default",
+            modulePath: "vocoder.fourier",
+            sourceFile: "vocoder.py",
+            sourceLine: 136,
+            message: "The converter did not lower this fixed-window Fourier operation.",
+            exampleShapes: ["waveform: [1, 24000]"],
+            suggestedRewriteID: "fixed_filter_fourier"
+        )
+    }
+}

@@ -1,7 +1,7 @@
 struct CoreAIPipelinePort: Codable, Hashable, Identifiable, Sendable {
-    let name: String
-    let value: CoreAIPipelineValueContract
-    let isOptional: Bool
+    var name: String
+    var value: CoreAIPipelineValueContract
+    var isOptional: Bool
 
     var id: String { name }
 

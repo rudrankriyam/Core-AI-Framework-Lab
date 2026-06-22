@@ -1,8 +1,8 @@
 struct CoreAIPipelineDimension: Codable, Hashable, Sendable {
-    let name: String?
-    let fixedSize: Int?
-    let minimum: Int?
-    let maximum: Int?
+    var name: String?
+    var fixedSize: Int?
+    var minimum: Int?
+    var maximum: Int?
 
     static func fixed(_ size: Int) -> Self {
         Self(name: nil, fixedSize: size, minimum: nil, maximum: nil)

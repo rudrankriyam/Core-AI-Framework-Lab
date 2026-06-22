@@ -29,6 +29,13 @@ struct ContentView: View {
                         )
                     }
 
+                    NavigationLink(value: CoreAILabSection.recipeStudio) {
+                        Label(
+                            CoreAILabSection.recipeStudio.title,
+                            systemImage: CoreAILabSection.recipeStudio.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.chatterbox) {
                         Label(
                             CoreAILabSection.chatterbox.title,
@@ -72,6 +79,8 @@ struct ContentView: View {
                 NavigationStack {
                     CoreAIConversionWorkspaceView()
                 }
+            case .recipeStudio:
+                CoreAIRecipeStudioView()
             case .chatterbox:
                 ChatterboxWorkspaceView()
             case .diarization:
