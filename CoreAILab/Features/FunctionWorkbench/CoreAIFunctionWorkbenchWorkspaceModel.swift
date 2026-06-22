@@ -32,7 +32,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     @ObservationIgnored
     private let artifactDigester: any CoreAIArtifactDigesting
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
     @ObservationIgnored
     private var contractOperationID = UUID()
     @ObservationIgnored

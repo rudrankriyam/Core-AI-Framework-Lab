@@ -23,7 +23,7 @@ final class AppleAudioWorkspaceModel {
     @ObservationIgnored
     private var transcriptionTask: Task<Void, Never>?
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleAudioExample = .wav2Vec2,

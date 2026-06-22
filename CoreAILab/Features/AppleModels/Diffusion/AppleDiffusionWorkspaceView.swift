@@ -5,7 +5,6 @@ struct AppleDiffusionWorkspaceView: View {
     @State private var workspace: AppleDiffusionWorkspaceModel
     @State private var isImportingPipeline = false
     private let initialModelURL: URL?
-    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleDiffusionExample,
@@ -13,20 +12,14 @@ struct AppleDiffusionWorkspaceView: View {
         runContext: CoreAIRuntimeRunContext? = nil,
         runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        let resolvedContext = runContext ?? .workspaceDefault(
-            experienceID: "apple-diffusion-\(example.rawValue)",
-            title: example.title,
-            modelIdentifier: example.rawValue
-        )
         _workspace = State(
             initialValue: AppleDiffusionWorkspaceModel(
                 example: example,
-                runContext: resolvedContext,
+                runContext: runContext,
                 runCoordinator: runCoordinator
             )
         )
         self.initialModelURL = initialModelURL
-        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -48,7 +41,7 @@ struct AppleDiffusionWorkspaceView: View {
 
             CoreAIRuntimeLifecycleView(
                 coordinator: workspace.runCoordinator,
-                context: runContext
+                context: workspace.runContext
             )
 
             Section("Pipeline Bundle") {

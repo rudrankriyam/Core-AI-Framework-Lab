@@ -144,6 +144,30 @@ struct CoreAIRunLifecycleCoordinatorTests {
         #expect(replacement.timingClass == .cold)
     }
 
+    @Test
+    func workspaceModelsExposeInjectedRunContext() {
+        let context = makeContext()
+        let runContexts = [
+            AppleAudioWorkspaceModel(runContext: context).runContext,
+            AppleLanguageWorkspaceModel(
+                example: .qwen3_0_6B,
+                runContext: context
+            ).runContext,
+            AppleDiffusionWorkspaceModel(
+                example: .stableDiffusion15,
+                runContext: context
+            ).runContext,
+            AppleObjectDetectionWorkspaceModel(runContext: context).runContext,
+            AppleSegmentationWorkspaceModel(
+                example: .efficientSAM,
+                runContext: context
+            ).runContext,
+            CoreAIFunctionWorkbenchWorkspaceModel(runContext: context).runContext
+        ]
+
+        #expect(runContexts.allSatisfy { $0 == context })
+    }
+
     private func makeContext() -> CoreAIRuntimeRunContext {
         .workspaceDefault(
             experienceID: "test-language",

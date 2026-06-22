@@ -5,24 +5,17 @@ struct AppleObjectDetectionWorkspaceView: View {
     @State private var workspace: AppleObjectDetectionWorkspaceModel
     @State private var isImportingModel = false
     @State private var isImportingImage = false
-    private let runContext: CoreAIRuntimeRunContext
 
     init(
         runContext: CoreAIRuntimeRunContext? = nil,
         runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        let resolvedContext = runContext ?? .workspaceDefault(
-            experienceID: "apple-yolos-tiny-detection",
-            title: "YOLOS Tiny",
-            modelIdentifier: "yolos-tiny"
-        )
         _workspace = State(
             initialValue: AppleObjectDetectionWorkspaceModel(
-                runContext: resolvedContext,
+                runContext: runContext,
                 runCoordinator: runCoordinator
             )
         )
-        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -46,7 +39,7 @@ struct AppleObjectDetectionWorkspaceView: View {
 
                 CoreAIRuntimeLifecycleView(
                     coordinator: workspace.runCoordinator,
-                    context: runContext
+                    context: workspace.runContext
                 )
 
                 Text("Export command")

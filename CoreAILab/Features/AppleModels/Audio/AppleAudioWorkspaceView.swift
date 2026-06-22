@@ -6,7 +6,6 @@ struct AppleAudioWorkspaceView: View {
     @State private var isImportingModel = false
     @State private var isImportingAudio = false
     private let initialModelURL: URL?
-    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleAudioExample = .wav2Vec2,
@@ -14,20 +13,14 @@ struct AppleAudioWorkspaceView: View {
         runContext: CoreAIRuntimeRunContext? = nil,
         runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        let resolvedContext = runContext ?? .workspaceDefault(
-            experienceID: "apple-wav2vec2-transcription",
-            title: example.title,
-            modelIdentifier: "wav2vec2-base"
-        )
         _workspace = State(
             initialValue: AppleAudioWorkspaceModel(
                 example: example,
-                runContext: resolvedContext,
+                runContext: runContext,
                 runCoordinator: runCoordinator
             )
         )
         self.initialModelURL = initialModelURL
-        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -50,7 +43,7 @@ struct AppleAudioWorkspaceView: View {
 
             CoreAIRuntimeLifecycleView(
                 coordinator: workspace.runCoordinator,
-                context: runContext
+                context: workspace.runContext
             )
 
             Section("Inputs") {
