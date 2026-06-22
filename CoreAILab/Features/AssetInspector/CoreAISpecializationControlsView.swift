@@ -3,6 +3,7 @@ import SwiftUI
 struct CoreAISpecializationControlsView: View {
     @Bindable var workspace: CoreAIAssetWorkspaceModel
     var isInteractionDisabled = false
+    var allowsCacheRemoval = true
 
     var body: some View {
         Section("Specialization & Cache") {
@@ -60,34 +61,36 @@ struct CoreAISpecializationControlsView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(!workspace.canSpecialize)
 
-                Menu("Remove Cache", systemImage: "trash") {
-                    Button(
-                        "Selected Configuration",
-                        systemImage: "minus.circle",
-                        role: .destructive,
-                        action: prepareSelectedProfileRemoval
-                    )
-                    .disabled(workspace.cacheStatus != .cached)
+                if allowsCacheRemoval {
+                    Menu("Remove Cache", systemImage: "trash") {
+                        Button(
+                            "Selected Configuration",
+                            systemImage: "minus.circle",
+                            role: .destructive,
+                            action: prepareSelectedProfileRemoval
+                        )
+                        .disabled(workspace.cacheStatus != .cached)
 
-                    Button(
-                        "All Configurations for This Asset",
-                        systemImage: "trash",
-                        role: .destructive,
-                        action: prepareAssetRemoval
-                    )
-                }
-                .confirmationDialog(
-                    workspace.cacheRemovalTitle,
-                    isPresented: $workspace.isConfirmingCacheRemoval,
-                    titleVisibility: .visible
-                ) {
-                    Button(
+                        Button(
+                            "All Configurations for This Asset",
+                            systemImage: "trash",
+                            role: .destructive,
+                            action: prepareAssetRemoval
+                        )
+                    }
+                    .confirmationDialog(
                         workspace.cacheRemovalTitle,
-                        role: .destructive,
-                        action: removePreparedCacheEntry
-                    )
-                } message: {
-                    Text(workspace.cacheRemovalMessage)
+                        isPresented: $workspace.isConfirmingCacheRemoval,
+                        titleVisibility: .visible
+                    ) {
+                        Button(
+                            workspace.cacheRemovalTitle,
+                            role: .destructive,
+                            action: removePreparedCacheEntry
+                        )
+                    } message: {
+                        Text(workspace.cacheRemovalMessage)
+                    }
                 }
             }
             .disabled(workspace.phase.isBusy || isInteractionDisabled)
@@ -100,6 +103,14 @@ struct CoreAISpecializationControlsView: View {
             Text("Core AI exposes hit/miss and deletion for known assets, but not cache paths, entry sizes, or a complete inventory.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+
+            if !allowsCacheRemoval {
+                Text(
+                    "Remove project-owned cache configurations from the artifact detail screen so configurations referenced by another project remain available."
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
         }
     }
 

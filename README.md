@@ -47,14 +47,21 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
 - `CoreAILab/Features/Projects/` - persistent project library, artifact inventory, and Inspector/Workbench handoff
 - `CoreAILabCore/Projects/` - SwiftData project schema and atomic SHA-256 artifact storage
+- `CoreAILabCore/Manifests/` - versioned, Codable recipe, target, artifact, pipeline, and capacity contracts with reference and path validation
+- `CoreAILabCore/Recipes/` - public recipe-bundle schema, deterministic hash-verified import/export, curated trust metadata, and approval-gated code references
+- `CoreAILab/Features/Recipes/` - curated catalog and imported-bundle trust review surface
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
+- `CoreAILab/Features/DeviceLab/` - iPhone target authoring, storage slicing, compatibility diagnostics, and physical-evidence import
+- `CoreAILabCore/DeviceLab/` - versioned connected-target and device-trial contracts with bounded sizing and truthfulness validation
+- `CoreAILab/Features/RuntimeStudio/` - searchable recipe-backed experience routing, run status, and comparison selection
+- `CoreAILabCore/RuntimeStudio/` - versioned experience registry, shared lifecycle coordinator, and optional project timing evidence
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
+- `CoreAILab/Resources/RuntimeStudio/` - validated recipe-to-experience mappings for the built-in adapters
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
-- `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
-- `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
+- `Documentation/RECIPE_BUNDLES.md` - public recipe-bundle authoring and trust-boundary guide
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
 
@@ -93,6 +100,49 @@ one of several references does not. Stored `.aimodel` packages open directly in
 Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
 Project** action instead of remaining tied to their original output folder.
 
+Directory imports also retain a versioned manifest of safe relative paths,
+streamed per-file SHA-256 digests, and byte counts. Model inspection snapshots
+function descriptors, storage and compute types, and operation distribution into
+the project library. Source provenance remains editable per project artifact,
+while successful
+specializations register project-owned cache configurations that can be browsed
+and removed without deleting cache entries still referenced by another project.
+
+The project schema also stores immutable recipe-manifest revisions, target
+profiles, typed run status, and evidence metadata. These records retain the exact
+validated JSON contracts used by a run and survive reopening the SwiftData store.
+Controller APIs keep recipe, target, run, and evidence ownership within one Lab
+Project. Runtime Studio can optionally record inference status and a successful
+run's measured duration as metric evidence. It does not invent output-artifact
+records: output persistence still needs a real stored file, digest, and media
+contract. Selecting a project for recording reconciles runs interrupted by a
+previous app session as failed. Conversion jobs and generic benchmarks are not
+yet connected to this coordinator.
+
+## Recipe Bundles and Trust
+
+Open **Recipes** to inspect the versioned curated index or import a recipe-bundle
+directory. Catalog entries report trust and verification separately, with notes
+that state exactly which evidence exists. Trust is bound to a recipe-manifest
+digest, and positive verification states are bound to a hashed evidence source.
+Fixture validation does not imply a physical-device, performance, or Neural
+Engine result.
+
+The public version 1 bundle contract is documented in
+[`Documentation/RECIPE_BUNDLES.md`](Documentation/RECIPE_BUNDLES.md) and
+[`Documentation/recipe-bundle.schema.json`](Documentation/recipe-bundle.schema.json).
+Deterministic export inventories every payload, streams its SHA-256 digest,
+records immutable provenance, emits sorted-key JSON, verifies a staging copy,
+and promotes it atomically. Import rejects unsupported schema or family values,
+unsafe paths, symbolic links, undeclared files, and size or hash mismatches
+before copying only declared content into managed storage.
+
+Imported bundles always start untrusted. Python, Swift, and custom-code
+references cannot be resolved through the bundle session until the user grants
+explicit approval. Approval does not run the code, and the importer never starts
+a process or loads a package. Executing imported authoring code in an isolated
+worker and publishing hardware/SDK CI evidence remain separate work.
+
 ## Visual Conversion Workbench
 
 On macOS, open **Convert** or choose **Convert This Recipe** from any Apple
@@ -110,9 +160,18 @@ can create a `uv` environment and download large upstream checkpoints. Gated
 models still require the user's own source authentication and license access.
 
 This conversion slice deliberately uses a local Apple repository clone.
-Automatic cloning, resumable jobs across app launches, and custom PyTorch recipe
-authoring remain later milestones. Completed output artifacts can now be copied
-into persistent projects.
+Automatic cloning and custom PyTorch recipe authoring remain later milestones.
+The reusable conversion core now includes a versioned durable job store with
+legal state transitions, append-only JSONL events, launch-time interruption
+reconciliation, and checkpoint reuse decisions tied to a versioned request and
+environment identity: full recipe revision, source/lock/executable hashes,
+Xcode/SDK builds, relevant child environment, and store-verified no-follow
+artifact tree evidence. Job creation is staged atomically, independent store
+instances coordinate through a file lock, and a torn final log frame preserves
+the valid event prefix for recovery. The visual workbench has not
+adopted that store yet: after an app restart it still launches a fresh converter
+process rather than claiming that a killed process resumed. Completed output
+artifacts can be copied into persistent projects.
 
 ## Specialization and Cache Controls
 
@@ -123,6 +182,11 @@ setting, specializes with the standard reclaimable policy, and can remove one
 configuration or every cached profile for the selected source asset. Compute
 selection is a preference, not proof that inference ran on one unit.
 
+The Lab binds each cache entry it creates to the source artifact's SHA-256
+digest and the opaque Core AI model bookmark. A cache lookup is accepted only
+when both still match; unbound or stale entries are removed and specialized
+again before their model can be used or reported as a hit.
+
 These controls use only Apple's public cache APIs. Core AI does not expose a
 cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
 reports honest known-entry hit/miss state instead of guessing from private
@@ -132,11 +196,49 @@ its opaque model bookmark to load or remove such an entry after the source
 disappears. Projects now keep the source artifact stable, but the bookmark still
 needs to become versioned project metadata before that policy can be honest.
 
+## Runtime Studio
+
+Open **Runtime Studio** for the registry-backed language, vision, audio,
+diffusion, and generic-function experiences. The bundled schema-versioned JSON
+declares an exact intended recipe revision and model identifier for a semantic
+adapter, capabilities, platforms, and presentation. Runtime Studio excludes
+entries that do not declare support for the current OS. EfficientSAM and SAM 3,
+as well as all four diffusion presets, prove that a second model can reuse an
+existing destination without adding navigation SwiftUI.
+
+Qwen, YOLOS, both segmentation adapters, Wav2Vec2, diffusion runs, and direct
+Function Workbench invocations report one shared lifecycle: running, succeeded,
+failed, or canceled. Attempts remain cold until one run succeeds for the same
+experience and imported model identity in a Runtime Studio session; later
+attempts are warm. A selected comparison identity is captured with each run,
+but this slice does not claim numerical or semantic A/B comparison of outputs.
+
+Choose a Lab Project under **Run Recording** to persist future runtime status.
+The importer checks that an artifact's identifiable model family matches the
+selected registry entry. Current Apple exports do not carry artifact-bound
+recipe/revision proof, so successful runs add timing-only metric evidence with
+explicit `unverified_intent` provenance and never link the selected project
+recipe revision. Every persisted run also carries validation evidence that
+states whether its recipe provenance is unattributed or unverified intent.
+Terminal run status and its metric are saved together; a
+failed or ambiguously reported save remains available through **Retry Run
+Recording**, and retries do not duplicate the metric. Evidence also records the
+experience, actual model identity, cold/warm class, duration, and optional
+comparison identity. Selecting a project also marks any running records left by
+an interrupted previous app session as failed.
+Imported model bookmarks, produced output files, cross-launch warm-state
+recovery, embeddings, and output-quality comparison remain follow-up work.
+No experience downloads model weights; each adapter still requires a locally
+exported bundle under its upstream license.
+
 ## Generic Function Workbench
 
-Open **Workbench**, choose any `.aimodel`, and specialize it with one of the
-same cache and compute profiles. The Lab then lists every function contract and
-can run supported stateless functions without a model-specific SwiftUI screen.
+Open **Runtime Studio -> Function Workbench**, choose any `.aimodel`, and
+specialize it with one of the same cache and compute profiles. The Lab then
+lists every function contract and can run supported stateless functions without
+a model-specific SwiftUI screen. Direct invocations use Runtime Studio's shared
+lifecycle and optional project recording; the separate multi-trial benchmark
+reports remain session-only evidence.
 
 The first generic runtime slice supports fixed or dynamic NDArray inputs using
 zeros or repeatable seeded random values across Bool, signed and unsigned
@@ -161,30 +263,85 @@ trial remains visible alongside function-load, input-setup, and warmup timing;
 the summary reports minimum, median, mean, maximum, standard deviation, and
 runs per second. P95 appears only for 20 or more measured runs.
 
-Each in-memory report captures the asset, function, shapes, generators, seeds,
-full specialization configuration, cache state, Core AI device architecture,
-OS, available compute units, build configuration, and start/end thermal state.
-Use a Release build for comparisons. **Stop After Current Inference** cancels
-between Core AI calls because an active generic inference cannot be interrupted
-by the Lab, while retaining every measured trial that completed. The history
-supports honest A/B checks across shapes and compute or
-reshape preferences without claiming hardware placement, energy, or memory
-measurements that Core AI did not report.
+Immediately before specialization, the Workbench computes a content-addressed
+artifact digest. It recomputes that digest immediately before benchmarking and
+refuses to run if the source bytes changed, so evidence cannot be attached to a
+different asset than the loaded specialization. Each in-memory report captures
+that digest, every benchmark timing and trial, function and input configuration,
+shapes, generators, seeds, full specialization configuration, cache and warmup
+state, Core AI device architecture, OS, processor and physical-memory capacity,
+available compute units, build configuration, embedded Xcode/SDK metadata, and
+benchmark start/end thermal state. Use a Release build for comparisons. **Stop
+After Current Inference** cancels between Core AI calls because an active generic
+inference cannot be interrupted by the Lab, while retaining every measured trial
+that completed.
+
+**Export Evidence JSON** writes a validated, schema-versioned, deterministic
+report with no source URL or local filesystem path. Peak resident memory and
+energy remain explicit `null` values marked `notMeasured`; device capacity is
+not a runtime memory measurement, and compute preferences do not prove hardware
+placement. Specialization duration remains visible in the session UI but is
+intentionally omitted from export because the current runtime does not capture
+timestamp and thermal metadata for that earlier phase. The exported file is
+durable, but benchmark history is still in-memory until evidence records join
+Lab Project persistence.
 
 ### Integration Export
 
 After specialization, **Export Integration** packages the inspected standalone
-asset with a schema-versioned contract manifest, deterministic SHA-256 tree
-digest, README, and generated Swift runtime. Generated methods cover every
-stateless NDArray-input function and preserve exact Core AI function names.
-Stateful, image-input, and unknown contracts remain in the manifest with an
-explicit reason instead of receiving unsafe placeholder code. Large assets are
-streamed into a same-folder temporary package that appears atomically only
-after the complete export succeeds. Each package also includes a deterministic,
-non-executed `compile-model.sh` for optional iOS and macOS 27 ahead-of-time
-compilation with the selected GPU or Neural Engine preference and reshape hint.
-CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
-`coreai-build compile` does not expose a CPU-only flag.
+asset as a dependency-free Swift package with a schema-versioned contract
+manifest, deterministic SHA-256 tree digest, a whole-package checksum
+inventory, reported license notices, README, bundled-resource loader, and
+generated Swift runtime. Run the package's `python3 verify-export.py` command
+to verify its safe inventory, reject undeclared files or package dependencies,
+and build the generated source in a clean temporary directory using only the
+installed SDK. The verifier has no network dependencies and never runs
+`coreai-build`.
+
+Generated methods cover every stateless NDArray-input function and preserve
+exact Core AI function names. Stateful, image-input, and unknown contracts
+remain in the manifest with an explicit reason instead of receiving unsafe
+placeholder code. Large assets are streamed into a same-folder temporary
+package that appears atomically only after the complete export succeeds. Each
+package also includes a deterministic, non-executed `compile-model.sh` for
+optional iOS and macOS 27 ahead-of-time compilation with the selected GPU or
+Neural Engine preference and reshape hint. CPU-only remains a runtime
+`SpecializationOptions.cpuOnly` choice because `coreai-build compile` does not
+expose a CPU-only flag.
+
+### Typed Pipeline Contract
+
+`CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
+Recipe Studio, Pipeline Studio, and future generated runtimes share. A pipeline
+is an asset-level directed graph with typed ports, explicit state ownership,
+seeded randomness, bounded loops, and a versioned host-operator registry.
+
+Validation rejects missing endpoints, incompatible value contracts, duplicate
+input wiring, cycles, ambiguous state ownership, randomness without exactly one
+seed source, and loops without both a finite iteration bound and stop input.
+Pipeline Studio now edits that asset-level contract directly: nodes, typed
+ports, and compatible single-source edges remain under the same validator used
+by the deterministic JSON codec. This editor does not execute the graph; the
+generic pipeline runtime remains a separate milestone.
+
+### Custom Recipe Studio Foundation
+
+Recipe Studio provides a versioned, deterministic authoring manifest and native
+editors for a PyTorch source and module, concrete example inputs, bounded dynamic
+dimensions, explicit state bindings, externalization rules, and function
+entrypoints. Its validation keeps cross-references and the embedded pipeline
+contract honest before a recipe can be encoded.
+
+Unsupported-operation findings retain the operator, module path, source file,
+line, example shapes, and an optional built-in rewrite suggestion. The checked-in
+rewrite catalog records patterns already evidenced by the Chatterbox adapters.
+Generated Python custom-lowering and Metal-kernel files are deliberately failing
+stubs (`NotImplementedError` and `#error`) until an author implements and
+parity-tests them.
+
+This checkpoint is an in-memory authoring foundation. It does not yet run the
+diagnostic worker, persist recipe workspaces into Lab Projects, execute pipelines,
+or migrate Chatterbox conversion and runtime orchestration into the recipe system.
 
 ## Run Apple's YOLOS Tiny Example
 
@@ -320,7 +477,10 @@ language, diffusion, or segmentation resource folders.
 
 ## Chatterbox Workspace
 
-The macOS target embeds four `.aimodel` assets and a Hugging Face tokenizer:
+The macOS target embeds a versioned `recipe.json`, four `.aimodel` assets, and a
+Hugging Face tokenizer. The recipe is the source of truth for display metadata,
+asset paths, native entrypoints, tokenizer location, preferred target, and the
+complete generation-capacity contract:
 
 | Asset | Precision | Entrypoints | Role |
 | --- | --- | --- | --- |
@@ -330,8 +490,10 @@ The macOS target embeds four `.aimodel` assets and a Hugging Face tokenizer:
 | HiFT vocoder | FP16 | `vocoder` | 80-bin mel frames to 24 kHz waveform audio |
 
 The bundle occupies about 600 MiB on disk and reports 625.1 MB of allocated
-model data on the tested Mac. The app validates all six native entrypoints
-before enabling generation and persistently caches Core AI specialization.
+model data on the tested Mac. The app validates the manifest and all six native
+entrypoints before enabling generation, then persistently caches Core AI
+specialization using the recipe's target preference. Chatterbox UI and engine
+code no longer enumerate asset filenames or native function names.
 
 The production export has capacity for 253 generated speech tokens plus three
 end-silence tokens. That is a 10.24-second graph window. The WAV writer trims
@@ -457,7 +619,8 @@ DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
 python3 Scripts/run_device_tests.py \
   --team YOUR_TEAM_ID \
   --device YOUR_PHYSICAL_DEVICE_UDID \
-  --profile YOUR_INSTALLED_PROFILE_UUID
+  --profile YOUR_INSTALLED_PROFILE_UUID \
+  --evidence-json TestResults/iphone-fixture-evidence.json
 ```
 
 `--device` and `--profile` are optional when exactly one eligible local choice
@@ -487,6 +650,34 @@ Those controls must be active before either self-hosted runner is registered.
 See [`.github/ci/README.md`](.github/ci/README.md) for runner labels, the one
 required environment secret, safety boundaries, and retained evidence.
 
+`--evidence-json` writes a new schema-versioned machine-readable record for both
+dry and physical runs. It records the device model and OS, a deterministic
+path-and-content digest of the exact fixture asset, the specialization
+configuration digest, and the specialization/inference result. A failed
+physical XCTest records both stages as not proven rather than guessing which
+stage ran. The current XCTest does not isolate inference latency, peak memory,
+thermal state, energy,
+Neural Engine compatibility dimensions, or execution placement, so those fields
+are explicitly `unavailable` or `notEvaluated`; the runner never derives them
+from a compute preference. Existing evidence files are never overwritten.
+The runner rejects symlinked asset roots and nested links, captures the source
+identity before execution, and re-hashes the fixture inside the built physical
+XCTest bundle before writing successful evidence. A changed or uncertain tree
+does not produce a success record.
+
+Open **Device Lab** to author a static iPhone context/shape profile, separate
+app-download and on-demand model slices, compare download and installed byte
+counts, check bounded storage requirements, and import a runner evidence JSON
+file. Precision, layout, projection, and
+unsupported-operation diagnostics are driven only by imported evidence and
+apply only when artifact SHA-256 and byte count, configuration identifier and
+SHA-256, compute preference, reshape policy, context, and static shapes exactly
+match the selected trial contract. The default `tokens` and `values` profile
+matches the generated fixture evidence. Evidence imports are limited to 1 MiB,
+read and decoded away from the main actor, and protected against stale import
+completion. Authoring validation bounds context, shape count, rank, dimensions,
+per-shape elements, and total elements before device planning.
+
 ## Current Limitations
 
 - Apple's repository ships export code and runtime utilities, not converted
@@ -502,10 +693,17 @@ required environment secret, safety boundaries, and retained evidence.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
-- Projects and imported artifacts persist across launches. Conversion job
-  execution and benchmark evidence are not restart-safe yet.
+- Projects, imported artifacts, recipe revisions, target profiles, run records,
+  and evidence metadata persist across launches. Recipe-backed Runtime Studio
+  adapters can record lifecycle and successful timing metrics. The restart-safe
+  conversion job store exists, but Conversion Workbench adoption and resumable
+  active execution remain open. Benchmark history is session-scoped, while its
+  evidence can be exported manually as deterministic JSON. Output files,
+  imported file bookmarks, and generic benchmark capture are not wired to
+  project records yet. Interrupted runtime records are reconciled as failed
+  when their project is selected.
 - The generic function workbench currently generates NDArray inputs only.
-  Stateful execution, image-input adaptation, imported fixtures, persisted
+  Stateful execution, image-input adaptation, imported fixtures, project-linked
   benchmark evidence, and raw-output export remain later Runtime Studio work.
   Integration export generates invocation code, not task-specific
   preprocessing or mutable-state orchestration.
@@ -519,6 +717,13 @@ required environment secret, safety boundaries, and retained evidence.
   audio.
 - The 600 MiB model bundle is included only in the macOS target.
 - Simulator and device support may differ during the Xcode 27 beta cycle.
+- Device Lab is a contract and authoring foundation, not a completed Milestone 7
+  deployment claim. A passing physical fixture XCTest can prove its own
+  specialization and inference assertions, but no physical evidence is checked
+  in and the harness does not yet provide separately authored language/vision and audio variants,
+  per-inference latency distributions, memory/thermal/energy trials, or measured
+  Neural Engine placement. Those require unlocked physical hardware plus
+  benchmark and Instruments evidence.
 - Core AI and its converter packages are beta APIs and may move between seeds.
 
 ## Current SDK Shape

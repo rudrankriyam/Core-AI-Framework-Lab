@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CoreAIFunctionBenchmarkReportView: View {
     let report: CoreAIFunctionBenchmarkReport
+    let exportEvidence: (CoreAIFunctionBenchmarkReport) -> Void
 
     var body: some View {
         DisclosureGroup {
@@ -38,6 +39,11 @@ struct CoreAIFunctionBenchmarkReportView: View {
             CoreAIFunctionBenchmarkEnvironmentView(
                 environment: report.result.environment
             )
+            Button(
+                "Export Evidence JSON",
+                systemImage: "square.and.arrow.up",
+                action: export
+            )
 
             if !report.result.outputs.isEmpty {
                 DisclosureGroup("Final Output Check") {
@@ -65,5 +71,9 @@ struct CoreAIFunctionBenchmarkReportView: View {
     private var summaryDescription: String {
         let milliseconds = report.result.statistics.median.coreAIMilliseconds
         return "Median \(milliseconds.formatted(.number.precision(.fractionLength(2)))) ms · \(report.result.statistics.runsPerSecond.formatted(.number.precision(.fractionLength(2)))) runs/s"
+    }
+
+    private func export() {
+        exportEvidence(report)
     }
 }

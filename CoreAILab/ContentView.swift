@@ -22,10 +22,24 @@ struct ContentView: View {
                         )
                     }
 
+                    NavigationLink(value: CoreAILabSection.recipes) {
+                        Label(
+                            CoreAILabSection.recipes.title,
+                            systemImage: CoreAILabSection.recipes.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.conversion) {
                         Label(
                             CoreAILabSection.conversion.title,
                             systemImage: CoreAILabSection.conversion.systemImage
+                        )
+                    }
+
+                    NavigationLink(value: CoreAILabSection.recipeStudio) {
+                        Label(
+                            CoreAILabSection.recipeStudio.title,
+                            systemImage: CoreAILabSection.recipeStudio.systemImage
                         )
                     }
 
@@ -58,6 +72,13 @@ struct ContentView: View {
                             systemImage: CoreAILabSection.runtime.systemImage
                         )
                     }
+
+                    NavigationLink(value: CoreAILabSection.deviceLab) {
+                        Label(
+                            CoreAILabSection.deviceLab.title,
+                            systemImage: CoreAILabSection.deviceLab.systemImage
+                        )
+                    }
                 }
             }
             .navigationTitle("Core AI Lab")
@@ -68,10 +89,14 @@ struct ContentView: View {
                 CoreAIProjectLibraryView()
             case .appleModels:
                 AppleModelLibraryView()
+            case .recipes:
+                CoreAIRecipeCatalogView()
             case .conversion:
                 NavigationStack {
                     CoreAIConversionWorkspaceView()
                 }
+            case .recipeStudio:
+                CoreAIRecipeStudioView()
             case .chatterbox:
                 ChatterboxWorkspaceView()
             case .diarization:
@@ -80,6 +105,10 @@ struct ContentView: View {
                 CoreAIAssetInspectorView()
             case .runtime:
                 CoreAIRuntimeView()
+            case .deviceLab:
+                NavigationStack {
+                    CoreAIDeviceLabView()
+                }
             }
         }
         .navigationSplitViewStyle(.prominentDetail)
@@ -92,7 +121,11 @@ struct ContentView: View {
             for: [
                 LabProject.self,
                 ModelArtifactRecord.self,
-                ProjectArtifactLink.self
+                ProjectArtifactLink.self,
+                CoreAIRecipeRevisionRecord.self,
+                CoreAITargetProfileRecord.self,
+                CoreAIRunRecord.self,
+                CoreAIEvidenceRecord.self
             ],
             inMemory: true
         )

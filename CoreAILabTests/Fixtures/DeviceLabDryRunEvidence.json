@@ -1,0 +1,92 @@
+{
+  "artifact": {
+    "byteCount": 1694,
+    "identifier": "CoreAILabTensorFixture.aimodel",
+    "sha256Digest": "c79fbfe17650c929af142bd353d60ab6aadd4a679ea86c37b9225667eeac7adc"
+  },
+  "capturedAt": "2027-01-02T03:04:05.000Z",
+  "configuration": {
+    "contextTokens": null,
+    "expectsFrequentReshapes": false,
+    "identifier": "physical-ios-fixture-v1",
+    "preferredComputeUnit": "automatic",
+    "sha256Digest": "ba9e4ba3c35b3b91f05d6c18f594558d3f68e2ddc41efb28e6ff347bb2fef5b6",
+    "staticInputShapes": {
+      "tokens": [1, 4],
+      "values": [1, 4]
+    }
+  },
+  "device": {
+    "destinationIdentifier": "00008140-TEST",
+    "modelIdentifier": "iPhone18,1",
+    "modelName": "Test iPhone",
+    "operatingSystemVersion": "27.0"
+  },
+  "energy": {
+    "availability": "unavailable",
+    "joules": null,
+    "source": null
+  },
+  "id": "dryRun-20270102T030405.000000Z",
+  "inference": {
+    "detail": "Dry run only; inference was not executed.",
+    "durationMilliseconds": null,
+    "status": "notRun"
+  },
+  "latency": {
+    "availability": "unavailable",
+    "maximumMilliseconds": null,
+    "meanMilliseconds": null,
+    "medianMilliseconds": null,
+    "minimumMilliseconds": null,
+    "p95Milliseconds": null,
+    "samplesMilliseconds": []
+  },
+  "memory": {
+    "availability": "unavailable",
+    "peakResidentBytes": null,
+    "source": null
+  },
+  "neuralEngineCompatibilityChecks": [
+    {
+      "category": "precision",
+      "detail": "The XCTest harness does not isolate this Neural Engine compatibility dimension.",
+      "result": "notEvaluated",
+      "source": null
+    },
+    {
+      "category": "layout",
+      "detail": "The XCTest harness does not isolate this Neural Engine compatibility dimension.",
+      "result": "notEvaluated",
+      "source": null
+    },
+    {
+      "category": "projection",
+      "detail": "The XCTest harness does not isolate this Neural Engine compatibility dimension.",
+      "result": "notEvaluated",
+      "source": null
+    },
+    {
+      "category": "unsupportedOperation",
+      "detail": "The XCTest harness does not isolate this Neural Engine compatibility dimension.",
+      "result": "notEvaluated",
+      "source": null
+    }
+  ],
+  "placement": {
+    "actualComputeUnits": [],
+    "availability": "unavailable",
+    "source": null
+  },
+  "runMode": "dryRun",
+  "schemaVersion": 1,
+  "specialization": {
+    "detail": "Dry run only; specialization was not executed.",
+    "durationMilliseconds": null,
+    "status": "notRun"
+  },
+  "thermal": {
+    "ended": "unavailable",
+    "started": "unavailable"
+  }
+}

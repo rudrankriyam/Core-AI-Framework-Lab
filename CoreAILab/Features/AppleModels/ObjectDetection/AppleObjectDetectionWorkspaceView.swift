@@ -2,9 +2,28 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AppleObjectDetectionWorkspaceView: View {
-    @State private var workspace = AppleObjectDetectionWorkspaceModel()
+    @State private var workspace: AppleObjectDetectionWorkspaceModel
     @State private var isImportingModel = false
     @State private var isImportingImage = false
+    private let runContext: CoreAIRuntimeRunContext
+
+    init(
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
+    ) {
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-yolos-tiny-detection",
+            title: "YOLOS Tiny",
+            modelIdentifier: "yolos-tiny"
+        )
+        _workspace = State(
+            initialValue: AppleObjectDetectionWorkspaceModel(
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
+        self.runContext = resolvedContext
+    }
 
     var body: some View {
         ScrollView {
@@ -23,6 +42,12 @@ struct AppleObjectDetectionWorkspaceView: View {
                         .buttonStyle(.borderedProminent)
                         .disabled(!workspace.canRun)
                 }
+                .disabled(workspace.isBusy)
+
+                CoreAIRuntimeLifecycleView(
+                    coordinator: workspace.runCoordinator,
+                    context: runContext
+                )
 
                 Text("Export command")
                     .font(.headline)
