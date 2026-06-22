@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C0E94F8EDA490B66DA1EDFE /* CoreAIImportedRecipeBundleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9B5A6316BB33B5E803B9F /* CoreAIImportedRecipeBundleView.swift */; };
+		4609510B070676A4B932F35B /* CoreAIRecipeCodeApprovalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B59361BFC3F0A181E9BED6 /* CoreAIRecipeCodeApprovalView.swift */; };
+		6ADF3F118B7054225F425D8D /* CoreAIRecipeCodeApprovalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B59361BFC3F0A181E9BED6 /* CoreAIRecipeCodeApprovalView.swift */; };
+		9E52200F3D8656373C428140 /* CoreAIRecipeCatalogEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB5D303DFA22B1F16F4E822 /* CoreAIRecipeCatalogEntryView.swift */; };
+		CBE0B385B15BAA1EEE869C5A /* CoreAIImportedRecipeBundleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9B5A6316BB33B5E803B9F /* CoreAIImportedRecipeBundleView.swift */; };
+		E1C0C6875201B0B602B6C035 /* CoreAIRecipeCatalogEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB5D303DFA22B1F16F4E822 /* CoreAIRecipeCatalogEntryView.swift */; };
+		04E44384BDF14CFC206BC91D /* CoreAIRecipeBundleSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F7CFF270794AC8E8B0C0AD9 /* CoreAIRecipeBundleSchema.swift */; };
+		08904C36CC4E841138D6CB44 /* CoreAIRecipeBundleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7C7070BC989B389477B68B /* CoreAIRecipeBundleIO.swift */; };
+		0F887233EDEA2B75AD872D6D /* CoreAIRecipeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D7BF4E99EDAED7E75BF176 /* CoreAIRecipeCatalog.swift */; };
+		32EC426A942A6B7F14AB83C1 /* CoreAIRecipeBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3129D64DC93F222E52C19E68 /* CoreAIRecipeBundleTests.swift */; };
+		3F5D971FB5E9B97EA50D6D2D /* CoreAIRecipeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D7BF4E99EDAED7E75BF176 /* CoreAIRecipeCatalog.swift */; };
+		45DAD806DB3C0562D96E6C61 /* CoreAIRecipeCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55BBD1D58798EDAF15AB16F6 /* CoreAIRecipeCatalogView.swift */; };
+		4C4AA1BB5DC0713F28D53C5C /* Recipes in Resources */ = {isa = PBXBuildFile; fileRef = DDF226758A991D381D061F65 /* Recipes */; };
+		563E9909ADFD7487A6800970 /* CoreAIRecipeBundleSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F7CFF270794AC8E8B0C0AD9 /* CoreAIRecipeBundleSchema.swift */; };
+		5D1EE0CBB9D1249E06E4A4E2 /* CoreAIRecipeBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3129D64DC93F222E52C19E68 /* CoreAIRecipeBundleTests.swift */; };
+		60EDF73F288FFD626A773F26 /* CoreAIRecipeBundleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7C7070BC989B389477B68B /* CoreAIRecipeBundleIO.swift */; };
+		727EC8BB9B8053DF1E40F796 /* CoreAIRecipeCatalogWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B1FA1F0BD85D96C5AB2A8C /* CoreAIRecipeCatalogWorkspaceModel.swift */; };
+		87AA091CD3005D23A0845A88 /* CoreAIRecipeCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55BBD1D58798EDAF15AB16F6 /* CoreAIRecipeCatalogView.swift */; };
+		98FBD45ECE661D180147BF89 /* CoreAIRecipeCatalogWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B1FA1F0BD85D96C5AB2A8C /* CoreAIRecipeCatalogWorkspaceModel.swift */; };
+		DD0B46D1452A8D40D01AE939 /* Recipes in Resources */ = {isa = PBXBuildFile; fileRef = DDF226758A991D381D061F65 /* Recipes */; };
 		003DF8FCFC6A31EA3798519F /* CoreAIDeviceEnergyEvidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253CF759A807987B513C05B5 /* CoreAIDeviceEnergyEvidence.swift */; };
 		00D6D5CF7F43134FED541360 /* CoreAIDeviceStorageDiagnosticKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099F67C8604F1C83C61B4547 /* CoreAIDeviceStorageDiagnosticKind.swift */; };
 		00858515B62B400137AD3F3B /* CoreAIBenchmarkEvidenceTrial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB3521FF3439D9C86144368 /* CoreAIBenchmarkEvidenceTrial.swift */; };
@@ -987,6 +1007,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2CB5D303DFA22B1F16F4E822 /* CoreAIRecipeCatalogEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCatalogEntryView.swift; sourceTree = "<group>"; };
+		A7D9B5A6316BB33B5E803B9F /* CoreAIImportedRecipeBundleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIImportedRecipeBundleView.swift; sourceTree = "<group>"; };
+		C6B59361BFC3F0A181E9BED6 /* CoreAIRecipeCodeApprovalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCodeApprovalView.swift; sourceTree = "<group>"; };
+		1F7CFF270794AC8E8B0C0AD9 /* CoreAIRecipeBundleSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeBundleSchema.swift; sourceTree = "<group>"; };
+		3129D64DC93F222E52C19E68 /* CoreAIRecipeBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeBundleTests.swift; sourceTree = "<group>"; };
+		42D7BF4E99EDAED7E75BF176 /* CoreAIRecipeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCatalog.swift; sourceTree = "<group>"; };
+		55BBD1D58798EDAF15AB16F6 /* CoreAIRecipeCatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCatalogView.swift; sourceTree = "<group>"; };
+		6C7C7070BC989B389477B68B /* CoreAIRecipeBundleIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeBundleIO.swift; sourceTree = "<group>"; };
+		DDF226758A991D381D061F65 /* Recipes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Recipes; path = CoreAILab/Resources/Recipes; sourceTree = SOURCE_ROOT; };
+		F7B1FA1F0BD85D96C5AB2A8C /* CoreAIRecipeCatalogWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCatalogWorkspaceModel.swift; sourceTree = "<group>"; };
 		00C91FE0CA899CF73D4523D4 /* CoreAIDeviceTrialOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIDeviceTrialOutcome.swift; sourceTree = "<group>"; };
 		A40000000000000000000001 /* CoreAIRecipeCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeCodec.swift; sourceTree = "<group>"; };
 		A40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeDynamicDimension.swift; sourceTree = "<group>"; };
@@ -1496,6 +1526,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8A6F556BF1045F3F13232D20 /* Recipes */ = {
+			isa = PBXGroup;
+			children = (
+				1F7CFF270794AC8E8B0C0AD9 /* CoreAIRecipeBundleSchema.swift */,
+				6C7C7070BC989B389477B68B /* CoreAIRecipeBundleIO.swift */,
+				42D7BF4E99EDAED7E75BF176 /* CoreAIRecipeCatalog.swift */,
+			);
+			path = Recipes;
+			sourceTree = "<group>";
+		};
+		C0B8C43573CFD7B119C57EBE /* Recipes */ = {
+			isa = PBXGroup;
+			children = (
+				A7D9B5A6316BB33B5E803B9F /* CoreAIImportedRecipeBundleView.swift */,
+				2CB5D303DFA22B1F16F4E822 /* CoreAIRecipeCatalogEntryView.swift */,
+				C6B59361BFC3F0A181E9BED6 /* CoreAIRecipeCodeApprovalView.swift */,
+				F7B1FA1F0BD85D96C5AB2A8C /* CoreAIRecipeCatalogWorkspaceModel.swift */,
+				55BBD1D58798EDAF15AB16F6 /* CoreAIRecipeCatalogView.swift */,
+			);
+			path = Recipes;
+			sourceTree = "<group>";
+		};
 		0044D45764784F4DF4F11027 /* Language */ = {
 			isa = PBXGroup;
 			children = (
@@ -1744,6 +1796,7 @@
 				7EB60B28EB9200E83DD6E742 /* Pipelines */,
 				D40000000000000000000001 /* Recipes */,
 				3ADD6C544755D90C43AC6892 /* Projects */,
+				8A6F556BF1045F3F13232D20 /* Recipes */,
 				3C6E513B5A0EEC2E6240023C /* RuntimeStudio */,
 				E5931FB122B8B661F87F6FC6 /* Specialization */,
 			);
@@ -1856,6 +1909,7 @@
 				8CF115EF9734DFE6A0A371EA /* DeviceLab */,
 				021C66BA4A8657645A3D06E4 /* FunctionWorkbench */,
 				387E856DBAB7CA19614C7B0B /* Projects */,
+				C0B8C43573CFD7B119C57EBE /* Recipes */,
 				D40000000000000000000002 /* RecipeStudio */,
 				4DDBEE15FDD3FD0E9BCE0E7A /* RuntimeStudio */,
 			);
@@ -1952,6 +2006,7 @@
 				F439B7C4B57C36E94260EE23 /* CoreAIProjectLibraryMetadataTests.swift */,
 				06D88CBADAECF0BF7A81EBA7 /* CoreAIProjectPersistenceTests.swift */,
 				B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */,
+				3129D64DC93F222E52C19E68 /* CoreAIRecipeBundleTests.swift */,
 				3B80876DB98F764664D51962 /* CoreAIRunLifecycleCoordinatorTests.swift */,
 				D40FAAC1851140DC4BA43B48 /* CoreAIRuntimeProjectPersistenceTests.swift */,
 				78A357768C661CED3486E6A0 /* CoreAISpecializationServiceStub.swift */,
@@ -2091,6 +2146,7 @@
 				975C1A9A635873D4ABE63B7A /* AppleModels */,
 				A1E1F350924813824143F274 /* Chatterbox */,
 				DA02C0CBB7145DD326E064AC /* Diarization */,
+				DDF226758A991D381D061F65 /* Recipes */,
 				0CE061745E062E1D6345ABCA /* Fixtures */,
 				CEE9CA1BE6F2C3D1073B57E4 /* RuntimeStudio */,
 				837F0A5A5CF103B4832A2A60 /* CoreAILab */,
@@ -2466,6 +2522,7 @@
 			files = (
 				7A9E807FF90C09C253FC353C /* AppleModels in Resources */,
 				384E95E4A3D8EC70901C9524 /* Chatterbox in Resources */,
+				DD0B46D1452A8D40D01AE939 /* Recipes in Resources */,
 				6AA174CC2BBE0AF4BD9DC285 /* Core AI Lab.icon in Resources */,
 				4E383D1941C0064B63D88A74 /* Diarization in Resources */,
 				9D95DDDEC37F73A0B8ACE589 /* RuntimeStudio in Resources */,
@@ -2477,6 +2534,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A322C454F6F307B2FB33C39E /* AppleModels in Resources */,
+				4C4AA1BB5DC0713F28D53C5C /* Recipes in Resources */,
 				02B5AAD400C38A8B522AFFEC /* Core AI Lab.icon in Resources */,
 				E9B0F9F1DEBE7F1494664653 /* Diarization in Resources */,
 				C9D2F2DAD466B993610B5A9D /* RuntimeStudio in Resources */,
@@ -2498,6 +2556,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32EC426A942A6B7F14AB83C1 /* CoreAIRecipeBundleTests.swift in Sources */,
 				B40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */,
 				9722B54F2398A0B4796C040B /* AppleAudioIntegrationTests.swift in Sources */,
 				0F688005292F07C334B44B74 /* AppleAudioWorkspaceModelTests.swift in Sources */,
@@ -2543,6 +2602,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5D1EE0CBB9D1249E06E4A4E2 /* CoreAIRecipeBundleTests.swift in Sources */,
 				C40000000000000000000026 /* CoreAIRecipeStudioTests.swift in Sources */,
 				157B52F1DE52344905FB4F88 /* AppleAudioIntegrationTests.swift in Sources */,
 				EDFFBE2DCD7A4E9F54541E9B /* AppleAudioWorkspaceModelTests.swift in Sources */,
@@ -2588,6 +2648,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBE0B385B15BAA1EEE869C5A /* CoreAIImportedRecipeBundleView.swift in Sources */,
+				E1C0C6875201B0B602B6C035 /* CoreAIRecipeCatalogEntryView.swift in Sources */,
+				4609510B070676A4B932F35B /* CoreAIRecipeCodeApprovalView.swift in Sources */,
+				04E44384BDF14CFC206BC91D /* CoreAIRecipeBundleSchema.swift in Sources */,
+				3F5D971FB5E9B97EA50D6D2D /* CoreAIRecipeCatalog.swift in Sources */,
+				60EDF73F288FFD626A773F26 /* CoreAIRecipeBundleIO.swift in Sources */,
+				727EC8BB9B8053DF1E40F796 /* CoreAIRecipeCatalogWorkspaceModel.swift in Sources */,
+				45DAD806DB3C0562D96E6C61 /* CoreAIRecipeCatalogView.swift in Sources */,
 				B40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */,
 				B40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */,
 				B40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */,
@@ -3026,6 +3094,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C0E94F8EDA490B66DA1EDFE /* CoreAIImportedRecipeBundleView.swift in Sources */,
+				9E52200F3D8656373C428140 /* CoreAIRecipeCatalogEntryView.swift in Sources */,
+				6ADF3F118B7054225F425D8D /* CoreAIRecipeCodeApprovalView.swift in Sources */,
+				563E9909ADFD7487A6800970 /* CoreAIRecipeBundleSchema.swift in Sources */,
+				0F887233EDEA2B75AD872D6D /* CoreAIRecipeCatalog.swift in Sources */,
+				08904C36CC4E841138D6CB44 /* CoreAIRecipeBundleIO.swift in Sources */,
+				98FBD45ECE661D180147BF89 /* CoreAIRecipeCatalogWorkspaceModel.swift in Sources */,
+				87AA091CD3005D23A0845A88 /* CoreAIRecipeCatalogView.swift in Sources */,
 				C40000000000000000000001 /* CoreAIRecipeCodec.swift in Sources */,
 				C40000000000000000000002 /* CoreAIRecipeDynamicDimension.swift in Sources */,
 				C40000000000000000000003 /* CoreAIRecipeExampleInput.swift in Sources */,
