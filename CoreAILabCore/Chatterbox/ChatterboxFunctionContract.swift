@@ -1,12 +1,14 @@
 enum ChatterboxFunctionContract {
     static func validate(
-        functionNamesByStage: [ChatterboxPipelineStage: Set<String>]
+        functionNamesByStage: [ChatterboxPipelineStage: Set<String>],
+        recipe: ChatterboxRecipeContract
     ) -> ChatterboxContractValidation {
         let present = Set(ChatterboxPipelineStage.allCases.filter { stage in
-            guard let functionNames = functionNamesByStage[stage] else {
+            guard let functionNames = functionNamesByStage[stage],
+                  let resolvedStage = try? recipe.resolvedStage(stage) else {
                 return false
             }
-            return stage.requiredFunctionNames.isSubset(of: functionNames)
+            return resolvedStage.requiredFunctionNames.isSubset(of: functionNames)
         })
         let missing = Set(ChatterboxPipelineStage.allCases).subtracting(present)
 

@@ -42,9 +42,9 @@ Current official references:
 
 ## 3. What exists today
 
-The repository is already a strong vertical prototype:
+The repository began as a strong vertical prototype:
 
-- A SwiftUI macOS/iOS shell with a Chatterbox workspace and a static runtime catalog.
+- A SwiftUI macOS/iOS shell with a Chatterbox workspace and an early runtime catalog.
 - Four bundled Chatterbox `.aimodel` assets totaling roughly 600 MiB.
 - Six native Core AI functions:
   - T3 embeddings: `prefill`, `decode`
@@ -56,14 +56,16 @@ The repository is already a strong vertical prototype:
 - Bespoke adapters for T3, S3Gen, the HiFT vocoder, and reference encoders.
 - PyTorch parity tests, Core AI runtime validation, native contract tests, a known no-cut regression sentence, and measured Release performance.
 
-The limiting architecture is also clear:
+The original limiting architecture was also clear:
 
-- `ContentView` is a two-tab demo shell.
-- `CoreAIRuntimeView` is a static list rather than a real asset explorer.
-- `ChatterboxCoreAIEngine`, `ChatterboxPipelineStage`, and the UI hardcode one model family.
-- Conversion is reproducible from the terminal but invisible to the app.
-- Large assets live in the app bundle and Git history rather than a managed artifact library.
-- Experiments and benchmarks exist as chat/terminal evidence, not durable project records.
+- `ContentView` was a two-tab demo shell.
+- `CoreAIRuntimeView` was a static list rather than a recipe-backed studio.
+- `ChatterboxCoreAIEngine` remains a model-specific runtime adapter, but its asset
+  paths, native entrypoints, display metadata, target preference, tokenizer, and
+  capacity now come from a validated bundled recipe manifest.
+- Conversion was reproducible from the terminal but invisible to the app.
+- Large assets lived only in the app bundle and Git history rather than a managed artifact library.
+- Experiments and benchmarks existed as chat/terminal evidence, not durable project records.
 
 The next step is therefore not “add another model tab.” It is to extract the system hiding inside Chatterbox.
 
@@ -76,6 +78,15 @@ The first platform slice is now represented in the repository:
   imports, cross-project deduplication, safe last-reference cleanup, corruption
   checks, and direct Inspector/Workbench handoff. Completed conversion outputs
   can be promoted into projects without depending on their original folder.
+- A versioned Codable recipe vocabulary for targets, artifacts, typed pipeline
+  stages, and capacity, with strict schema, reference, entrypoint, and safe-path
+  validation. Chatterbox Turbo ships the first concrete manifest.
+- Persistent recipe-revision snapshots, target profiles, typed run state, and
+  evidence metadata connected to Lab Projects, with reopen coverage and
+  migration-safe defaults for the additive schema.
+- Chatterbox resolves all four model paths, six native entrypoints, tokenizer,
+  target preference, presentation metadata, and generation capacity from its
+  manifest. Neither its UI nor engine enumerates bundled model filenames.
 - A generated, pinned snapshot of all 33 presets in Apple’s open-source `coreai-models` registry.
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
@@ -114,15 +125,34 @@ The first platform slice is now represented in the repository:
 - A runnable Wav2Vec2 audio playground built directly on Core AI, with
   AVFoundation decoding and 16 kHz mono resampling, static-contract validation,
   greedy CTC decoding, timing, and direct conversion handoff.
+- A versioned recipe-to-experience registry drives Runtime Studio navigation,
+  workload grouping, current-OS availability, and capability presentation.
+  Multiple segmentation and diffusion recipes reuse one semantic adapter
+  without adding another navigation screen.
+- Qwen, YOLOS, EfficientSAM/SAM 3, Wav2Vec2, and diffusion workspaces share a
+  run coordinator for running/succeeded/failed/canceled state, session-scoped
+  cold/warm classification, and comparison identity. Users can optionally
+  record future runs into a Lab Project; successful runs add measured timing
+  metric evidence without fabricating output artifacts. Imported families are
+  checked against the selected registry intent; because current exports do not
+  prove an artifact-bound recipe revision, each persisted run has explicit
+  `unverified_intent` validation evidence and no recipe snapshot is linked.
+  Terminal status plus timing evidence is an idempotent write that remains
+  retryable after a persistence failure.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
-loop without pretending that Apple distributes converted weights. Milestone 1
-is still incomplete until imports, provenance, and outputs live in persistent
-Lab Projects. The next vertical slices should add that persistence and
-restart-safe jobs, then the multi-model SAM3 plus Qwen composition shown in
-Apple’s Core AI material.
+loop without pretending that Apple distributes converted weights. Milestone 0's
+schema, manifest, and persistence foundation slice is implemented; automatic
+workspace run/evidence capture remains follow-up integration. Milestone 1's
+project-library slice now unifies deterministic resource-folder metadata,
+durable descriptor snapshots, editable source provenance, and project-owned
+specialization-cache cleanup with the existing generic function workbench and
+integration export. Milestone 2 now has a shared registry and lifecycle slice,
+while embeddings, persistent output files, real modality-aware comparisons,
+imported bookmarks, and cross-launch active-run recovery remain open.
+Restart-safe conversion execution remains Milestone 3 work.
 
 ## 4. Product boundary
 
@@ -453,6 +483,13 @@ Estimates assume one focused senior engineer and include product-quality tests. 
 
 ### Milestone 0 — Extract the platform foundation (2 weeks)
 
+Implementation status: the platform-foundation slice is implemented as of June
+22, 2026. The existing opt-in Chatterbox model smoke remains the hardware-backed
+audio and generation-limit regression gate; the default suite validates manifest
+mapping, bounded capacity relationships, and storage contracts without
+performing expensive specialization. Automatic run/evidence capture from the
+Chatterbox workspace remains follow-up integration work.
+
 Deliverables:
 
 - Introduce `LabProject`, recipe, target, artifact, run, and evidence models.
@@ -460,7 +497,9 @@ Deliverables:
 - Move Chatterbox’s asset/function/capacity metadata into a versioned recipe manifest.
 - Add Environment Doctor and remove fixed Xcode-path assumptions from documentation and scripts.
 - Make the current Chatterbox experience load through the new project/manifest layer with no audio regression.
-- Move to Swift 6.2-or-newer project settings and keep the existing actor isolation.
+- Keep Swift 6 language mode on a Swift 6.2-or-newer toolchain and preserve the
+  existing actor isolation. (`SWIFT_VERSION` names the language mode, so `6.0`
+  is the correct Xcode setting even when the selected compiler is Swift 6.4.)
 
 Done bar:
 
@@ -468,6 +507,11 @@ Done bar:
 - No UI or engine code enumerates Chatterbox asset filenames directly.
 
 ### Milestone 1 — Model Library and universal inspector (3 weeks)
+
+Implementation status: complete for the project-library and generic-runtime
+boundary. Hardware specialization and inference remain capability-dependent,
+and are exercised by the existing real Core AI fixture rather than simulated by
+the library persistence tests.
 
 Deliverables:
 
@@ -511,6 +555,12 @@ Done bar:
 - A supported Qwen preset can be selected and converted from the app on a clean machine, then run in Runtime Studio.
 
 ### Milestone 4 — Custom Recipe Studio (5–7 weeks)
+
+Initial slice: the repository now has a versioned typed pipeline manifest,
+deterministic JSON codec, and structural validator for asset functions, host
+operators, explicit state, seeded randomness, and bounded loops. The visual
+editors, diagnostic worker, runtime executor, and Chatterbox migration remain
+part of this milestone.
 
 Deliverables:
 
