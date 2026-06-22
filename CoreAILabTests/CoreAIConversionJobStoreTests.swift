@@ -629,6 +629,37 @@ struct CoreAIConversionJobStoreTests {
         #expect(try await decision.value == .reusable)
     }
 
+    @Test
+    func postCommitSyncFailureReturnsTheCommittedStateAndReportsDurabilityRisk() async throws {
+        let root = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let issues = ConversionDurabilityIssueRecorder()
+        let syncer = FailingPostCommitDirectorySyncer()
+        let store = CoreAIConversionJobStore(
+            rootURL: root,
+            directorySyncer: syncer,
+            durabilityIssueHandler: { issues.record($0) }
+        )
+        let jobIdentity = try identity()
+
+        let created = try await store.createJob(identity: jobIdentity)
+        #expect(try await store.job(id: created.id) == created)
+
+        let running = try await store.transition(jobID: created.id, to: .running)
+        #expect(try await store.job(id: created.id) == running)
+
+        let checkpoint = try CoreAIConversionCheckpoint(
+            jobID: created.id,
+            gate: "asset-saved",
+            artifactRootPath: jobIdentity.request.outputDirectoryPath,
+            fingerprint: created.fingerprint,
+            artifacts: []
+        )
+        try await store.saveCheckpoint(jobID: created.id, checkpoint: checkpoint)
+        #expect(try await store.checkpoint(jobID: created.id, gate: "asset-saved") == checkpoint)
+        #expect(issues.values.count == 3)
+    }
+
     private func identity(
         modelName: String = "qwen",
         arguments: [String] = ["export", "qwen"],
@@ -704,5 +735,32 @@ private final class BlockingCheckpointArtifactVerifier:
 
     func allowVerificationToFinish() {
         mayFinish.signal()
+    }
+}
+
+private struct FailingPostCommitDirectorySyncer: CoreAIConversionDirectorySyncing {
+    func sync(url: URL) throws {
+        guard url.lastPathComponent.hasPrefix(".job-tmp-") else {
+            throw POSIXError(.EIO)
+        }
+    }
+
+    func sync(descriptor _: Int32) throws {
+        throw POSIXError(.EIO)
+    }
+}
+
+private final class ConversionDurabilityIssueRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var messages: [String] = []
+
+    var values: [String] {
+        lock.withLock { messages }
+    }
+
+    func record(_ message: String) {
+        lock.withLock {
+            messages.append(message)
+        }
     }
 }

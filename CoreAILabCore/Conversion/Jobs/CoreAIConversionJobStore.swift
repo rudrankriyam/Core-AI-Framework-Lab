@@ -1,5 +1,36 @@
 import Darwin
 import Foundation
+import OSLog
+
+private let coreAIConversionJobStoreLogger = Logger(
+    subsystem: "CoreAIFrameworkLab",
+    category: "ConversionJobStore"
+)
+
+protocol CoreAIConversionDirectorySyncing: Sendable {
+    func sync(url: URL) throws
+    func sync(descriptor: Int32) throws
+}
+
+struct CoreAIConversionPOSIXDirectorySyncer: CoreAIConversionDirectorySyncing {
+    func sync(url: URL) throws {
+        let descriptor = open(
+            url.path,
+            O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW
+        )
+        guard descriptor >= 0 else {
+            throw POSIXError(.init(rawValue: errno) ?? .EIO)
+        }
+        defer { close(descriptor) }
+        try sync(descriptor: descriptor)
+    }
+
+    func sync(descriptor: Int32) throws {
+        guard fsync(descriptor) == 0 else {
+            throw POSIXError(.init(rawValue: errno) ?? .EIO)
+        }
+    }
+}
 
 struct CoreAIConversionJobStoreIssue: Equatable, Sendable {
     let directoryName: String
@@ -22,16 +53,25 @@ actor CoreAIConversionJobStore {
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     private let checkpointArtifactVerifier: any CoreAIConversionCheckpointArtifactVerifying
+    private let directorySyncer: any CoreAIConversionDirectorySyncing
+    private let durabilityIssueHandler: @Sendable (String) -> Void
 
     init(
         rootURL: URL,
         fileManager: FileManager = .default,
         checkpointArtifactVerifier: any CoreAIConversionCheckpointArtifactVerifying =
-            CoreAIConversionCheckpointArtifactVerifier()
+            CoreAIConversionCheckpointArtifactVerifier(),
+        directorySyncer: any CoreAIConversionDirectorySyncing =
+            CoreAIConversionPOSIXDirectorySyncer(),
+        durabilityIssueHandler: @escaping @Sendable (String) -> Void = { message in
+            coreAIConversionJobStoreLogger.error("\(message, privacy: .public)")
+        }
     ) {
         self.rootURL = rootURL.standardizedFileURL
         self.fileManager = fileManager
         self.checkpointArtifactVerifier = checkpointArtifactVerifier
+        self.directorySyncer = directorySyncer
+        self.durabilityIssueHandler = durabilityIssueHandler
         encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         decoder = JSONDecoder()
@@ -73,8 +113,8 @@ actor CoreAIConversionJobStore {
             )
             try syncDirectory(stagingURL)
             try fileManager.moveItem(at: stagingURL, to: finalURL)
-            try syncDirectory(rootURL)
             promoted = true
+            syncAfterCommit(rootURL, committedItem: "job \(record.id.uuidString)")
             return record
         }
     }
@@ -526,10 +566,8 @@ actor CoreAIConversionJobStore {
         guard renameat(directoryDescriptor, temporaryName, directoryDescriptor, fileName) == 0 else {
             throw POSIXError(.init(rawValue: errno) ?? .EIO)
         }
-        guard fsync(directoryDescriptor) == 0 else {
-            throw POSIXError(.init(rawValue: errno) ?? .EIO)
-        }
         moved = true
+        syncAfterCommit(directoryDescriptor, committedItem: fileName)
     }
 
     private func writeAtomically(_ data: Data, to url: URL) throws {
@@ -544,8 +582,11 @@ actor CoreAIConversionJobStore {
         guard rename(temporaryURL.path, url.path) == 0 else {
             throw POSIXError(.init(rawValue: errno) ?? .EIO)
         }
-        try syncDirectory(url.deletingLastPathComponent())
         moved = true
+        syncAfterCommit(
+            url.deletingLastPathComponent(),
+            committedItem: url.lastPathComponent
+        )
     }
 
     private func writeAll(_ data: Data, descriptor: Int32) throws {
@@ -568,10 +609,29 @@ actor CoreAIConversionJobStore {
     }
 
     private func syncDirectory(_ url: URL) throws {
-        let descriptor = open(url.path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW)
-        guard descriptor >= 0 else { throw POSIXError(.init(rawValue: errno) ?? .EIO) }
-        defer { close(descriptor) }
-        guard fsync(descriptor) == 0 else { throw POSIXError(.init(rawValue: errno) ?? .EIO) }
+        try directorySyncer.sync(url: url)
+    }
+
+    private func syncAfterCommit(_ url: URL, committedItem: String) {
+        do {
+            try directorySyncer.sync(url: url)
+        } catch {
+            reportDurabilityIssue(error, committedItem: committedItem)
+        }
+    }
+
+    private func syncAfterCommit(_ descriptor: Int32, committedItem: String) {
+        do {
+            try directorySyncer.sync(descriptor: descriptor)
+        } catch {
+            reportDurabilityIssue(error, committedItem: committedItem)
+        }
+    }
+
+    private func reportDurabilityIssue(_ error: Error, committedItem: String) {
+        durabilityIssueHandler(
+            "Committed \(committedItem), but its directory sync failed: \(error.localizedDescription)"
+        )
     }
 
     private var lockURL: URL { rootURL.appending(path: ".store.lock") }
