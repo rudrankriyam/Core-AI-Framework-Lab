@@ -112,6 +112,7 @@ struct CoreAIProjectLibraryMetadataTests {
                         profile: .cpuOnly,
                         expectFrequentReshapes: true
                     ),
+                    artifactDigest: testArtifactDigest,
                     duration: .milliseconds(3),
                     loadedFromCache: false,
                     functionNames: ["main"],
@@ -339,6 +340,7 @@ struct CoreAIProjectLibraryMetadataTests {
         )
         let firstResult = CoreAISpecializationResult(
             configuration: configuration,
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(10),
             loadedFromCache: false,
             functionNames: ["main"],
@@ -346,6 +348,7 @@ struct CoreAIProjectLibraryMetadataTests {
         )
         let cachedResult = CoreAISpecializationResult(
             configuration: configuration,
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(1),
             loadedFromCache: true,
             functionNames: ["main"],
@@ -398,6 +401,7 @@ struct CoreAIProjectLibraryMetadataTests {
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
         let result = CoreAISpecializationResult(
             configuration: CoreAISpecializationConfiguration(profile: .automatic),
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(2),
             loadedFromCache: false,
             functionNames: ["main"],
@@ -428,6 +432,7 @@ struct CoreAIProjectLibraryMetadataTests {
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
         let result = CoreAISpecializationResult(
             configuration: CoreAISpecializationConfiguration(profile: .automatic),
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(2),
             loadedFromCache: false,
             functionNames: ["main"],
@@ -490,6 +495,7 @@ struct CoreAIProjectLibraryMetadataTests {
         let sourceURL = try controller.validatedStoredURL(for: artifact)
         let result = CoreAISpecializationResult(
             configuration: CoreAISpecializationConfiguration(profile: .cpuOnly),
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(2),
             loadedFromCache: false,
             functionNames: ["main"],
@@ -788,6 +794,7 @@ struct CoreAIProjectLibraryMetadataTests {
     ) -> CoreAISpecializationResult {
         CoreAISpecializationResult(
             configuration: configuration,
+            artifactDigest: testArtifactDigest,
             duration: .milliseconds(1),
             loadedFromCache: loadedFromCache,
             functionNames: ["main"],
@@ -813,6 +820,10 @@ struct CoreAIProjectLibraryMetadataTests {
             isStoredInMemoryOnly: true
         )
         return try ModelContainer(for: schema, configurations: [configuration])
+    }
+
+    private var testArtifactDigest: CoreAIArtifactDigest {
+        CoreAIArtifactDigesterStub().artifactDigest
     }
 
     private func descriptorReport(url: URL) -> CoreAIModelAssetReport {
