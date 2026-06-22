@@ -541,6 +541,15 @@ Done bar:
 
 ### Milestone 3 — Guided conversion alpha (4–5 weeks)
 
+Initial durability slice: the repository now has a versioned conversion-job
+store with legal state transitions, append-only structured logs, explicit
+restart reconciliation, and checkpoint reuse decisions bound to the exact
+versioned request/toolchain/source identity and store-verified artifact tree
+evidence. The current
+process runner still starts a fresh converter process after interruption;
+automatic workspace adoption, per-gate execution, and end-to-end restart
+recovery remain unfinished.
+
 Deliverables:
 
 - Resumable conversion job engine with structured logs and cancellation.

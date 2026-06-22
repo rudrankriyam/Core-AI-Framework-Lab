@@ -133,9 +133,18 @@ can create a `uv` environment and download large upstream checkpoints. Gated
 models still require the user's own source authentication and license access.
 
 This conversion slice deliberately uses a local Apple repository clone.
-Automatic cloning, resumable jobs across app launches, and custom PyTorch recipe
-authoring remain later milestones. Completed output artifacts can now be copied
-into persistent projects.
+Automatic cloning and custom PyTorch recipe authoring remain later milestones.
+The reusable conversion core now includes a versioned durable job store with
+legal state transitions, append-only JSONL events, launch-time interruption
+reconciliation, and checkpoint reuse decisions tied to a versioned request and
+environment identity: full recipe revision, source/lock/executable hashes,
+Xcode/SDK builds, relevant child environment, and store-verified no-follow
+artifact tree evidence. Job creation is staged atomically, independent store
+instances coordinate through a file lock, and a torn final log frame preserves
+the valid event prefix for recovery. The visual workbench has not
+adopted that store yet: after an app restart it still launches a fresh converter
+process rather than claiming that a killed process resumed. Completed output
+artifacts can be copied into persistent projects.
 
 ## Specialization and Cache Controls
 
