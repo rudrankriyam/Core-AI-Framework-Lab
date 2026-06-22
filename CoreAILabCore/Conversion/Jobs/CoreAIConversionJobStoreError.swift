@@ -4,6 +4,7 @@ enum CoreAIConversionJobStoreError: LocalizedError, Equatable {
     case jobNotFound(UUID)
     case unsupportedSchema(Int)
     case illegalTransition(from: CoreAIConversionJobState, to: CoreAIConversionJobState)
+    case terminalJobCannotAppendLog(UUID)
     case corruptLog(UUID)
     case corruptRecord
     case invalidCheckpointGate(String)
@@ -23,6 +24,8 @@ enum CoreAIConversionJobStoreError: LocalizedError, Equatable {
             "Conversion job schema \(version) is not supported."
         case .illegalTransition(let current, let next):
             "A conversion job cannot move from \(current.rawValue) to \(next.rawValue)."
+        case .terminalJobCannotAppendLog(let id):
+            "Conversion job \(id.uuidString) is terminal and cannot accept more log entries."
         case .corruptLog(let id):
             "The structured log for conversion job \(id.uuidString) is invalid."
         case .corruptRecord:

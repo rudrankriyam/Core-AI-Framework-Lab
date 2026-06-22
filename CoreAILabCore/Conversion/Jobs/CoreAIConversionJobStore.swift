@@ -179,6 +179,9 @@ actor CoreAIConversionJobStore {
     ) throws -> CoreAIConversionJobLogEntry {
         try withStoreLock {
             let record = try readJobUnlocked(id: jobID)
+            guard !record.state.isTerminal else {
+                throw CoreAIConversionJobStoreError.terminalJobCannotAppendLog(jobID)
+            }
             let existing = try readLogUnlocked(jobID: jobID)
             if existing.result.tornTailByteCount > 0 {
                 try preserveAndRemoveTornLogTail(jobID: jobID)

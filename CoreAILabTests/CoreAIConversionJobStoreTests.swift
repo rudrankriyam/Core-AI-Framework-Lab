@@ -58,6 +58,19 @@ struct CoreAIConversionJobStoreTests {
         } catch is CoreAIConversionJobStoreError {
             // Expected.
         }
+        do {
+            _ = try await store.appendLog(
+                jobID: record.id,
+                kind: .lifecycle,
+                message: "late terminal log"
+            )
+            Issue.record("Expected a terminal conversion job to reject new log entries.")
+        } catch CoreAIConversionJobStoreError.terminalJobCannotAppendLog(let id) {
+            #expect(id == record.id)
+        } catch {
+            Issue.record("Unexpected terminal-log error: \(error)")
+        }
+        #expect(try await store.logs(jobID: record.id).isEmpty)
 
         let reopened = CoreAIConversionJobStore(rootURL: root)
         #expect(try await reopened.job(id: record.id) == succeeded)
