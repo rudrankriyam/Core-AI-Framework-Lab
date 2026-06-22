@@ -110,6 +110,45 @@ struct AppleSegmentationWorkspaceModelTests {
         #expect(workspace.isShowingError)
     }
 
+    @Test
+    func delayedSegmentationRejectsOverlappingRunsAndInputReplacement() async throws {
+        let engine = DelayedImageSegmenterStub()
+        let workspace = AppleSegmentationWorkspaceModel(
+            example: .sam3,
+            engine: engine
+        )
+        let firstImageURL = try makeTestImage(width: 4, height: 4)
+        let secondImageURL = try makeTestImage(width: 6, height: 4)
+        defer {
+            try? FileManager.default.removeItem(at: firstImageURL)
+            try? FileManager.default.removeItem(at: secondImageURL)
+        }
+        await workspace.loadModel(from: URL(filePath: "/tmp/sam3"))
+        workspace.loadImage(from: firstImageURL)
+        workspace.textPrompt = "cat"
+
+        let firstRun = Task { await workspace.runSegmentation() }
+        await engine.waitUntilSegmentationStarts()
+        workspace.loadImage(from: secondImageURL)
+        workspace.textPrompt = "dog"
+        await workspace.runSegmentation()
+        await engine.resumeSegmentation()
+        await firstRun.value
+
+        #expect(workspace.imageName == firstImageURL.lastPathComponent)
+        #expect(workspace.textPrompt == "cat")
+        #expect(workspace.result?.scores == [4])
+        #expect(await engine.queries == [.text("cat")])
+        #expect(workspace.runCoordinator.history.count == 1)
+        #expect(workspace.runCoordinator.history.first?.timingClass == .cold)
+
+        await workspace.runSegmentation()
+
+        #expect(await engine.queries == [.text("cat"), .text("cat")])
+        #expect(workspace.runCoordinator.history.count == 2)
+        #expect(workspace.runCoordinator.history.first?.timingClass == .warm)
+    }
+
     private func makeTestImage(width: Int, height: Int) throws -> URL {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
@@ -135,6 +174,43 @@ struct AppleSegmentationWorkspaceModelTests {
         CGImageDestinationAddImage(destination, image, nil)
         #expect(CGImageDestinationFinalize(destination))
         return url
+    }
+}
+
+private actor DelayedImageSegmenterStub: AppleImageSegmenting {
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var shouldDelay = true
+    private(set) var queries: [AppleSegmentationQuery] = []
+
+    func loadModel(at _: URL) {}
+
+    func segment(
+        image: CGImage,
+        query: AppleSegmentationQuery
+    ) async -> AppleSegmentationResult {
+        queries.append(query)
+        if shouldDelay {
+            shouldDelay = false
+            await withCheckedContinuation { continuation in
+                self.continuation = continuation
+            }
+        }
+        return AppleSegmentationResult(
+            renderedImage: image,
+            segmentCount: 1,
+            scores: [Float(image.width)]
+        )
+    }
+
+    func waitUntilSegmentationStarts() async {
+        while queries.isEmpty || continuation == nil {
+            await Task.yield()
+        }
+    }
+
+    func resumeSegmentation() {
+        continuation?.resume()
+        continuation = nil
     }
 }
 

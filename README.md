@@ -51,7 +51,10 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
+- `CoreAILab/Features/RuntimeStudio/` - searchable recipe-backed experience routing, run status, and comparison selection
+- `CoreAILabCore/RuntimeStudio/` - versioned experience registry, shared lifecycle coordinator, and optional project timing evidence
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
+- `CoreAILab/Resources/RuntimeStudio/` - validated recipe-to-experience mappings for the built-in adapters
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
 - `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
@@ -94,12 +97,24 @@ one of several references does not. Stored `.aimodel` packages open directly in
 Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
 Project** action instead of remaining tied to their original output folder.
 
+Directory imports also retain a versioned manifest of safe relative paths,
+streamed per-file SHA-256 digests, and byte counts. Model inspection snapshots
+function descriptors, storage and compute types, and operation distribution into
+the project library. Source provenance remains editable per project artifact,
+while successful
+specializations register project-owned cache configurations that can be browsed
+and removed without deleting cache entries still referenced by another project.
+
 The project schema also stores immutable recipe-manifest revisions, target
 profiles, typed run status, and evidence metadata. These records retain the exact
 validated JSON contracts used by a run and survive reopening the SwiftData store.
 Controller APIs keep recipe, target, run, and evidence ownership within one Lab
-Project. Current conversion and benchmark workspaces do not yet write those
-records automatically, so restart-safe execution remains later work.
+Project. Runtime Studio can optionally record inference status and a successful
+run's measured duration as metric evidence. It does not invent output-artifact
+records: output persistence still needs a real stored file, digest, and media
+contract. Selecting a project for recording reconciles runs interrupted by a
+previous app session as failed. Conversion jobs and generic benchmarks are not
+yet connected to this coordinator.
 
 ## Visual Conversion Workbench
 
@@ -149,11 +164,49 @@ its opaque model bookmark to load or remove such an entry after the source
 disappears. Projects now keep the source artifact stable, but the bookmark still
 needs to become versioned project metadata before that policy can be honest.
 
+## Runtime Studio
+
+Open **Runtime Studio** for the registry-backed language, vision, audio,
+diffusion, and generic-function experiences. The bundled schema-versioned JSON
+declares an exact intended recipe revision and model identifier for a semantic
+adapter, capabilities, platforms, and presentation. Runtime Studio excludes
+entries that do not declare support for the current OS. EfficientSAM and SAM 3,
+as well as all four diffusion presets, prove that a second model can reuse an
+existing destination without adding navigation SwiftUI.
+
+Qwen, YOLOS, both segmentation adapters, Wav2Vec2, diffusion runs, and direct
+Function Workbench invocations report one shared lifecycle: running, succeeded,
+failed, or canceled. Attempts remain cold until one run succeeds for the same
+experience and imported model identity in a Runtime Studio session; later
+attempts are warm. A selected comparison identity is captured with each run,
+but this slice does not claim numerical or semantic A/B comparison of outputs.
+
+Choose a Lab Project under **Run Recording** to persist future runtime status.
+The importer checks that an artifact's identifiable model family matches the
+selected registry entry. Current Apple exports do not carry artifact-bound
+recipe/revision proof, so successful runs add timing-only metric evidence with
+explicit `unverified_intent` provenance and never link the selected project
+recipe revision. Every persisted run also carries validation evidence that
+states whether its recipe provenance is unattributed or unverified intent.
+Terminal run status and its metric are saved together; a
+failed or ambiguously reported save remains available through **Retry Run
+Recording**, and retries do not duplicate the metric. Evidence also records the
+experience, actual model identity, cold/warm class, duration, and optional
+comparison identity. Selecting a project also marks any running records left by
+an interrupted previous app session as failed.
+Imported model bookmarks, produced output files, cross-launch warm-state
+recovery, embeddings, and output-quality comparison remain follow-up work.
+No experience downloads model weights; each adapter still requires a locally
+exported bundle under its upstream license.
+
 ## Generic Function Workbench
 
-Open **Workbench**, choose any `.aimodel`, and specialize it with one of the
-same cache and compute profiles. The Lab then lists every function contract and
-can run supported stateless functions without a model-specific SwiftUI screen.
+Open **Runtime Studio -> Function Workbench**, choose any `.aimodel`, and
+specialize it with one of the same cache and compute profiles. The Lab then
+lists every function contract and can run supported stateless functions without
+a model-specific SwiftUI screen. Direct invocations use Runtime Studio's shared
+lifecycle and optional project recording; the separate multi-trial benchmark
+reports remain session-only evidence.
 
 The first generic runtime slice supports fixed or dynamic NDArray inputs using
 zeros or repeatable seeded random values across Bool, signed and unsigned
@@ -202,6 +255,19 @@ non-executed `compile-model.sh` for optional iOS and macOS 27 ahead-of-time
 compilation with the selected GPU or Neural Engine preference and reshape hint.
 CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
 `coreai-build compile` does not expose a CPU-only flag.
+
+### Typed Pipeline Contract
+
+`CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
+future Recipe Studio, Pipeline Studio, and generated runtimes share. A pipeline
+is an asset-level directed graph with typed ports, explicit state ownership,
+seeded randomness, bounded loops, and a versioned host-operator registry.
+
+Validation rejects missing endpoints, incompatible value contracts, duplicate
+input wiring, cycles, ambiguous state ownership, randomness without exactly one
+seed source, and loops without both a finite iteration bound and stop input.
+This first slice is intentionally schema and validation only: it does not claim
+that the visual editor or generic pipeline executor has shipped yet.
 
 ## Run Apple's YOLOS Tiny Example
 
@@ -506,8 +572,11 @@ device; an empty or misrouted filtered run fails the harness.
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
 - Projects, imported artifacts, recipe revisions, target profiles, run records,
-  and evidence metadata persist across launches. Conversion job execution and
-  benchmark capture are not wired to those records or restart-safe yet.
+  and evidence metadata persist across launches. Recipe-backed Runtime Studio
+  adapters can record lifecycle and successful timing metrics, but output files,
+  imported file bookmarks, conversion jobs, generic benchmark capture, and
+  resumable active execution are not wired to those records yet. Interrupted
+  runtime records are reconciled as failed when their project is selected.
 - The generic function workbench currently generates NDArray inputs only.
   Stateful execution, image-input adaptation, imported fixtures, persisted
   benchmark evidence, and raw-output export remain later Runtime Studio work.
