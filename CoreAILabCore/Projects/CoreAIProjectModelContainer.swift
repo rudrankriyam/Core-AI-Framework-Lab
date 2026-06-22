@@ -16,6 +16,8 @@ enum CoreAIProjectModelContainer {
             LabProject.self,
             ModelArtifactRecord.self,
             ProjectArtifactLink.self,
+            CoreAISourceProvenanceRecord.self,
+            CoreAISpecializationCacheRecord.self,
             CoreAIRecipeRevisionRecord.self,
             CoreAITargetProfileRecord.self,
             CoreAIRunRecord.self,

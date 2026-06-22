@@ -16,7 +16,7 @@ struct CoreAIIntegrationExportSection: View {
             )
 
             if workspace.isExportingIntegration {
-                ProgressView("Copying and hashing the model asset…")
+                ProgressView("Packaging and hashing the model asset…")
                 Button(
                     "Cancel Export",
                     systemImage: "xmark",
@@ -40,7 +40,7 @@ struct CoreAIIntegrationExportSection: View {
             Text("Integration Export")
         } footer: {
             Text(
-                "Exports the original asset, a versioned contract manifest, generated Swift invocation code, and an optional AOT compile script using the active specialization configuration. Stateful and image-input functions remain manifest-only."
+                "Exports a standalone Swift package with the original asset, checksums, notices, typed metadata, generated invocation code, and an offline verifier. The optional AOT script is never run automatically. Stateful and image-input functions remain manifest-only."
             )
         }
     }

@@ -7,7 +7,7 @@ struct CoreAIProjectArtifactRowView: View {
         HStack {
             Label(
                 link.displayName,
-                systemImage: link.artifact?.kind.systemImage ?? "shippingbox"
+                systemImage: link.artifact?.kind?.systemImage ?? "shippingbox"
             )
 
             Spacer()

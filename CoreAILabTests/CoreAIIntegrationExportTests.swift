@@ -1,4 +1,5 @@
 import CoreAI
+import CryptoKit
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -7,8 +8,16 @@ struct CoreAIIntegrationExportTests {
     @Test
     func manifestRoundTripsWithoutSourcePathOrBookmarkData() throws {
         let manifest = CoreAIExportManifest(
+            package: .init(
+                name: "FixtureIntegration",
+                productName: "FixtureIntegration",
+                targetName: "FixtureIntegration",
+                swiftToolsVersion: "6.4",
+                generatedSourceRelativePath: "Sources/FixtureIntegration/Fixture.swift",
+                resourcesRelativePath: "Sources/FixtureIntegration/Resources"
+            ),
             artifact: .init(
-                relativePath: "Resources/fixture.aimodel",
+                relativePath: "Sources/FixtureIntegration/Resources/fixture.aimodel",
                 sha256: String(repeating: "a", count: 64),
                 byteCount: 42
             ),
@@ -22,7 +31,8 @@ struct CoreAIIntegrationExportTests {
         let json = try #require(String(data: data, encoding: .utf8))
         #expect(!json.contains("/private/source"))
         #expect(!json.localizedCaseInsensitiveContains("bookmark"))
-        #expect(manifest.schemaVersion == 1)
+        #expect(manifest.schemaVersion == 2)
+        #expect(manifest.package.targetName == "FixtureIntegration")
         #expect(manifest.specialization.profile == "preferGPU")
         #expect(manifest.specialization.preferredCompute == "gpu")
     }
@@ -76,9 +86,11 @@ struct CoreAIIntegrationExportTests {
         let generator = CoreAISwiftInvocationGenerator()
         let supported = tensorContract(named: "decode-token")
         let unsupported = imageContract(named: "class")
+        let stateful = statefulContract(named: "decode")
+        let descriptorless = descriptorlessContract(named: "missing-descriptor")
         let output = generator.generate(
             assetName: "demo.aimodel",
-            contracts: [unsupported, supported]
+            contracts: [unsupported, supported, stateful, descriptorless]
         )
 
         #expect(output.source.contains("public actor DemoCoreAIModel"))
@@ -87,7 +99,14 @@ struct CoreAIIntegrationExportTests {
         #expect(output.source.contains("func decodeToken"))
         #expect(output.source.contains("loadFunction(named: \"decode-token\")"))
         #expect(!output.source.contains("func runClass"))
-        #expect(unsupported.generatedRuntimeUnsupportedReason?.contains("image") == true)
+        #expect(!output.source.contains("func decode("))
+        #expect(!output.source.contains("func missingDescriptor"))
+        #expect(unsupported.generatedRuntimeUnsupportedReason == "Image input")
+        #expect(stateful.generatedRuntimeUnsupportedReason?.contains("mutable") == true)
+        #expect(
+            descriptorless.generatedRuntimeUnsupportedReason
+                == "Core AI did not provide a descriptor for this function."
+        )
     }
 
     @Test
@@ -121,13 +140,59 @@ struct CoreAIIntegrationExportTests {
         #expect(first.manifest == second.manifest)
         #expect(first.manifest.artifact.byteCount > 0)
         #expect(first.manifest.artifact.sha256.count == 64)
-        let firstSource = try Data(
-            contentsOf: first.packageURL.appending(path: "Sources/CoreAILabTensorFixtureCoreAIModel.swift")
+        #expect(try packageSnapshot(at: first.packageURL) == packageSnapshot(at: second.packageURL))
+        let targetName = first.manifest.package.targetName
+        let targetURL = first.packageURL.appending(path: "Sources/\(targetName)")
+        let resourcesURL = targetURL.appending(path: "Resources")
+        let firstSource = try String(
+            contentsOf: targetURL.appending(path: "CoreAILabTensorFixtureCoreAIModel.swift"),
+            encoding: .utf8
         )
-        let secondSource = try Data(
-            contentsOf: second.packageURL.appending(path: "Sources/CoreAILabTensorFixtureCoreAIModel.swift")
+        #expect(!firstSource.contains("CoreAILabCore"))
+        let packageManifest = try String(
+            contentsOf: first.packageURL.appending(path: "Package.swift"),
+            encoding: .utf8
         )
-        #expect(firstSource == secondSource)
+        #expect(packageManifest.contains(".library("))
+        #expect(packageManifest.contains("resources: [.copy(\"Resources\")]"))
+        #expect(!packageManifest.contains(".package("))
+        let checksums = try JSONDecoder().decode(
+            CoreAIExportChecksumManifest.self,
+            from: Data(contentsOf: first.packageURL.appending(path: "coreai-checksums.json"))
+        )
+        #expect(checksums.schemaVersion == 1)
+        #expect(
+            checksums.files.map(\.relativePath)
+                == checksums.files.map(\.relativePath).sorted(
+                    by: CoreAIExportPath.isOrderedBefore
+                )
+        )
+        #expect(checksums.files.contains { $0.relativePath == "Package.swift" })
+        #expect(checksums.files.contains { $0.relativePath == "verify-export.py" })
+        #expect(checksums.files.contains { $0.relativePath == "README.md" })
+        #expect(
+            checksums.files.contains {
+                $0.relativePath.hasSuffix("/Resources/coreai-export.json")
+            }
+        )
+        #expect(
+            checksums.files.contains {
+                $0.relativePath.hasSuffix("/Resources/THIRD_PARTY_NOTICES.md")
+            }
+        )
+        #expect(checksums.files.contains { $0.relativePath.hasSuffix("/main.mlirb") })
+        #expect(!checksums.files.contains { $0.relativePath == "coreai-checksums.json" })
+        let notices = try String(
+            contentsOf: resourcesURL.appending(path: "THIRD_PARTY_NOTICES.md"),
+            encoding: .utf8
+        )
+        #expect(notices.contains("Reported license: MIT"))
+        let resourceAccessor = try String(
+            contentsOf: targetURL.appending(path: "CoreAILabTensorFixtureCoreAIModelResources.swift"),
+            encoding: .utf8
+        )
+        #expect(resourceAccessor.contains("static func loadBundled"))
+        #expect(resourceAccessor.contains("Bundle.module.resourceURL"))
         let compileScript = try String(
             contentsOf: first.packageURL.appending(path: "compile-model.sh"),
             encoding: .utf8
@@ -136,6 +201,14 @@ struct CoreAIIntegrationExportTests {
         #expect(compileScript.contains("--platform macOS"))
         #expect(compileScript.contains("--min-deployment-version 27.0"))
         #expect(!compileScript.contains("--preferred-compute"))
+        #expect(compileScript.contains(first.manifest.artifact.relativePath))
+        let verifier = try String(
+            contentsOf: first.packageURL.appending(path: "verify-export.py"),
+            encoding: .utf8
+        )
+        #expect(verifier.contains("--disable-automatic-resolution"))
+        #expect(verifier.contains("verify_checksums(files)"))
+        #expect(!verifier.contains("xcrun\", \"coreai-build"))
 
         do {
             _ = try await exporter.export(
@@ -209,6 +282,206 @@ struct CoreAIIntegrationExportTests {
         }
         #expect(try FileManager.default.contentsOfDirectory(atPath: destinationParent.path).isEmpty)
     }
+
+    @Test
+    func sourceMutationAfterSnapshotIsRejectedAndCleanedUp() async throws {
+        let sourceParent = temporaryDirectory()
+        let sourceURL = sourceParent.appending(path: "mutable.aimodel", directoryHint: .isDirectory)
+        let sourceFileURL = sourceURL.appending(path: "main.mlirb")
+        let destinationParent = temporaryDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: sourceParent)
+            try? FileManager.default.removeItem(at: destinationParent)
+        }
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        try Data("before".utf8).write(to: sourceFileURL)
+        let exporter = CoreAIIntegrationExporter(sourceSnapshotHook: {
+            try Data("after".utf8).write(to: sourceFileURL, options: .atomic)
+        })
+
+        do {
+            _ = try await exporter.export(
+                report: report(at: sourceURL),
+                contracts: [tensorContract(named: "main")],
+                specializationConfiguration: .init(profile: .automatic),
+                destinationParentURL: destinationParent
+            )
+            Issue.record("Expected source mutation to invalidate the export snapshot.")
+        } catch CoreAIIntegrationExportError.sourceChanged(let path) {
+            #expect(path == "main.mlirb")
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: destinationParent.path).isEmpty)
+    }
+
+    #if os(macOS)
+    @Test
+    func checksumVerifierRejectsResourceTampering() async throws {
+        let destinationParent = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: destinationParent) }
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: try fixtureURL()),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .automatic),
+            destinationParentURL: destinationParent
+        )
+        let noticesURL = result.packageURL.appending(
+            path: "Sources/\(result.manifest.package.targetName)/Resources/THIRD_PARTY_NOTICES.md"
+        )
+        try Data("tampered".utf8).write(to: noticesURL, options: .atomic)
+
+        let outcome = try runExecutableAllowingFailure(
+            at: URL(filePath: "/usr/bin/python3"),
+            arguments: [
+                result.packageURL.appending(path: "verify-export.py").path,
+                "--structure-only",
+            ]
+        )
+        #expect(outcome.status != 0)
+        #expect(outcome.output.contains("checksum mismatch:"))
+        #expect(outcome.output.contains("THIRD_PARTY_NOTICES.md"))
+    }
+
+    @Test
+    func verifierRejectsUnexpectedPackageResolved() async throws {
+        let destinationParent = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: destinationParent) }
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: try fixtureURL()),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .automatic),
+            destinationParentURL: destinationParent
+        )
+        try Data("{}\n".utf8).write(
+            to: result.packageURL.appending(path: "Package.resolved"),
+            options: .atomic
+        )
+
+        let outcome = try runVerifierStructureOnly(in: result.packageURL)
+        #expect(outcome.status != 0)
+        #expect(outcome.output.contains("unexpected package file: Package.resolved"))
+    }
+
+    @Test
+    func verifierRejectsWhitespaceObfuscatedDependencyAfterChecksumRecalculation() async throws {
+        let destinationParent = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: destinationParent) }
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: try fixtureURL()),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .automatic),
+            destinationParentURL: destinationParent
+        )
+        let packageURL = result.packageURL.appending(path: "Package.swift")
+        var packageSource = try String(contentsOf: packageURL, encoding: .utf8)
+        packageSource = packageSource.replacing(
+            "    targets: [",
+            with: """
+                    dependencies : [
+                        .package (url: "https://example.invalid/dependency.git", from: "1.0.0"),
+                    ],
+                    targets: [
+                """
+        )
+        let packageData = Data(packageSource.utf8)
+        try packageData.write(to: packageURL, options: .atomic)
+        try updateChecksum(for: "Package.swift", data: packageData, in: result.packageURL)
+
+        let outcome = try runVerifierStructureOnly(in: result.packageURL)
+        #expect(outcome.status != 0)
+        #expect(
+            outcome.output.contains(
+                "Package.swift does not exactly match the generated dependency-free template"
+            )
+        )
+    }
+
+    @Test
+    func verifierRejectsPluginTargetAndFormattingMutationsAfterChecksumRecalculation() async throws {
+        let destinationParent = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: destinationParent) }
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: try fixtureURL()),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .automatic),
+            destinationParentURL: destinationParent
+        )
+        let packageURL = result.packageURL.appending(path: "Package.swift")
+        let original = try String(contentsOf: packageURL, encoding: .utf8)
+        let mutations = [
+            original.replacing(".target(", with: ".target ("),
+            original.replacing(
+                "resources: [.copy(\"Resources\")]",
+                with: """
+                    resources: [.copy("Resources")],
+                    plugins : [.plugin (name: "MutatedPlugin")]
+                    """
+            ),
+            original.replacing(
+                "resources: [.copy(\"Resources\")]",
+                with: """
+                    resources: [.copy("Resources")],
+                    swiftSettings : [.define ("MUTATED_TARGET")]
+                    """
+            ),
+        ]
+
+        for packageSource in mutations {
+            let packageData = Data(packageSource.utf8)
+            try packageData.write(to: packageURL, options: .atomic)
+            try updateChecksum(for: "Package.swift", data: packageData, in: result.packageURL)
+
+            let outcome = try runVerifierStructureOnly(in: result.packageURL)
+            #expect(outcome.status != 0)
+            #expect(
+                outcome.output.contains(
+                    "Package.swift does not exactly match the generated dependency-free template"
+                )
+            )
+        }
+    }
+
+    @Test
+    func decomposedUnicodePathsNormalizeAndVerifyWithUTF8Ordering() async throws {
+        let sourceParent = temporaryDirectory()
+        let sourceURL = sourceParent.appending(path: "unicode.aimodel", directoryHint: .isDirectory)
+        let destinationParent = temporaryDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: sourceParent)
+            try? FileManager.default.removeItem(at: destinationParent)
+        }
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        let decomposedName = "cafe\u{301}.bin"
+        try Data("accent".utf8).write(to: sourceURL.appending(path: decomposedName))
+        try Data("ascii".utf8).write(to: sourceURL.appending(path: "z.bin"))
+
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: sourceURL),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .automatic),
+            destinationParentURL: destinationParent
+        )
+        let checksums = try checksumManifest(in: result.packageURL)
+        let paths = checksums.files.map(\.relativePath)
+        #expect(paths == paths.sorted(by: CoreAIExportPath.isOrderedBefore))
+        #expect(paths.contains { $0.hasSuffix("/caf\u{e9}.bin") })
+        #expect(
+            paths.allSatisfy {
+                Array($0.utf8)
+                    == Array($0.precomposedStringWithCanonicalMapping.utf8)
+            }
+        )
+
+        let outcome = try runVerifierStructureOnly(in: result.packageURL)
+        #expect(outcome.status == 0)
+        #expect(outcome.output.contains("Core AI integration export verified."))
+    }
+    #endif
 
     @Test
     func compileScriptUsesOnlySupportedComputeFlags() {
@@ -316,6 +589,176 @@ struct CoreAIIntegrationExportTests {
             ]
         )
     }
+
+
+    @Test
+    func cleanExportVerifierBuildsTheStandalonePackage() async throws {
+        let exportParent = temporaryDirectory()
+        let cleanParent = temporaryDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: exportParent)
+            try? FileManager.default.removeItem(at: cleanParent)
+        }
+        try FileManager.default.createDirectory(at: exportParent, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: cleanParent, withIntermediateDirectories: true)
+        let result = try await CoreAIIntegrationExporter().export(
+            report: report(at: try fixtureURL()),
+            contracts: [tensorContract(named: "main")],
+            specializationConfiguration: .init(profile: .preferGPU),
+            destinationParentURL: exportParent
+        )
+        let cleanPackageURL = cleanParent.appending(path: result.packageURL.lastPathComponent)
+        try FileManager.default.copyItem(at: result.packageURL, to: cleanPackageURL)
+
+        let output = try runExecutable(
+            at: URL(filePath: "/usr/bin/python3"),
+            arguments: [cleanPackageURL.appending(path: "verify-export.py").path],
+            environment: [
+                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+            ]
+        )
+        #expect(output.contains("Core AI integration export verified."))
+        #expect(!FileManager.default.fileExists(atPath: cleanPackageURL.appending(path: ".build").path))
+
+        let consumerURL = cleanParent.appending(path: "Consumer", directoryHint: .isDirectory)
+        let consumerSourcesURL = consumerURL.appending(
+            path: "Sources/Consumer",
+            directoryHint: .isDirectory
+        )
+        try FileManager.default.createDirectory(
+            at: consumerSourcesURL,
+            withIntermediateDirectories: true
+        )
+        let packageName = result.manifest.package.productName
+        let dependencyPath = "../\(cleanPackageURL.lastPathComponent)"
+        let consumerPackage = """
+            // swift-tools-version: 6.4
+            import PackageDescription
+
+            let package = Package(
+                name: "Consumer",
+                platforms: [.macOS(.v27)],
+                dependencies: [
+                    .package(name: "GeneratedIntegration", path: "\(dependencyPath)"),
+                ],
+                targets: [
+                    .executableTarget(
+                        name: "Consumer",
+                        dependencies: [
+                            .product(
+                                name: "\(packageName)",
+                                package: "GeneratedIntegration"
+                            ),
+                        ]
+                    ),
+                ]
+            )
+            """ + "\n"
+        try Data(consumerPackage.utf8).write(
+            to: consumerURL.appending(path: "Package.swift"),
+            options: .atomic
+        )
+        let consumerSource = """
+            import \(packageName)
+            import Foundation
+
+            @main
+            struct Consumer {
+                static func main() throws {
+                    print(try CoreAILabTensorFixtureCoreAIModelResources.modelURL().lastPathComponent)
+                }
+            }
+            """ + "\n"
+        try Data(consumerSource.utf8).write(
+            to: consumerSourcesURL.appending(path: "main.swift"),
+            options: .atomic
+        )
+        let consumerOutput = try runExecutable(
+            at: URL(filePath: "/usr/bin/xcrun"),
+            arguments: [
+                "swift", "run",
+                "--package-path", consumerURL.path,
+                "--scratch-path", cleanParent.appending(path: "ConsumerScratch").path,
+                "--disable-automatic-resolution",
+            ],
+            environment: [
+                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+                "SWIFTPM_DISABLE_PACKAGE_REPOSITORY_CACHE": "1",
+            ]
+        )
+        #expect(consumerOutput.contains("CoreAILabTensorFixture.aimodel"))
+
+        let iOSConsumerURL = cleanParent.appending(
+            path: "IOSConsumer",
+            directoryHint: .isDirectory
+        )
+        let iOSConsumerSourcesURL = iOSConsumerURL.appending(
+            path: "Sources/IOSConsumer",
+            directoryHint: .isDirectory
+        )
+        try FileManager.default.createDirectory(
+            at: iOSConsumerSourcesURL,
+            withIntermediateDirectories: true
+        )
+        let iOSConsumerPackage = """
+            // swift-tools-version: 6.4
+            import PackageDescription
+
+            let package = Package(
+                name: "IOSConsumer",
+                platforms: [.iOS(.v27)],
+                products: [
+                    .library(name: "IOSConsumer", targets: ["IOSConsumer"]),
+                ],
+                dependencies: [
+                    .package(name: "GeneratedIntegration", path: "\(dependencyPath)"),
+                ],
+                targets: [
+                    .target(
+                        name: "IOSConsumer",
+                        dependencies: [
+                            .product(
+                                name: "\(packageName)",
+                                package: "GeneratedIntegration"
+                            ),
+                        ]
+                    ),
+                ]
+            )
+            """ + "\n"
+        try Data(iOSConsumerPackage.utf8).write(
+            to: iOSConsumerURL.appending(path: "Package.swift"),
+            options: .atomic
+        )
+        let iOSConsumerSource = """
+            import \(packageName)
+
+            public enum IOSConsumerIntegration {
+                public static let assetRelativePath =
+                    CoreAILabTensorFixtureCoreAIModelResources.assetRelativePath
+            }
+            """ + "\n"
+        try Data(iOSConsumerSource.utf8).write(
+            to: iOSConsumerSourcesURL.appending(path: "IOSConsumer.swift"),
+            options: .atomic
+        )
+        let iOSBuildOutput = try runExecutable(
+            at: URL(filePath: "/usr/bin/xcodebuild"),
+            arguments: [
+                "-scheme", "IOSConsumer",
+                "-destination", "generic/platform=iOS",
+                "-derivedDataPath", cleanParent.appending(path: "IOSDerivedData").path,
+                "CODE_SIGNING_ALLOWED=NO",
+                "build",
+            ],
+            environment: [
+                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+                "SWIFTPM_DISABLE_PACKAGE_REPOSITORY_CACHE": "1",
+            ],
+            currentDirectoryURL: iOSConsumerURL
+        )
+        #expect(iOSBuildOutput.contains("BUILD SUCCEEDED"))
+    }
     #endif
 
     private func report(at url: URL) -> CoreAIModelAssetReport {
@@ -367,6 +810,38 @@ struct CoreAIIntegrationExportTests {
         )
     }
 
+    private func statefulContract(named name: String) -> CoreAIFunctionContract {
+        CoreAIFunctionContract(
+            name: name,
+            inputs: [],
+            states: [
+                CoreAIFunctionValueContract(
+                    name: "cache",
+                    kind: .tensor(
+                        CoreAITensorContract(
+                            scalarType: .float32,
+                            shape: [1, 4],
+                            hasDynamicShape: false,
+                            minimumByteCount: 16
+                        )
+                    )
+                ),
+            ],
+            outputs: [],
+            unsupportedReason: nil
+        )
+    }
+
+    private func descriptorlessContract(named name: String) -> CoreAIFunctionContract {
+        CoreAIFunctionContract(
+            name: name,
+            inputs: [],
+            states: [],
+            outputs: [],
+            unsupportedReason: "Core AI did not provide a descriptor for this function."
+        )
+    }
+
     private func fixtureURL() throws -> URL {
         try CoreAITestFixtures.tensorModelURL()
     }
@@ -375,26 +850,135 @@ struct CoreAIIntegrationExportTests {
         URL.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
     }
 
+    private func packageSnapshot(at rootURL: URL) throws -> [String: Data] {
+        guard let enumerator = FileManager.default.enumerator(
+            at: rootURL,
+            includingPropertiesForKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
+        ) else {
+            return [:]
+        }
+        var snapshot: [String: Data] = [:]
+        for case let url as URL in enumerator {
+            let values = try url.resourceValues(
+                forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
+            )
+            #expect(values.isSymbolicLink != true)
+            guard values.isRegularFile == true else { continue }
+            let relativePath = String(url.path.dropFirst(rootURL.path.count + 1))
+            snapshot[relativePath] = try Data(contentsOf: url)
+        }
+        return snapshot
+    }
+
     #if os(macOS)
+    private func checksumManifest(in packageURL: URL) throws -> CoreAIExportChecksumManifest {
+        try JSONDecoder().decode(
+            CoreAIExportChecksumManifest.self,
+            from: Data(contentsOf: packageURL.appending(path: "coreai-checksums.json"))
+        )
+    }
+
+    private func updateChecksum(
+        for relativePath: String,
+        data: Data,
+        in packageURL: URL
+    ) throws {
+        let manifest = try checksumManifest(in: packageURL)
+        let digest = Data(SHA256.hash(data: data))
+        let files = manifest.files.map { file in
+            if file.relativePath == relativePath {
+                CoreAIExportChecksumManifest.File(
+                    relativePath: relativePath,
+                    sha256: hexadecimalString(digest),
+                    byteCount: Int64(data.count)
+                )
+            } else {
+                file
+            }
+        }
+        let updated = CoreAIExportChecksumManifest(files: files)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        try encoder.encode(updated).write(
+            to: packageURL.appending(path: "coreai-checksums.json"),
+            options: .atomic
+        )
+    }
+
+    private func hexadecimalString(_ data: Data) -> String {
+        let digits = Array("0123456789abcdef".utf8)
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(data.count * 2)
+        for byte in data {
+            bytes.append(digits[Int(byte >> 4)])
+            bytes.append(digits[Int(byte & 0x0f)])
+        }
+        return String(decoding: bytes, as: UTF8.self)
+    }
+
+    private func runVerifierStructureOnly(
+        in packageURL: URL
+    ) throws -> (status: Int32, output: String) {
+        try runExecutableAllowingFailure(
+            at: URL(filePath: "/usr/bin/python3"),
+            arguments: [
+                packageURL.appending(path: "verify-export.py").path,
+                "--structure-only",
+            ]
+        )
+    }
+
     private func runXcrun(arguments: [String]) throws -> String {
         try runExecutable(at: URL(filePath: "/usr/bin/xcrun"), arguments: arguments)
     }
 
-    private func runExecutable(at url: URL, arguments: [String]) throws -> String {
+    private func runExecutable(
+        at url: URL,
+        arguments: [String],
+        environment: [String: String] = [:],
+        currentDirectoryURL: URL? = nil
+    ) throws -> String {
+        let outcome = try runExecutableAllowingFailure(
+            at: url,
+            arguments: arguments,
+            environment: environment,
+            currentDirectoryURL: currentDirectoryURL
+        )
+        guard outcome.status == 0 else {
+            throw CocoaError(
+                .executableRuntimeMismatch,
+                userInfo: [NSDebugDescriptionErrorKey: outcome.output]
+            )
+        }
+        return outcome.output
+    }
+
+    private func runExecutableAllowingFailure(
+        at url: URL,
+        arguments: [String],
+        environment: [String: String] = [:],
+        currentDirectoryURL: URL? = nil
+    ) throws -> (status: Int32, output: String) {
         let process = Process()
-        let output = Pipe()
+        let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        FileManager.default.createFile(atPath: outputURL.path, contents: nil)
+        let output = try FileHandle(forWritingTo: outputURL)
+        defer {
+            try? output.close()
+            try? FileManager.default.removeItem(at: outputURL)
+        }
         process.executableURL = url
         process.arguments = arguments
+        process.environment = ProcessInfo.processInfo.environment.merging(environment) { _, new in new }
+        process.currentDirectoryURL = currentDirectoryURL
         process.standardOutput = output
         process.standardError = output
         try process.run()
         process.waitUntilExit()
-        let data = output.fileHandleForReading.readDataToEndOfFile()
+        try output.close()
+        let data = try Data(contentsOf: outputURL)
         let text = String(decoding: data, as: UTF8.self)
-        guard process.terminationStatus == 0 else {
-            throw CocoaError(.executableRuntimeMismatch, userInfo: [NSDebugDescriptionErrorKey: text])
-        }
-        return text
+        return (process.terminationStatus, text)
     }
     #endif
 }

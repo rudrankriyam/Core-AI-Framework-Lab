@@ -6,6 +6,7 @@ import Observation
 @MainActor
 @Observable
 final class AppleObjectDetectionWorkspaceModel {
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     private(set) var modelName: String?
     private(set) var sourceImage: CGImage?
     private(set) var imageName: String?
@@ -18,23 +19,51 @@ final class AppleObjectDetectionWorkspaceModel {
 
     @ObservationIgnored
     private let engine: any AppleObjectDetecting
+    @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
+    @ObservationIgnored
+    private var activeRunID: UUID?
 
-    init(engine: any AppleObjectDetecting = AppleObjectDetectorEngine()) {
+    init(
+        engine: any AppleObjectDetecting = AppleObjectDetectorEngine(),
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
+    ) {
         self.engine = engine
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-yolos-tiny-detection",
+            title: "YOLOS Tiny",
+            modelIdentifier: "yolos-tiny"
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
+    }
+
+    var isBusy: Bool {
+        isLoadingModel || isRunning
     }
 
     var canRun: Bool {
-        modelName != nil && sourceImage != nil && !isLoadingModel && !isRunning
+        modelName != nil && sourceImage != nil && !isBusy
     }
 
     func loadModel(from url: URL) async {
+        guard !isBusy else { return }
         isLoadingModel = true
         statusMessage = "Specializing and loading \(url.lastPathComponent)…"
         defer { isLoadingModel = false }
 
         do {
+            try CoreAIRuntimeArtifactValidator.validate(
+                url,
+                for: .appleObjectDetection,
+                context: runContext
+            )
             try await engine.loadModel(at: url)
             modelName = url.lastPathComponent
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: url.lastPathComponent
+            )
             detections = []
             clearError()
             statusMessage = "Model ready. Choose an image to run object detection."
@@ -44,6 +73,7 @@ final class AppleObjectDetectionWorkspaceModel {
     }
 
     func loadImage(from url: URL) {
+        guard !isBusy else { return }
         let isAccessing = url.startAccessingSecurityScopedResource()
         defer {
             if isAccessing {
@@ -67,6 +97,7 @@ final class AppleObjectDetectionWorkspaceModel {
     }
 
     func runDetection() async {
+        guard !isBusy, activeRunID == nil else { return }
         guard modelName != nil else {
             present(AppleObjectDetectionError.modelNotLoaded)
             return
@@ -77,24 +108,64 @@ final class AppleObjectDetectionWorkspaceModel {
         }
 
         detections = []
+        let runID = UUID()
+        activeRunID = runID
         isRunning = true
         statusMessage = "Running YOLOS with Core AI…"
-        defer { isRunning = false }
+        defer {
+            if activeRunID == runID {
+                activeRunID = nil
+                isRunning = false
+            }
+        }
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: modelName ?? runContext.comparisonIdentity.modelIdentifier
+        )
 
         do {
-            detections = try await engine.detect(in: sourceImage)
+            let detectedObjects = try await engine.detect(in: sourceImage)
+            try Task.checkCancellation()
+            guard activeRunID == runID else {
+                runCoordinator.cancel(
+                    runToken,
+                    summary: "Object detection superseded by a newer request."
+                )
+                return
+            }
+            detections = detectedObjects
             clearError()
             statusMessage = detections.isEmpty
                 ? "No objects met the default confidence threshold."
                 : detections.count == 1
                     ? "Found 1 object."
                     : "Found \(detections.count) objects."
+            runCoordinator.succeed(runToken, summary: statusMessage)
+        } catch is CancellationError {
+            guard activeRunID == runID else {
+                runCoordinator.cancel(
+                    runToken,
+                    summary: "Object detection superseded by a newer request."
+                )
+                return
+            }
+            statusMessage = "Object detection canceled."
+            runCoordinator.cancel(runToken, summary: statusMessage)
         } catch {
+            guard activeRunID == runID else {
+                runCoordinator.cancel(
+                    runToken,
+                    summary: "Object detection superseded by a newer request."
+                )
+                return
+            }
+            runCoordinator.fail(runToken, error: error)
             present(error)
         }
     }
 
     func presentImportError(_ error: any Error) {
+        guard !isBusy else { return }
         present(error)
     }
 

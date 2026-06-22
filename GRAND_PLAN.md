@@ -42,9 +42,9 @@ Current official references:
 
 ## 3. What exists today
 
-The repository is already a strong vertical prototype:
+The repository began as a strong vertical prototype:
 
-- A SwiftUI macOS/iOS shell with a Chatterbox workspace and a static runtime catalog.
+- A SwiftUI macOS/iOS shell with a Chatterbox workspace and an early runtime catalog.
 - Four bundled Chatterbox `.aimodel` assets totaling roughly 600 MiB.
 - Six native Core AI functions:
   - T3 embeddings: `prefill`, `decode`
@@ -56,16 +56,16 @@ The repository is already a strong vertical prototype:
 - Bespoke adapters for T3, S3Gen, the HiFT vocoder, and reference encoders.
 - PyTorch parity tests, Core AI runtime validation, native contract tests, a known no-cut regression sentence, and measured Release performance.
 
-The limiting architecture is also clear:
+The original limiting architecture was also clear:
 
-- `ContentView` is a two-tab demo shell.
-- `CoreAIRuntimeView` is a static list rather than a real asset explorer.
+- `ContentView` was a two-tab demo shell.
+- `CoreAIRuntimeView` was a static list rather than a recipe-backed studio.
 - `ChatterboxCoreAIEngine` remains a model-specific runtime adapter, but its asset
   paths, native entrypoints, display metadata, target preference, tokenizer, and
   capacity now come from a validated bundled recipe manifest.
-- Conversion is reproducible from the terminal but invisible to the app.
-- Large assets live in the app bundle and Git history rather than a managed artifact library.
-- Experiments and benchmarks exist as chat/terminal evidence, not durable project records.
+- Conversion was reproducible from the terminal but invisible to the app.
+- Large assets lived only in the app bundle and Git history rather than a managed artifact library.
+- Experiments and benchmarks existed as chat/terminal evidence, not durable project records.
 
 The next step is therefore not “add another model tab.” It is to extract the system hiding inside Chatterbox.
 
@@ -131,17 +131,34 @@ The first platform slice is now represented in the repository:
 - A runnable Wav2Vec2 audio playground built directly on Core AI, with
   AVFoundation decoding and 16 kHz mono resampling, static-contract validation,
   greedy CTC decoding, timing, and direct conversion handoff.
+- A versioned recipe-to-experience registry drives Runtime Studio navigation,
+  workload grouping, current-OS availability, and capability presentation.
+  Multiple segmentation and diffusion recipes reuse one semantic adapter
+  without adding another navigation screen.
+- Qwen, YOLOS, EfficientSAM/SAM 3, Wav2Vec2, and diffusion workspaces share a
+  run coordinator for running/succeeded/failed/canceled state, session-scoped
+  cold/warm classification, and comparison identity. Users can optionally
+  record future runs into a Lab Project; successful runs add measured timing
+  metric evidence without fabricating output artifacts. Imported families are
+  checked against the selected registry intent; because current exports do not
+  prove an artifact-bound recipe revision, each persisted run has explicit
+  `unverified_intent` validation evidence and no recipe snapshot is linked.
+  Terminal status plus timing evidence is an idempotent write that remains
+  retryable after a persistence failure.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 0's
 schema, manifest, and persistence foundation slice is implemented; automatic
-workspace run/evidence capture remains follow-up integration. Milestone 1
-remains incomplete because generic resource-folder metadata, descriptor
-snapshots, provenance editing, and specialization-cache ownership are not yet
-unified in the project library. Restart-safe conversion execution remains
-Milestone 3 work.
+workspace run/evidence capture remains follow-up integration. Milestone 1's
+project-library slice now unifies deterministic resource-folder metadata,
+durable descriptor snapshots, editable source provenance, and project-owned
+specialization-cache cleanup with the existing generic function workbench and
+integration export. Milestone 2 now has a shared registry and lifecycle slice,
+while embeddings, persistent output files, real modality-aware comparisons,
+imported bookmarks, and cross-launch active-run recovery remain open.
+Restart-safe conversion execution remains Milestone 3 work.
 
 ## 4. Product boundary
 
@@ -497,6 +514,11 @@ Done bar:
 
 ### Milestone 1 — Model Library and universal inspector (3 weeks)
 
+Implementation status: complete for the project-library and generic-runtime
+boundary. Hardware specialization and inference remain capability-dependent,
+and are exercised by the existing real Core AI fixture rather than simulated by
+the library persistence tests.
+
 Deliverables:
 
 - Import `.aimodel` assets and Core AI resource folders.
@@ -525,6 +547,15 @@ Done bar:
 
 ### Milestone 3 — Guided conversion alpha (4–5 weeks)
 
+Initial durability slice: the repository now has a versioned conversion-job
+store with legal state transitions, append-only structured logs, explicit
+restart reconciliation, and checkpoint reuse decisions bound to the exact
+versioned request/toolchain/source identity and store-verified artifact tree
+evidence. The current
+process runner still starts a fresh converter process after interruption;
+automatic workspace adoption, per-gate execution, and end-to-end restart
+recovery remain unfinished.
+
 Deliverables:
 
 - Resumable conversion job engine with structured logs and cancellation.
@@ -539,6 +570,20 @@ Done bar:
 - A supported Qwen preset can be selected and converted from the app on a clean machine, then run in Runtime Studio.
 
 ### Milestone 4 — Custom Recipe Studio (5–7 weeks)
+
+Foundation checkpoint: the repository now has a versioned typed pipeline
+manifest, deterministic JSON codec, and structural validator for asset
+functions, host operators, explicit state, seeded randomness, and bounded loops.
+Recipe Studio adds a deterministic authoring schema and native editors for
+PyTorch source/module configuration, example inputs, dynamic dimensions, state,
+externalization, and function entrypoints. Pipeline Studio edits the same typed
+asset-level graph. Attributed unsupported-op findings, an evidence-backed rewrite
+catalog, and deliberately failing custom-lowering/Metal stubs cover the manual
+resolution handoff.
+
+This is not Milestone 4 completion. The diagnostic worker, Lab Project recipe
+persistence, conversion execution, generic pipeline runtime, and complete
+Chatterbox migration remain part of this milestone.
 
 Deliverables:
 
@@ -556,10 +601,13 @@ Done bar:
 
 ### Milestone 5 — Optimization and evidence lab (4–5 weeks)
 
-Initial slice: the generic function workbench now provides a stable in-session
+Initial slices: the generic function workbench provides a stable in-session
 benchmark protocol for deterministic NDArray inputs and selected specialization
-configurations. Persistent evidence, generated variants, quality gates, and
-promotion rules remain part of this milestone.
+configurations, plus validated, deterministic, path-free JSON evidence export
+with artifact identity, full trial distributions, environment/toolchain data,
+trial-derived aggregate validation, phase-scoped benchmark environment data,
+and explicit unsupported metrics. Project-linked persistence, generated
+variants, quality gates, and promotion rules remain part of this milestone.
 
 Deliverables:
 
@@ -576,6 +624,13 @@ Done bar:
 - A slower “optimization” cannot replace a current variant without an explicit override.
 
 ### Milestone 6 — Integration export and code generation (4–6 weeks)
+
+Initial standalone-asset slice: Integration Export now emits a deterministic,
+dependency-free Swift package containing the model resource, typed manifest,
+whole-package checksums, reported third-party notices, generated runtime and bundled
+resource loader, plus a clean offline verifier that compiles with the installed
+SDK without invoking `coreai-build`. Stateless NDArray functions are generated;
+stateful and image-input functions remain truthfully manifest-only.
 
 Deliverables:
 

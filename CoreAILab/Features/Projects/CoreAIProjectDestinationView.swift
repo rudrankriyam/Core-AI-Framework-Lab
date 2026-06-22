@@ -34,14 +34,26 @@ struct CoreAIProjectDestinationView: View {
                 )
             }
         case .inspect(let linkID):
-            if let artifact = artifactLink(withID: linkID)?.artifact {
-                CoreAIAssetInspectorView(initialURL: controller.storedURL(for: artifact))
+            if let link = artifactLink(withID: linkID),
+               let artifact = link.artifact,
+               let storedURL = try? controller.validatedStoredURL(for: artifact) {
+                CoreAIAssetInspectorView(
+                    initialURL: storedURL,
+                    projectArtifactLink: link,
+                    projectController: controller
+                )
             } else {
                 ContentUnavailableView("Artifact Unavailable", systemImage: "shippingbox")
             }
         case .workbench(let linkID):
-            if let artifact = artifactLink(withID: linkID)?.artifact {
-                CoreAIFunctionWorkbenchView(initialURL: controller.storedURL(for: artifact))
+            if let link = artifactLink(withID: linkID),
+               let artifact = link.artifact,
+               let storedURL = try? controller.validatedStoredURL(for: artifact) {
+                CoreAIFunctionWorkbenchView(
+                    initialURL: storedURL,
+                    projectArtifactLink: link,
+                    projectController: controller
+                )
             } else {
                 ContentUnavailableView("Artifact Unavailable", systemImage: "shippingbox")
             }

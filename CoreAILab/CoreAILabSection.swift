@@ -4,6 +4,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case projects
     case appleModels
     case conversion
+    case recipeStudio
     case chatterbox
     case diarization
     case assetInspector
@@ -20,6 +21,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "Apple Models"
         case .conversion:
             "Convert"
+        case .recipeStudio:
+            "Recipe Studio"
         case .chatterbox:
             "Chatterbox"
         case .diarization:
@@ -27,7 +30,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         case .assetInspector:
             "Asset Inspector"
         case .runtime:
-            "Workbench"
+            "Runtime Studio"
         case .deviceLab:
             "Device Lab"
         }
@@ -41,6 +44,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "square.stack.3d.up"
         case .conversion:
             "arrow.triangle.2.circlepath"
+        case .recipeStudio:
+            "slider.horizontal.3"
         case .chatterbox:
             "waveform"
         case .diarization:
@@ -48,7 +53,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         case .assetInspector:
             "doc.text.magnifyingglass"
         case .runtime:
-            "function"
+            "play.square.stack"
         case .deviceLab:
             "iphone.gen3"
         }
