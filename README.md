@@ -94,6 +94,14 @@ one of several references does not. Stored `.aimodel` packages open directly in
 Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
 Project** action instead of remaining tied to their original output folder.
 
+Directory imports also retain a versioned manifest of safe relative paths,
+streamed per-file SHA-256 digests, and byte counts. Model inspection snapshots
+function descriptors, storage and compute types, and operation distribution into
+the project library. Source provenance remains editable per project artifact,
+while successful
+specializations register project-owned cache configurations that can be browsed
+and removed without deleting cache entries still referenced by another project.
+
 The project schema also stores immutable recipe-manifest revisions, target
 profiles, typed run status, and evidence metadata. These records retain the exact
 validated JSON contracts used by a run and survive reopening the SwiftData store.

@@ -1,6 +1,40 @@
 import CryptoKit
 import Foundation
 
+struct CoreAIStoredArtifact: Equatable, Sendable {
+    let sourceURL: URL
+    let sha256Digest: String
+    let storageRelativePath: String
+    let originalFilename: String
+    let kind: CoreAIArtifactKind
+    let byteCount: Int64
+    let fileCount: Int
+    let resourceSnapshot: CoreAIResourceFolderSnapshot?
+    let wasAlreadyStored: Bool
+
+    fileprivate init(
+        sourceURL: URL,
+        sha256Digest: String,
+        storageRelativePath: String,
+        originalFilename: String,
+        kind: CoreAIArtifactKind,
+        byteCount: Int64,
+        fileCount: Int,
+        resourceSnapshot: CoreAIResourceFolderSnapshot?,
+        wasAlreadyStored: Bool
+    ) {
+        self.sourceURL = sourceURL
+        self.sha256Digest = sha256Digest
+        self.storageRelativePath = storageRelativePath
+        self.originalFilename = originalFilename
+        self.kind = kind
+        self.byteCount = byteCount
+        self.fileCount = fileCount
+        self.resourceSnapshot = resourceSnapshot
+        self.wasAlreadyStored = wasAlreadyStored
+    }
+}
+
 actor CoreAIArtifactStore {
     nonisolated static let defaultRootURL = CoreAIStorageLocation.artifactRootURL
     nonisolated static let shared = CoreAIArtifactStore()
@@ -26,49 +60,62 @@ actor CoreAIArtifactStore {
             }
         }
 
-        let sourceFingerprint = try fingerprint(at: sourceURL)
-        let relativePath = storageRelativePath(for: sourceFingerprint)
-        let destinationURL = url(for: relativePath)
-        let destinationContainerURL = destinationURL.deletingLastPathComponent()
-
         try fileManager.createDirectory(
             at: rootURL,
             withIntermediateDirectories: true
         )
+        let sourceFingerprint = try fingerprint(at: sourceURL)
+        let relativePath = storageRelativePath(for: sourceFingerprint)
+        let destinationURL = try validatedURL(
+            for: relativePath,
+            requireExisting: false
+        )
+        let destinationContainerURL = destinationURL.deletingLastPathComponent()
 
         if fileManager.fileExists(atPath: destinationContainerURL.path) {
-            guard fileManager.fileExists(atPath: destinationURL.path) else {
-                throw CoreAIArtifactStoreError.corruptedStoredArtifact(
-                    sourceFingerprint.sha256Digest
-                )
-            }
-            let storedFingerprint = try fingerprint(at: destinationURL)
+            let existingURL = try validatedURL(
+                for: relativePath,
+                requireExisting: true
+            )
+            let storedFingerprint = try fingerprint(at: existingURL)
             guard storedFingerprint.sha256Digest == sourceFingerprint.sha256Digest else {
                 throw CoreAIArtifactStoreError.corruptedStoredArtifact(
                     sourceFingerprint.sha256Digest
                 )
             }
             return sourceFingerprint.storedArtifact(
+                sourceURL: sourceURL,
                 relativePath: relativePath,
-                originalFilename: sourceURL.lastPathComponent,
                 wasAlreadyStored: true
             )
         }
 
-        let stagingParentURL = rootURL
-            .appending(path: ".staging", directoryHint: .isDirectory)
-            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let stagingIdentifier = UUID().uuidString
+        let stagingParentURL = try CoreAIStoredPathSecurity.validatedDescendantURL(
+            rootURL: rootURL,
+            components: [".staging", stagingIdentifier],
+            requireExisting: false
+        )
         let stagedPayloadURL = stagingParentURL.appending(
             path: destinationURL.lastPathComponent,
             directoryHint: sourceFingerprint.isDirectory ? .isDirectory : .notDirectory
         )
         defer {
-            try? fileManager.removeItem(at: stagingParentURL)
+            try? CoreAIStoredPathSecurity.removeTree(
+                rootURL: rootURL,
+                parentComponents: [".staging"],
+                entryName: stagingIdentifier
+            )
         }
 
         try fileManager.createDirectory(
             at: stagingParentURL,
             withIntermediateDirectories: true
+        )
+        _ = try CoreAIStoredPathSecurity.validatedDescendantURL(
+            rootURL: rootURL,
+            components: [".staging", stagingIdentifier],
+            requireExisting: true
         )
         try fileManager.copyItem(at: sourceURL, to: stagedPayloadURL)
 
@@ -81,7 +128,13 @@ actor CoreAIArtifactStore {
             at: destinationContainerURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
+        _ = try validatedURL(for: relativePath, requireExisting: false)
         do {
+            _ = try CoreAIStoredPathSecurity.validatedDescendantURL(
+                rootURL: rootURL,
+                components: [".staging", stagingIdentifier],
+                requireExisting: true
+            )
             try fileManager.moveItem(
                 at: stagingParentURL,
                 to: destinationContainerURL
@@ -90,37 +143,46 @@ actor CoreAIArtifactStore {
             guard fileManager.fileExists(atPath: destinationURL.path) else {
                 throw error
             }
-            let storedFingerprint = try fingerprint(at: destinationURL)
+            let existingURL = try validatedURL(
+                for: relativePath,
+                requireExisting: true
+            )
+            let storedFingerprint = try fingerprint(at: existingURL)
             guard storedFingerprint.sha256Digest == sourceFingerprint.sha256Digest else {
                 throw CoreAIArtifactStoreError.corruptedStoredArtifact(
                     sourceFingerprint.sha256Digest
                 )
             }
             return sourceFingerprint.storedArtifact(
+                sourceURL: sourceURL,
                 relativePath: relativePath,
-                originalFilename: sourceURL.lastPathComponent,
                 wasAlreadyStored: true
             )
         }
 
         return sourceFingerprint.storedArtifact(
+            sourceURL: sourceURL,
             relativePath: relativePath,
-            originalFilename: sourceURL.lastPathComponent,
             wasAlreadyStored: false
         )
     }
 
     func removeArtifact(at relativePath: String) throws {
-        let artifactURL = try validatedURL(for: relativePath)
-        let containerURL = artifactURL.deletingLastPathComponent()
-        guard fileManager.fileExists(atPath: containerURL.path) else { return }
-        try fileManager.removeItem(at: containerURL)
+        try CoreAIStoredPathSecurity.removeContentAddressedContainer(
+            rootURL: rootURL,
+            relativePath: relativePath
+        )
     }
 
-    nonisolated func url(for relativePath: String) -> URL {
-        relativePath.split(separator: "/").reduce(rootURL) { partialURL, component in
-            partialURL.appending(path: String(component))
-        }
+    nonisolated func validatedURL(
+        for relativePath: String,
+        requireExisting: Bool = true
+    ) throws -> URL {
+        try CoreAIStoredPathSecurity.validatedURL(
+            rootURL: rootURL,
+            relativePath: relativePath,
+            requireExisting: requireExisting
+        )
     }
 
     private func fingerprint(at sourceURL: URL) throws -> Fingerprint {
@@ -148,29 +210,57 @@ actor CoreAIArtifactStore {
 
         var byteCount: Int64 = 0
         var fileCount = 0
+        var resourceDirectories: [String] = []
+        var resourceFiles: [CoreAIResourceFileSnapshot] = []
         if isDirectory {
             let entries = try entries(in: sourceURL)
             for entry in entries {
                 update(entry.isDirectory ? "directory" : "file", in: &hasher)
                 update(entry.relativePath, in: &hasher)
-                if !entry.isDirectory {
-                    byteCount = try addFile(
+                if entry.isDirectory {
+                    resourceDirectories.append(entry.relativePath)
+                } else {
+                    let fileFingerprint = try addFile(
                         at: entry.url,
-                        to: &hasher,
-                        currentByteCount: byteCount
+                        to: &hasher
                     )
+                    let (updatedByteCount, overflow) = byteCount.addingReportingOverflow(
+                        fileFingerprint.byteCount
+                    )
+                    guard !overflow else {
+                        throw CoreAIArtifactStoreError.unsupportedItem(
+                            entry.relativePath
+                        )
+                    }
+                    byteCount = updatedByteCount
                     fileCount += 1
+                    resourceFiles.append(
+                        CoreAIResourceFileSnapshot(
+                            relativePath: entry.relativePath,
+                            sha256Digest: fileFingerprint.sha256Digest,
+                            byteCount: fileFingerprint.byteCount
+                        )
+                    )
                 }
             }
         } else {
             update("file", in: &hasher)
             byteCount = try addFile(
                 at: sourceURL,
-                to: &hasher,
-                currentByteCount: byteCount
-            )
+                to: &hasher
+            ).byteCount
             fileCount = 1
         }
+
+        let resourceSnapshot: CoreAIResourceFolderSnapshot? = if isDirectory {
+            CoreAIResourceFolderSnapshot(
+                directories: resourceDirectories,
+                files: resourceFiles
+            )
+        } else {
+            nil
+        }
+        try resourceSnapshot?.validate()
 
         return Fingerprint(
             sha256Digest: hexadecimal(hasher.finalize()),
@@ -178,7 +268,8 @@ actor CoreAIArtifactStore {
             pathExtension: pathExtension,
             byteCount: byteCount,
             fileCount: fileCount,
-            isDirectory: isDirectory
+            isDirectory: isDirectory,
+            resourceSnapshot: resourceSnapshot
         )
     }
 
@@ -196,6 +287,7 @@ actor CoreAIArtifactStore {
 
         let rootPath = rootURL.standardizedFileURL.path
         var entries: [Entry] = []
+        var comparisonPaths = Set<String>()
         for case let childURL as URL in enumerator {
             let values = try childURL.resourceValues(
                 forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
@@ -206,6 +298,23 @@ actor CoreAIArtifactStore {
             }
             let relativePath = String(childPath.dropFirst(rootPath.count + 1))
                 .precomposedStringWithCanonicalMapping
+            do {
+                try CoreAIManifestValidator.requireSafeRelativePath(
+                    relativePath,
+                    path: "resourceFolder"
+                )
+            } catch {
+                throw CoreAIArtifactStoreError.unsafeRelativePath(relativePath)
+            }
+            guard !relativePath.unicodeScalars.contains(where: {
+                CharacterSet.controlCharacters.contains($0)
+            }) else {
+                throw CoreAIArtifactStoreError.unsafeRelativePath(relativePath)
+            }
+            let comparisonPath = relativePath.lowercased()
+            guard comparisonPaths.insert(comparisonPath).inserted else {
+                throw CoreAIArtifactStoreError.unsafeRelativePath(relativePath)
+            }
             if values.isSymbolicLink == true {
                 throw CoreAIArtifactStoreError.symbolicLink(relativePath)
             }
@@ -225,35 +334,37 @@ actor CoreAIArtifactStore {
 
     private func addFile(
         at url: URL,
-        to hasher: inout SHA256,
-        currentByteCount: Int64
-    ) throws -> Int64 {
+        to hasher: inout SHA256
+    ) throws -> FileFingerprint {
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
 
         let expectedByteCount = try handle.seekToEnd()
         try handle.seek(toOffset: 0)
         update(expectedByteCount, in: &hasher)
-        var updatedByteCount = currentByteCount
+        var fileHasher = SHA256()
         var fileByteCount: UInt64 = 0
         while let chunk = try handle.read(upToCount: readChunkSize), !chunk.isEmpty {
             let (nextFileByteCount, fileOverflow) = fileByteCount.addingReportingOverflow(
                 UInt64(chunk.count)
             )
-            let (nextByteCount, overflow) = updatedByteCount.addingReportingOverflow(
-                Int64(chunk.count)
-            )
-            guard !fileOverflow, !overflow else {
+            guard !fileOverflow else {
                 throw CoreAIArtifactStoreError.unsupportedItem(url.lastPathComponent)
             }
             fileByteCount = nextFileByteCount
-            updatedByteCount = nextByteCount
             hasher.update(data: chunk)
+            fileHasher.update(data: chunk)
         }
         guard fileByteCount == expectedByteCount else {
             throw CoreAIArtifactStoreError.sourceChangedDuringImport
         }
-        return updatedByteCount
+        guard let byteCount = Int64(exactly: fileByteCount) else {
+            throw CoreAIArtifactStoreError.unsupportedItem(url.lastPathComponent)
+        }
+        return FileFingerprint(
+            byteCount: byteCount,
+            sha256Digest: hexadecimal(fileHasher.finalize())
+        )
     }
 
     private func update(_ value: String, in hasher: inout SHA256) {
@@ -292,26 +403,6 @@ actor CoreAIArtifactStore {
             payloadName
         ].joined(separator: "/")
     }
-
-    private func validatedURL(for relativePath: String) throws -> URL {
-        let components = relativePath.split(separator: "/")
-        guard !relativePath.hasPrefix("/"),
-              components.count == 4,
-              components[0] == "sha256",
-              components[1].count == 2,
-              components[2].count == 64,
-              components[3] == "artifact" || components[3].hasPrefix("artifact."),
-              components[1].allSatisfy(\.isHexDigit),
-              components[2].allSatisfy(\.isHexDigit) else {
-            throw CoreAIArtifactStoreError.invalidStoredPath
-        }
-        let candidate = url(for: relativePath).standardizedFileURL
-        let rootPath = rootURL.standardizedFileURL.path
-        guard candidate.path.hasPrefix(rootPath + "/") else {
-            throw CoreAIArtifactStoreError.invalidStoredPath
-        }
-        return candidate
-    }
 }
 
 private extension CoreAIArtifactStore {
@@ -328,21 +419,29 @@ private extension CoreAIArtifactStore {
         let byteCount: Int64
         let fileCount: Int
         let isDirectory: Bool
+        let resourceSnapshot: CoreAIResourceFolderSnapshot?
 
         func storedArtifact(
+            sourceURL: URL,
             relativePath: String,
-            originalFilename: String,
             wasAlreadyStored: Bool
         ) -> CoreAIStoredArtifact {
             CoreAIStoredArtifact(
+                sourceURL: sourceURL,
                 sha256Digest: sha256Digest,
                 storageRelativePath: relativePath,
-                originalFilename: originalFilename,
+                originalFilename: sourceURL.lastPathComponent,
                 kind: kind,
                 byteCount: byteCount,
                 fileCount: fileCount,
+                resourceSnapshot: resourceSnapshot,
                 wasAlreadyStored: wasAlreadyStored
             )
         }
+    }
+
+    struct FileFingerprint {
+        let byteCount: Int64
+        let sha256Digest: String
     }
 }
