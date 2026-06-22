@@ -1,9 +1,12 @@
 import CoreAI
 import CoreVideo
+import CryptoKit
 import Foundation
 
 actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     private let artifactDigester: any CoreAIArtifactDigesting
+    private let modelCache: any CoreAIModelCacheAccessing
+    private let cacheIdentityStore: CoreAISpecializationCacheIdentityStore
     private var model: AIModel?
     private var modelURL: URL?
     private var configuration: CoreAISpecializationConfiguration?
@@ -12,9 +15,14 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     private var hasActiveRun = false
 
     init(
-        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared
+        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared,
+        modelCache: any CoreAIModelCacheAccessing = CoreAIDefaultModelCacheAccess(),
+        cacheIdentityStore: CoreAISpecializationCacheIdentityStore =
+            CoreAISpecializationCacheIdentityStore.shared
     ) {
         self.artifactDigester = artifactDigester
+        self.modelCache = modelCache
+        self.cacheIdentityStore = cacheIdentityStore
     }
 
     func reset() {
@@ -29,13 +37,19 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     func isCached(
         at url: URL,
         configuration: CoreAISpecializationConfiguration
-    ) throws -> Bool {
-        try withSecurityScopedAccess(to: url) {
-            try cachedModel(
-                at: url,
-                configuration: configuration
-            ) != nil
+    ) async throws -> Bool {
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
+        let artifactDigest = try await artifactDigester.digest(at: url)
+        return try await cachedModel(
+            at: url,
+            configuration: configuration,
+            artifactDigest: artifactDigest
+        ) != nil
     }
 
     nonisolated static func isMissingCacheEntry(_ error: any Error) -> Bool {
@@ -74,21 +88,37 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
 
         let clock = ContinuousClock()
         let startedAt = clock.now
-        let cachedModel = try cachedModel(
+        let cachedModel = try await cachedModel(
             at: url,
-            configuration: configuration
+            configuration: configuration,
+            artifactDigest: artifactDigest
         )
         let loadedFromCache = cachedModel != nil
         let specializedModel: AIModel
         if let cachedModel {
             specializedModel = cachedModel
         } else {
-            specializedModel = try await AIModel.specialize(
-                contentsOf: url,
-                options: configuration.options,
-                cache: .default,
-                cachePolicy: cachePolicy.policy
+            specializedModel = try await modelCache.specialize(
+                at: url,
+                configuration: configuration,
+                cachePolicy: cachePolicy
             )
+            do {
+                try await cacheIdentityStore.recordIdentity(
+                    CoreAISpecializationCacheIdentity(
+                        artifactDigest: artifactDigest,
+                        modelBookmarkData: specializedModel.bookmarkData
+                    ),
+                    for: url,
+                    configuration: configuration
+                )
+            } catch {
+                try? await modelCache.deleteEntry(
+                    at: url,
+                    configuration: configuration
+                )
+                throw error
+            }
         }
 
         guard specializationGeneration == generation else {
@@ -110,22 +140,27 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
     func removeCachedEntry(
         at url: URL,
         configuration: CoreAISpecializationConfiguration
-    ) throws {
+    ) async throws {
         guard !hasActiveRun else {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
         }
         specializationGeneration = UUID()
         activeSpecializationGeneration = nil
         releaseLoadedModel(ifMatching: url, configuration: configuration)
-        try withSecurityScopedAccess(to: url) {
-            try AIModelCache.default.deleteEntry(
-                for: url,
-                options: configuration.options
-            )
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
+        try await modelCache.deleteEntry(at: url, configuration: configuration)
+        try await cacheIdentityStore.removeIdentity(
+            for: url,
+            configuration: configuration
+        )
     }
 
-    func removeCachedEntries(at url: URL) throws {
+    func removeCachedEntries(at url: URL) async throws {
         guard !hasActiveRun else {
             throw CoreAIFunctionWorkbenchError.functionAlreadyRunning
         }
@@ -134,9 +169,14 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         if modelURL == url {
             reset()
         }
-        try withSecurityScopedAccess(to: url) {
-            try AIModelCache.default.deleteEntries(for: url)
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
+        try await modelCache.deleteEntries(at: url)
+        try await cacheIdentityStore.removeIdentities(for: url)
     }
 
     func functionContracts() throws -> [CoreAIFunctionContract] {
@@ -376,29 +416,197 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
 
     private func cachedModel(
         at url: URL,
-        configuration: CoreAISpecializationConfiguration
-    ) throws -> AIModel? {
+        configuration: CoreAISpecializationConfiguration,
+        artifactDigest: CoreAIArtifactDigest
+    ) async throws -> AIModel? {
+        let cachedModel: AIModel?
         do {
-            return try AIModelCache.default.model(
-                for: url,
-                options: configuration.options
+            cachedModel = try await modelCache.model(
+                at: url,
+                configuration: configuration
             )
         } catch {
             guard Self.isMissingCacheEntry(error) else { throw error }
+            cachedModel = nil
+        }
+
+        guard let cachedModel else {
+            try await cacheIdentityStore.removeIdentity(
+                for: url,
+                configuration: configuration
+            )
             return nil
+        }
+
+        let recordedIdentity = try await cacheIdentityStore.identity(
+            for: url,
+            configuration: configuration
+        )
+        guard recordedIdentity?.artifactDigest == artifactDigest,
+              recordedIdentity?.modelBookmarkData == cachedModel.bookmarkData else {
+            do {
+                try await modelCache.deleteEntry(
+                    at: url,
+                    configuration: configuration
+                )
+            } catch {
+                guard Self.isMissingCacheEntry(error) else { throw error }
+            }
+            try await cacheIdentityStore.removeIdentity(
+                for: url,
+                configuration: configuration
+            )
+            return nil
+        }
+        return cachedModel
+    }
+}
+
+struct CoreAISpecializationCacheIdentity: Codable, Equatable, Sendable {
+    let artifactDigest: CoreAIArtifactDigest
+    let modelBookmarkData: Data
+}
+
+protocol CoreAIModelCacheAccessing: Sendable {
+    func model(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) async throws -> AIModel?
+    func specialize(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration,
+        cachePolicy: CoreAICachePolicyChoice
+    ) async throws -> AIModel
+    func deleteEntry(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) async throws
+    func deleteEntries(at url: URL) async throws
+}
+
+struct CoreAIDefaultModelCacheAccess: CoreAIModelCacheAccessing {
+    func model(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) async throws -> AIModel? {
+        try AIModelCache.default.model(
+            for: url,
+            options: configuration.options
+        )
+    }
+
+    func specialize(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration,
+        cachePolicy: CoreAICachePolicyChoice
+    ) async throws -> AIModel {
+        try await AIModel.specialize(
+            contentsOf: url,
+            options: configuration.options,
+            cache: .default,
+            cachePolicy: cachePolicy.policy
+        )
+    }
+
+    func deleteEntry(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) async throws {
+        try AIModelCache.default.deleteEntry(
+            for: url,
+            options: configuration.options
+        )
+    }
+
+    func deleteEntries(at url: URL) async throws {
+        try AIModelCache.default.deleteEntries(for: url)
+    }
+}
+
+actor CoreAISpecializationCacheIdentityStore {
+    nonisolated static let shared = CoreAISpecializationCacheIdentityStore()
+
+    private static let keyScheme = "CoreAISpecializationCacheIdentity/v1"
+    private let rootURL: URL
+    private let fileManager: FileManager
+
+    init(
+        rootURL: URL = CoreAIStorageLocation.rootURL.appending(
+            path: "SpecializationCacheIdentities",
+            directoryHint: .isDirectory
+        ),
+        fileManager: FileManager = .default
+    ) {
+        self.rootURL = rootURL
+        self.fileManager = fileManager
+    }
+
+    func identity(
+        for url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) throws -> CoreAISpecializationCacheIdentity? {
+        let identityURL = identityURL(for: url, configuration: configuration)
+        guard fileManager.fileExists(atPath: identityURL.path) else { return nil }
+        return try JSONDecoder().decode(
+            CoreAISpecializationCacheIdentity.self,
+            from: Data(contentsOf: identityURL)
+        )
+    }
+
+    func recordIdentity(
+        _ identity: CoreAISpecializationCacheIdentity,
+        for url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) throws {
+        try fileManager.createDirectory(
+            at: rootURL,
+            withIntermediateDirectories: true
+        )
+        try JSONEncoder().encode(identity).write(
+            to: identityURL(for: url, configuration: configuration),
+            options: .atomic
+        )
+    }
+
+    func removeIdentity(
+        for url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) throws {
+        let identityURL = identityURL(for: url, configuration: configuration)
+        guard fileManager.fileExists(atPath: identityURL.path) else { return }
+        try fileManager.removeItem(at: identityURL)
+    }
+
+    func removeIdentities(for url: URL) throws {
+        for profile in CoreAISpecializationProfile.allCases {
+            for expectFrequentReshapes in [false, true] {
+                try removeIdentity(
+                    for: url,
+                    configuration: CoreAISpecializationConfiguration(
+                        profile: profile,
+                        expectFrequentReshapes: expectFrequentReshapes
+                    )
+                )
+            }
         }
     }
 
-    private func withSecurityScopedAccess<Result>(
-        to url: URL,
-        operation: () throws -> Result
-    ) rethrows -> Result {
-        let isAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if isAccessing {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-        return try operation()
+    private func identityURL(
+        for url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) -> URL {
+        let key = [
+            Self.keyScheme,
+            url.standardizedFileURL.path,
+            configuration.profile.rawValue,
+            String(configuration.expectFrequentReshapes),
+        ].joined(separator: "\u{0}")
+        let digest = SHA256.hash(data: Data(key.utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+        return rootURL.appending(
+            path: "\(digest).json",
+            directoryHint: .notDirectory
+        )
     }
 }

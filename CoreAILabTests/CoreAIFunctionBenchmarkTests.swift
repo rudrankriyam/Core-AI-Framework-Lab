@@ -1,3 +1,4 @@
+import CoreAI
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -251,6 +252,116 @@ struct CoreAIFunctionBenchmarkTests {
     }
 
     @Test
+    func changedArtifactInvalidatesStaleCachedModelBeforeSpecialization() async throws {
+        let temporaryRoot = FileManager.default.temporaryDirectory.appending(
+            path: UUID().uuidString,
+            directoryHint: .isDirectory
+        )
+        defer { try? FileManager.default.removeItem(at: temporaryRoot) }
+        try FileManager.default.createDirectory(
+            at: temporaryRoot,
+            withIntermediateDirectories: true
+        )
+        let modelURL = temporaryRoot.appending(
+            path: "MutableFixture.aimodel",
+            directoryHint: .isDirectory
+        )
+        try FileManager.default.copyItem(
+            at: CoreAITestFixtures.tensorModelURL(),
+            to: modelURL
+        )
+
+        let configuration = CoreAISpecializationConfiguration(profile: .automatic)
+        let artifactStore = CoreAIArtifactStore(
+            rootURL: temporaryRoot.appending(
+                path: "Artifacts",
+                directoryHint: .isDirectory
+            )
+        )
+        let originalDigest = try await artifactStore.digest(at: modelURL)
+        let staleModel = try await AIModel(
+            contentsOf: modelURL,
+            options: configuration.options
+        )
+        let identityStoreURL = temporaryRoot.appending(
+            path: "CacheIdentities",
+            directoryHint: .isDirectory
+        )
+        let initialIdentityStore = CoreAISpecializationCacheIdentityStore(
+            rootURL: identityStoreURL
+        )
+        try await initialIdentityStore.recordIdentity(
+            CoreAISpecializationCacheIdentity(
+                artifactDigest: originalDigest,
+                modelBookmarkData: staleModel.bookmarkData
+            ),
+            for: modelURL,
+            configuration: configuration
+        )
+
+        let metadataURL = modelURL.appending(
+            path: "metadata.json",
+            directoryHint: .notDirectory
+        )
+        var changedMetadata = try Data(contentsOf: metadataURL)
+        changedMetadata.append(contentsOf: [0x20, 0x0A])
+        try changedMetadata.write(to: metadataURL, options: .atomic)
+        let changedDigest = try await artifactStore.digest(at: modelURL)
+        #expect(changedDigest != originalDigest)
+        let currentModel = try await AIModel(
+            contentsOf: modelURL,
+            options: configuration.options
+        )
+
+        let modelCache = CoreAIModelCacheAccessStub(
+            cachedModel: staleModel,
+            specializedModel: currentModel
+        )
+        let identityStore = CoreAISpecializationCacheIdentityStore(
+            rootURL: identityStoreURL
+        )
+        let service = CoreAISpecializationService(
+            artifactDigester: artifactStore,
+            modelCache: modelCache,
+            cacheIdentityStore: identityStore
+        )
+        let specialization = try await service.specialize(
+            at: modelURL,
+            configuration: configuration,
+            cachePolicy: .standard
+        )
+
+        #expect(specialization.artifactDigest == changedDigest)
+        #expect(!specialization.loadedFromCache)
+        let cacheSnapshot = await modelCache.snapshot()
+        #expect(cacheSnapshot.lookupCount == 1)
+        #expect(cacheSnapshot.deletionCount == 1)
+        #expect(cacheSnapshot.specializationCount == 1)
+        let reloadedIdentityStore = CoreAISpecializationCacheIdentityStore(
+            rootURL: identityStoreURL
+        )
+        let recordedIdentity = try await reloadedIdentityStore.identity(
+            for: modelURL,
+            configuration: configuration
+        )
+        #expect(recordedIdentity?.artifactDigest == changedDigest)
+        #expect(recordedIdentity?.modelBookmarkData == currentModel.bookmarkData)
+
+        let result = try await service.runFunction(
+            named: "scale_and_bias",
+            inputs: [
+                CoreAIFunctionInputPlan(
+                    name: "values",
+                    shape: [1, 4],
+                    generator: .zeros,
+                    seed: 42
+                )
+            ]
+        )
+        #expect(result.outputs.first?.mean == 1)
+    }
+
+    @Test
     func realFixtureRunsWarmupAndMeasuredInference() async throws {
         let service = CoreAISpecializationService()
         let fixtureURL = try CoreAITestFixtures.tensorModelURL()
@@ -333,5 +444,60 @@ struct CoreAIFunctionBenchmarkTests {
             Double(components.seconds)
                 + Double(components.attoseconds) / 1_000_000_000_000_000_000
         ) * 1_000
+    }
+}
+
+private actor CoreAIModelCacheAccessStub: CoreAIModelCacheAccessing {
+    private let cachedModel: AIModel
+    private let specializedModel: AIModel
+    private var lookupCount = 0
+    private var deletionCount = 0
+    private var specializationCount = 0
+
+    init(cachedModel: AIModel, specializedModel: AIModel) {
+        self.cachedModel = cachedModel
+        self.specializedModel = specializedModel
+    }
+
+    func model(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) -> AIModel? {
+        lookupCount += 1
+        return cachedModel
+    }
+
+    func specialize(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration,
+        cachePolicy: CoreAICachePolicyChoice
+    ) -> AIModel {
+        specializationCount += 1
+        return specializedModel
+    }
+
+    func deleteEntry(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) {
+        deletionCount += 1
+    }
+
+    func deleteEntries(at url: URL) {
+        deletionCount += 1
+    }
+
+    func snapshot() -> Snapshot {
+        Snapshot(
+            lookupCount: lookupCount,
+            deletionCount: deletionCount,
+            specializationCount: specializationCount
+        )
+    }
+
+    struct Snapshot: Sendable {
+        let lookupCount: Int
+        let deletionCount: Int
+        let specializationCount: Int
     }
 }

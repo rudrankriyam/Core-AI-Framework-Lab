@@ -123,6 +123,11 @@ setting, specializes with the standard reclaimable policy, and can remove one
 configuration or every cached profile for the selected source asset. Compute
 selection is a preference, not proof that inference ran on one unit.
 
+The Lab binds each cache entry it creates to the source artifact's SHA-256
+digest and the opaque Core AI model bookmark. A cache lookup is accepted only
+when both still match; unbound or stale entries are removed and specialized
+again before their model can be used or reported as a hit.
+
 These controls use only Apple's public cache APIs. Core AI does not expose a
 cache directory, entry sizes, ages, or an enumerable inventory, so the Lab
 reports honest known-entry hit/miss state instead of guessing from private
