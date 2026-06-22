@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class CoreAIFunctionWorkbenchWorkspaceModel {
     let assetWorkspace: CoreAIAssetWorkspaceModel
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     let deviceArchitectureName = CoreAIDiscoverySnapshot.current().deviceArchitectureName
     private(set) var contracts: [CoreAIFunctionContract] = []
     var selectedFunctionName: String? {
@@ -31,6 +32,8 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     @ObservationIgnored
     private let artifactDigester: any CoreAIArtifactDigesting
     @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
+    @ObservationIgnored
     private var contractOperationID = UUID()
     @ObservationIgnored
     private var benchmarkTask: Task<Void, Never>?
@@ -42,11 +45,19 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
         runtimeService: any CoreAIFunctionRuntimeServicing = CoreAISpecializationService(),
         integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter(),
-        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared
+        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
         self.runtimeService = runtimeService
         self.integrationExporter = integrationExporter
         self.artifactDigester = artifactDigester
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "generic-function-workbench",
+            title: "Function Workbench",
+            modelIdentifier: "imported-coreai-asset"
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
         assetWorkspace = CoreAIAssetWorkspaceModel(
             inspectionService: inspectionService,
             specializationService: runtimeService
@@ -87,6 +98,11 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         let didReplaceAsset = await assetWorkspace.inspect(url: url)
         if didReplaceAsset {
             clearRuntimeState()
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: assetWorkspace.report?.url.lastPathComponent
+                    ?? url.lastPathComponent
+            )
         }
         phase = assetWorkspace.report == nil ? .idle : .ready
     }
@@ -129,17 +145,45 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
 
     func runSelectedFunction() async {
-        guard let selectedFunctionName, canRun else { return }
-        phase = .running
+        guard let selectedFunctionName,
+              let asset = assetWorkspace.report,
+              canRun else {
+            return
+        }
+        let plans: [CoreAIFunctionInputPlan]
         do {
-            let plans = try inputDrafts.map { try $0.plan() }
-            runResult = try await runtimeService.runFunction(
+            plans = try inputDrafts.map { try $0.plan() }
+        } catch {
+            assetWorkspace.presentImportError(error)
+            return
+        }
+
+        phase = .running
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: asset.url.lastPathComponent
+        )
+        do {
+            let result = try await runtimeService.runFunction(
                 named: selectedFunctionName,
                 inputs: plans
             )
+            try Task.checkCancellation()
+            runResult = result
             phase = .ready
+            runCoordinator.succeed(
+                runToken,
+                summary: "Ran \(selectedFunctionName) with \(result.outputs.count) inspected outputs."
+            )
+        } catch is CancellationError {
+            phase = .ready
+            runCoordinator.cancel(
+                runToken,
+                summary: "Function run canceled before completion."
+            )
         } catch {
             phase = .ready
+            runCoordinator.fail(runToken, error: error)
             assetWorkspace.presentImportError(error)
         }
     }

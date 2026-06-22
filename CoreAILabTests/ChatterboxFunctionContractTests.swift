@@ -4,14 +4,16 @@ import Testing
 
 struct ChatterboxFunctionContractTests {
     @Test
-    func completeContractRecognizesEveryStage() {
+    func completeContractRecognizesEveryStage() throws {
+        let recipe = try ChatterboxRecipeFixture.contract()
         let functions = Dictionary(
-            uniqueKeysWithValues: ChatterboxPipelineStage.allCases.map {
-                ($0, $0.requiredFunctionNames)
+            uniqueKeysWithValues: try ChatterboxPipelineStage.allCases.map {
+                ($0, try recipe.resolvedStage($0).requiredFunctionNames)
             }
         )
         let validation = ChatterboxFunctionContract.validate(
-            functionNamesByStage: functions
+            functionNamesByStage: functions,
+            recipe: recipe
         )
 
         #expect(validation.isComplete)
@@ -19,12 +21,14 @@ struct ChatterboxFunctionContractTests {
     }
 
     @Test
-    func incompleteContractReportsMissingStages() {
+    func incompleteContractReportsMissingStages() throws {
+        let recipe = try ChatterboxRecipeFixture.contract()
         let validation = ChatterboxFunctionContract.validate(
             functionNamesByStage: [
                 .t3Embeddings: ["prefill", "decode"],
                 .vocoder: [],
-            ]
+            ],
+            recipe: recipe
         )
 
         #expect(!validation.isComplete)
@@ -45,11 +49,34 @@ struct ChatterboxFunctionContractTests {
     }
 
     @Test
-    func waveWriterProducesPCMHeader() {
-        let data = ChatterboxWaveFile.data(samples: [0, 0.5, -0.5])
+    func waveWriterProducesPCMHeader() throws {
+        let data = try ChatterboxWaveFile.data(
+            samples: [0, 0.5, -0.5],
+            sampleRate: 24_000
+        )
         #expect(String(data: data.prefix(4), encoding: .ascii) == "RIFF")
         #expect(String(data: data[8..<12], encoding: .ascii) == "WAVE")
         #expect(data.count == 50)
+    }
+
+    @Test
+    func waveWriterRejectsUnrepresentableSampleRates() {
+        #expect(throws: ChatterboxCoreAIError.self) {
+            _ = try ChatterboxWaveFile.data(
+                samples: [0],
+                sampleRate: .max
+            )
+        }
+    }
+
+    @Test
+    func waveWriterRejectsNonFiniteSamples() {
+        #expect(throws: ChatterboxCoreAIError.self) {
+            _ = try ChatterboxWaveFile.data(
+                samples: [.nan],
+                sampleRate: 24_000
+            )
+        }
     }
 
     @Test

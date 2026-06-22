@@ -54,7 +54,10 @@ struct CoreAIProjectDetailView: View {
                 }
 
                 if controller.activeProjectID == project.id {
-                    Label("Hashing and storing artifact…", systemImage: "hourglass")
+                    Label(
+                        controller.activeOperation?.title ?? "Updating project…",
+                        systemImage: controller.activeOperation?.systemImage ?? "hourglass"
+                    )
                         .foregroundStyle(.secondary)
                 }
             }
@@ -67,7 +70,7 @@ struct CoreAIProjectDetailView: View {
                     systemImage: "square.and.arrow.down",
                     action: showArtifactImporter
                 )
-                .disabled(controller.isImporting)
+                .disabled(controller.isPerformingOperation)
 
                 Menu("Project Actions", systemImage: "ellipsis.circle") {
                     Button("Rename Project", systemImage: "pencil", action: showRenamePrompt)
@@ -78,7 +81,7 @@ struct CoreAIProjectDetailView: View {
                         action: confirmProjectDeletion
                     )
                 }
-                .disabled(controller.isImporting)
+                .disabled(controller.isPerformingOperation)
             }
         }
         .fileImporter(
