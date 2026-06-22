@@ -3,6 +3,7 @@ import SwiftUI
 struct CoreAIAssetReportView: View {
     let report: CoreAIModelAssetReport
     @Bindable var workspace: CoreAIAssetWorkspaceModel
+    let allowsCacheRemoval: Bool
 
     var body: some View {
         List {
@@ -55,13 +56,46 @@ struct CoreAIAssetReportView: View {
                 }
             }
 
+            Section("Storage Types") {
+                if report.storageTypes.isEmpty {
+                    Text("No storage statistics were reported.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(report.storageTypes) { storageType in
+                        LabeledContent(
+                            storageType.typeName,
+                            value: storageType.count,
+                            format: .number
+                        )
+                    }
+                }
+            }
+
+            Section("Operation Distribution") {
+                if report.operationDistribution.isEmpty {
+                    Text("No operation statistics were reported.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(report.operationDistribution) { operation in
+                        LabeledContent(
+                            operation.operationName,
+                            value: operation.count,
+                            format: .number
+                        )
+                    }
+                }
+            }
+
             Section("Source") {
                 Text(report.url.path)
                     .font(.callout.monospaced())
                     .textSelection(.enabled)
             }
 
-            CoreAISpecializationControlsView(workspace: workspace)
+            CoreAISpecializationControlsView(
+                workspace: workspace,
+                allowsCacheRemoval: allowsCacheRemoval
+            )
         }
     }
 

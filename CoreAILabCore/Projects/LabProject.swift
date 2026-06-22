@@ -26,6 +26,9 @@ final class LabProject {
     @Relationship(deleteRule: .cascade, inverse: \CoreAIEvidenceRecord.project)
     private(set) var evidence: [CoreAIEvidenceRecord] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \CoreAISpecializationCacheRecord.project)
+    private(set) var specializationCaches: [CoreAISpecializationCacheRecord] = []
+
     init(
         id: UUID = UUID(),
         schemaVersion: Int = 1,
@@ -47,6 +50,7 @@ final class LabProject {
         targetProfiles = []
         runs = []
         evidence = []
+        specializationCaches = []
     }
 
     var sortedArtifactLinks: [ProjectArtifactLink] {

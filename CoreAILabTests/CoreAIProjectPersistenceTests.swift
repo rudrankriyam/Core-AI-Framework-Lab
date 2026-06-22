@@ -161,6 +161,7 @@ struct CoreAIProjectPersistenceTests {
             to: firstProject,
             modelContext: context
         )
+        let originalUpdatedAt = secondProject.updatedAt
 
         #expect(throws: CoreAIProjectLibraryError.domainRecordProjectMismatch) {
             _ = try controller.createRun(
@@ -170,6 +171,44 @@ struct CoreAIProjectPersistenceTests {
                 modelContext: context
             )
         }
+        #expect(secondProject.runs.isEmpty)
+        #expect(secondProject.updatedAt == originalUpdatedAt)
+        #expect(!context.hasChanges)
+    }
+
+    @Test
+    func foreignProjectContextCannotMintDomainRecordsOrSave() throws {
+        let sourceContainer = try makeContainer()
+        let foreignContainer = try makeContainer()
+        let controller = CoreAIProjectLibraryController()
+        let sourceProject = try controller.createProject(
+            named: "Source",
+            modelContext: sourceContainer.mainContext
+        )
+        let foreignProject = try controller.createProject(
+            named: "Foreign",
+            modelContext: foreignContainer.mainContext
+        )
+        let sourceUpdatedAt = sourceProject.updatedAt
+        let foreignUpdatedAt = foreignProject.updatedAt
+
+        #expect(throws: CoreAIProjectLibraryError.projectUnavailable) {
+            _ = try controller.addRecipeRevision(
+                ChatterboxRecipeFixture.manifest,
+                to: sourceProject,
+                modelContext: foreignContainer.mainContext
+            )
+        }
+
+        #expect(sourceProject.recipeRevisions.isEmpty)
+        #expect(foreignProject.recipeRevisions.isEmpty)
+        #expect(sourceProject.updatedAt == sourceUpdatedAt)
+        #expect(foreignProject.updatedAt == foreignUpdatedAt)
+        #expect(!sourceContainer.mainContext.hasChanges)
+        #expect(!foreignContainer.mainContext.hasChanges)
+        #expect(try foreignContainer.mainContext.fetch(
+            FetchDescriptor<CoreAIRecipeRevisionRecord>()
+        ).isEmpty)
     }
 
     @Test
@@ -324,6 +363,7 @@ struct CoreAIProjectPersistenceTests {
             named: "Run transitions",
             modelContext: context
         )
+        let originalUpdatedAt = project.updatedAt
 
         #expect(throws: CoreAIProjectLibraryError.terminalRunRequiresUpdate) {
             _ = try controller.createRun(
@@ -333,6 +373,9 @@ struct CoreAIProjectPersistenceTests {
                 modelContext: context
             )
         }
+        #expect(project.runs.isEmpty)
+        #expect(project.updatedAt == originalUpdatedAt)
+        #expect(!context.hasChanges)
     }
 
     @Test
@@ -356,7 +399,9 @@ struct CoreAIProjectPersistenceTests {
         #expect(first.kind == .modelAsset)
         #expect(first.fileCount == 2)
         #expect(first.byteCount == 13)
-        #expect(FileManager.default.fileExists(atPath: store.url(for: first.storageRelativePath).path))
+        #expect(FileManager.default.fileExists(
+            atPath: try store.validatedURL(for: first.storageRelativePath).path
+        ))
     }
 
     @Test
@@ -376,7 +421,7 @@ struct CoreAIProjectPersistenceTests {
         #expect(Set(imports.map(\.sha256Digest)).count == 1)
         #expect(Set(imports.map(\.storageRelativePath)).count == 1)
         #expect(FileManager.default.fileExists(
-            atPath: firstStore.url(for: imports[0].storageRelativePath).path
+            atPath: try firstStore.validatedURL(for: imports[0].storageRelativePath).path
         ))
     }
 
@@ -409,7 +454,7 @@ struct CoreAIProjectPersistenceTests {
             modelContext: context
         )
         let record = try #require(firstLink.artifact)
-        let storedURL = controller.storedURL(for: record)
+        let storedURL = try controller.validatedStoredURL(for: record)
 
         #expect(firstLink.id == duplicateLink.id)
         #expect(firstProject.artifactLinks.count == 1)
@@ -446,7 +491,9 @@ struct CoreAIProjectPersistenceTests {
             into: second,
             modelContext: context
         )
-        let storedURL = controller.storedURL(for: try #require(survivingLink.artifact))
+        let storedURL = try controller.validatedStoredURL(
+            for: #require(survivingLink.artifact)
+        )
 
         try await controller.deleteProject(first, modelContext: context)
 
@@ -488,9 +535,8 @@ struct CoreAIProjectPersistenceTests {
         try makeModelFixture(at: source)
         let store = CoreAIArtifactStore(rootURL: directory.appending(path: "store"))
         let imported = try await store.importArtifact(from: source)
-        try Data("corrupted".utf8).write(
-            to: store.url(for: imported.storageRelativePath).appending(path: "main.mlirb")
-        )
+        let storedURL = try store.validatedURL(for: imported.storageRelativePath)
+        try Data("corrupted".utf8).write(to: storedURL.appending(path: "main.mlirb"))
 
         await #expect(throws: CoreAIArtifactStoreError.self) {
             try await store.importArtifact(from: source)
@@ -512,11 +558,98 @@ struct CoreAIProjectPersistenceTests {
         #expect(FileManager.default.fileExists(atPath: markerURL.path))
     }
 
+    @Test
+    func symlinkedStoreParentCannotDeleteAnOutsideDirectory() async throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeRoot = directory.appending(path: "store", directoryHint: .isDirectory)
+        let outsideRoot = directory.appending(path: "outside", directoryHint: .isDirectory)
+        let digest = String(repeating: "a", count: 64)
+        let outsideContainer =
+            outsideRoot
+            .appending(path: "aa", directoryHint: .isDirectory)
+            .appending(path: digest, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(
+            at: outsideContainer,
+            withIntermediateDirectories: true
+        )
+        let markerURL = outsideContainer.appending(path: "keep-me")
+        try Data("outside".utf8).write(to: markerURL)
+        try FileManager.default.createDirectory(at: storeRoot, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(
+            at: storeRoot.appending(path: "sha256"),
+            withDestinationURL: outsideRoot
+        )
+        let store = CoreAIArtifactStore(rootURL: storeRoot)
+
+        await #expect(throws: CoreAIArtifactStoreError.self) {
+            try await store.removeArtifact(
+                at: "sha256/aa/\(digest)/artifact.aimodel"
+            )
+        }
+
+        #expect(FileManager.default.fileExists(atPath: markerURL.path))
+    }
+
+    @Test
+    func deletingStoredDirectoryUnlinksNestedSymlinksWithoutFollowingThem() async throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appending(path: "model.aimodel", directoryHint: .isDirectory)
+        try makeModelFixture(at: source)
+        let outsideRoot = directory.appending(path: "outside", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: outsideRoot, withIntermediateDirectories: true)
+        let markerURL = outsideRoot.appending(path: "keep-me")
+        try Data("outside".utf8).write(to: markerURL)
+        let store = CoreAIArtifactStore(rootURL: directory.appending(path: "store"))
+        let imported = try await store.importArtifact(from: source)
+        let storedURL = try store.validatedURL(for: imported.storageRelativePath)
+        try FileManager.default.createSymbolicLink(
+            at: storedURL.appending(path: "outside-link"),
+            withDestinationURL: outsideRoot
+        )
+
+        try await store.removeArtifact(at: imported.storageRelativePath)
+
+        #expect(FileManager.default.fileExists(atPath: markerURL.path))
+        #expect(!FileManager.default.fileExists(atPath: storedURL.path))
+    }
+
+    @Test
+    func importRejectsASymlinkedContentAddressedParentWithoutWritingOutside() async throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appending(path: "model.aimodel", directoryHint: .isDirectory)
+        try makeModelFixture(at: source)
+        let storeRoot = directory.appending(path: "store", directoryHint: .isDirectory)
+        let outsideRoot = directory.appending(path: "outside", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: storeRoot, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outsideRoot, withIntermediateDirectories: true)
+        let markerURL = outsideRoot.appending(path: "keep-me")
+        try Data("outside".utf8).write(to: markerURL)
+        try FileManager.default.createSymbolicLink(
+            at: storeRoot.appending(path: "sha256"),
+            withDestinationURL: outsideRoot
+        )
+        let store = CoreAIArtifactStore(rootURL: storeRoot)
+
+        await #expect(throws: CoreAIArtifactStoreError.self) {
+            try await store.importArtifact(from: source)
+        }
+
+        let outsideEntries = try FileManager.default.contentsOfDirectory(
+            atPath: outsideRoot.path
+        )
+        #expect(outsideEntries == ["keep-me"])
+    }
+
     private func makeContainer() throws -> ModelContainer {
         let schema = Schema([
             LabProject.self,
             ModelArtifactRecord.self,
             ProjectArtifactLink.self,
+            CoreAISourceProvenanceRecord.self,
+            CoreAISpecializationCacheRecord.self,
             CoreAIRecipeRevisionRecord.self,
             CoreAITargetProfileRecord.self,
             CoreAIRunRecord.self,

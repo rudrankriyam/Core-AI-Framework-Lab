@@ -1,13 +1,23 @@
+import SwiftData
 import SwiftUI
 
 struct CoreAIFunctionWorkbenchView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var workspace = CoreAIFunctionWorkbenchWorkspaceModel()
     @State private var isImportingModel = false
     @State private var isChoosingExportDestination = false
     let initialURL: URL?
+    let projectArtifactLink: ProjectArtifactLink?
+    let projectController: CoreAIProjectLibraryController?
 
-    init(initialURL: URL? = nil) {
+    init(
+        initialURL: URL? = nil,
+        projectArtifactLink: ProjectArtifactLink? = nil,
+        projectController: CoreAIProjectLibraryController? = nil
+    ) {
         self.initialURL = initialURL
+        self.projectArtifactLink = projectArtifactLink
+        self.projectController = projectController
     }
 
     var body: some View {
@@ -29,7 +39,8 @@ struct CoreAIFunctionWorkbenchView: View {
                     CoreAISpecializationControlsView(
                         workspace: workspace.assetWorkspace,
                         isInteractionDisabled: workspace.phase.isBusy
-                            || workspace.isExportingIntegration
+                            || workspace.isExportingIntegration,
+                        allowsCacheRemoval: projectArtifactLink == nil
                     )
 
                     if workspace.assetWorkspace.specializationResult == nil {
@@ -173,14 +184,26 @@ struct CoreAIFunctionWorkbenchView: View {
             )
         }
         .task(id: initialURL) {
-            if let initialURL {
-                await workspace.loadAsset(from: initialURL)
+            do {
+                if let initialURL = try resolvedInitialURL() {
+                    await workspace.loadAsset(from: initialURL)
+                }
+            } catch {
+                workspace.presentImportError(error)
             }
         }
         .task(id: workspace.assetWorkspace.specializationResult) {
             await workspace.specializationChanged(
                 workspace.assetWorkspace.specializationResult
             )
+        }
+        .onChange(of: workspace.assetWorkspace.report) { _, report in
+            persistDescriptorSnapshot(report)
+        }
+        .onChange(of: workspace.assetWorkspace.specializationResult) { _, result in
+            Task {
+                await persistSpecialization(result)
+            }
         }
         .onDisappear {
             workspace.cancelBenchmark()
@@ -230,5 +253,59 @@ struct CoreAIFunctionWorkbenchView: View {
         Task {
             await workspace.reloadContracts()
         }
+    }
+
+    private func persistDescriptorSnapshot(_ report: CoreAIModelAssetReport?) {
+        guard let report,
+              let projectArtifactLink,
+              let projectController,
+              isProjectArtifact(report.url) else { return }
+        do {
+            try projectController.recordDescriptorSnapshot(
+                report,
+                for: projectArtifactLink,
+                modelContext: modelContext
+            )
+        } catch {
+            workspace.presentImportError(error)
+        }
+    }
+
+    private func persistSpecialization(
+        _ result: CoreAISpecializationResult?
+    ) async {
+        guard let result,
+              let sourceURL = workspace.assetWorkspace.report?.url,
+              let projectArtifactLink,
+              let projectController,
+              isProjectArtifact(sourceURL) else { return }
+        do {
+            try await projectController.recordSpecializationCache(
+                result,
+                sourceURL: sourceURL,
+                for: projectArtifactLink,
+                modelContext: modelContext
+            )
+        } catch {
+            workspace.presentImportError(error)
+        }
+    }
+
+    private func isProjectArtifact(_ url: URL) -> Bool {
+        guard let artifact = projectArtifactLink?.artifact,
+              let projectController,
+              let storedURL = try? projectController.validatedStoredURL(for: artifact) else {
+            return false
+        }
+        return url.standardizedFileURL
+            == storedURL.standardizedFileURL
+    }
+
+    private func resolvedInitialURL() throws -> URL? {
+        guard let artifact = projectArtifactLink?.artifact,
+              let projectController else {
+            return initialURL
+        }
+        return try projectController.validatedStoredURL(for: artifact)
     }
 }

@@ -131,11 +131,11 @@ The first platform slice is now represented in the repository:
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 0's
 schema, manifest, and persistence foundation slice is implemented; automatic
-workspace run/evidence capture remains follow-up integration. Milestone 1
-remains incomplete because generic resource-folder metadata, descriptor
-snapshots, provenance editing, and specialization-cache ownership are not yet
-unified in the project library. Restart-safe conversion execution remains
-Milestone 3 work.
+workspace run/evidence capture remains follow-up integration. Milestone 1's
+project-library slice now unifies deterministic resource-folder metadata,
+durable descriptor snapshots, editable source provenance, and project-owned
+specialization-cache cleanup with the existing generic function workbench and
+integration export. Restart-safe conversion execution remains Milestone 3 work.
 
 ## 4. Product boundary
 
@@ -490,6 +490,11 @@ Done bar:
 - No UI or engine code enumerates Chatterbox asset filenames directly.
 
 ### Milestone 1 — Model Library and universal inspector (3 weeks)
+
+Implementation status: complete for the project-library and generic-runtime
+boundary. Hardware specialization and inference remain capability-dependent,
+and are exercised by the existing real Core AI fixture rather than simulated by
+the library persistence tests.
 
 Deliverables:
 
