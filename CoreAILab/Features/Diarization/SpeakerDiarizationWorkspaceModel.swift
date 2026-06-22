@@ -48,7 +48,7 @@ final class SpeakerDiarizationWorkspaceModel {
     }
 
     func prepareBundledModel(in bundle: Bundle = .main) async {
-        guard modelInfo == nil, !isBusy else { return }
+        guard modelInfo == nil else { return }
         do {
             let url = try SpeakerDiarizationBundledModel.url(in: bundle)
             await loadModel(from: url)
@@ -58,7 +58,7 @@ final class SpeakerDiarizationWorkspaceModel {
     }
 
     func loadModel(from url: URL) async {
-        guard !isBusy else { return }
+        guard !isLoadingModel, !isRunningDiarization else { return }
         isLoadingModel = true
         statusMessage = "Specializing \(url.lastPathComponent)…"
         defer { isLoadingModel = false }
@@ -69,7 +69,9 @@ final class SpeakerDiarizationWorkspaceModel {
             modelInfo = candidate
             result = nil
             clearError()
-            statusMessage = "CAM++ is ready. Choose media or run diarization."
+            statusMessage = mediaURL == nil
+                ? "CAM++ is ready. Choose media or run diarization."
+                : "Media and CAM++ are ready for batch diarization."
         } catch is CancellationError {
             statusMessage = "Model import cancelled."
         } catch {

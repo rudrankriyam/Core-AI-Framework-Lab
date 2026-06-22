@@ -9,6 +9,29 @@ import AVKit
 
 struct SpeakerDiarizationLabTests {
     @Test
+    @MainActor
+    func bundledModelLoadsWhileMediaAnalysisIsAlreadyRunning() async {
+        let service = SpeakerDiarizationServiceFake()
+        let workspace = SpeakerDiarizationWorkspaceModel(engine: service)
+        let missingMediaURL = FileManager.default.temporaryDirectory.appending(
+            path: "diarization-race-\(UUID().uuidString).wav"
+        )
+
+        workspace.selectMedia(missingMediaURL)
+        #expect(workspace.isAnalyzingMedia)
+
+        await workspace.prepareBundledModel()
+
+        #expect(
+            workspace.modelInfo?.assetName
+                == SpeakerDiarizationBundledModel.assetFilename
+        )
+        let loadCount = await service.loadCount
+        #expect(loadCount == 1)
+        workspace.cancelWork()
+    }
+
+    @Test
     func bundledCAMPlusHasPinnedLicenseProvenanceAndContract() async throws {
         let modelURL = try SpeakerDiarizationBundledModel.url()
         let asset = try AIModelAsset(contentsOf: modelURL)
@@ -328,6 +351,29 @@ struct SpeakerDiarizationLabTests {
                 return Float(bitPattern: bits)
             }
         }
+    }
+}
+
+private actor SpeakerDiarizationServiceFake: SpeakerDiarizationServicing {
+    private(set) var loadCount = 0
+
+    func loadModel(at url: URL) async throws -> SpeakerDiarizationModelInfo {
+        loadCount += 1
+        return SpeakerDiarizationModelInfo(
+            assetName: url.lastPathComponent,
+            frameCount: SpeakerDiarizationCAMPPlusFeatureExtractor.frameCount,
+            featureBinCount: SpeakerDiarizationCAMPPlusFeatureExtractor.binCount,
+            embeddingDimension: 192,
+            scalarTypeName: "float16"
+        )
+    }
+
+    func diarize(mediaAt url: URL) async throws -> SpeakerDiarizationResult {
+        SpeakerDiarizationResult(
+            engineName: "Test",
+            turns: [],
+            generatedAt: .now
+        )
     }
 }
 
