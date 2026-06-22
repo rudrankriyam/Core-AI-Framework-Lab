@@ -3,19 +3,34 @@ import SwiftUI
 
 struct CoreAIFunctionWorkbenchView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var workspace = CoreAIFunctionWorkbenchWorkspaceModel()
+    @State private var workspace: CoreAIFunctionWorkbenchWorkspaceModel
     @State private var isImportingModel = false
     @State private var isChoosingExportDestination = false
-    let initialURL: URL?
-    let projectArtifactLink: ProjectArtifactLink?
-    let projectController: CoreAIProjectLibraryController?
+    private let initialURL: URL?
+    private let runContext: CoreAIRuntimeRunContext
+    private let projectArtifactLink: ProjectArtifactLink?
+    private let projectController: CoreAIProjectLibraryController?
 
     init(
         initialURL: URL? = nil,
         projectArtifactLink: ProjectArtifactLink? = nil,
-        projectController: CoreAIProjectLibraryController? = nil
+        projectController: CoreAIProjectLibraryController? = nil,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "generic-function-workbench",
+            title: "Function Workbench",
+            modelIdentifier: "imported-coreai-asset"
+        )
+        _workspace = State(
+            initialValue: CoreAIFunctionWorkbenchWorkspaceModel(
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
         self.initialURL = initialURL
+        self.runContext = resolvedContext
         self.projectArtifactLink = projectArtifactLink
         self.projectController = projectController
     }
@@ -35,6 +50,11 @@ struct CoreAIFunctionWorkbenchView: View {
                             .foregroundStyle(.secondary)
                             .textSelection(.enabled)
                     }
+
+                    CoreAIRuntimeLifecycleView(
+                        coordinator: workspace.runCoordinator,
+                        context: runContext
+                    )
 
                     CoreAISpecializationControlsView(
                         workspace: workspace.assetWorkspace,

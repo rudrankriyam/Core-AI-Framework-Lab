@@ -335,6 +335,58 @@ extension CoreAIProjectLibraryController {
         try saveDomainChange(project: project, modelContext: modelContext)
     }
 
+    func finishRuntimeRun(
+        _ run: CoreAIRunRecord,
+        status: CoreAIRunStatus,
+        summary: String,
+        endedAt: Date,
+        metricEvidence: CoreAIRuntimeMetricEvidence?,
+        modelContext: ModelContext
+    ) throws {
+        guard status == .cancelled || status == .failed || status == .succeeded else {
+            throw CoreAIProjectLibraryError.terminalRunRequiresUpdate
+        }
+        guard let project = run.project else {
+            throw CoreAIProjectLibraryError.projectUnavailable
+        }
+
+        let encodedMetricMetadata = try metricEvidence.map {
+            try encoded($0.metadata)
+        }
+        let alreadyHasMetric = metricEvidence.map { metric in
+            run.evidence.contains { $0.id == metric.id }
+        } ?? true
+        if run.status == status,
+           run.summary == summary,
+           run.endedAt == endedAt,
+           alreadyHasMetric {
+            return
+        }
+
+        run.update(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            status: status,
+            summary: summary,
+            endedAt: endedAt
+        )
+        if let metricEvidence,
+           let encodedMetricMetadata,
+           !alreadyHasMetric {
+            let evidence = CoreAIEvidenceRecord(
+                authorization: CoreAIProjectDomainWriteAuthorization(),
+                id: metricEvidence.id,
+                kind: .metric,
+                label: metricEvidence.label,
+                summary: metricEvidence.summary,
+                metadataData: encodedMetricMetadata,
+                project: project,
+                run: run
+            )
+            modelContext.insert(evidence)
+        }
+        try saveDomainChange(project: project, modelContext: modelContext)
+    }
+
     @discardableResult
     func recordEvidence(
         kind: CoreAIEvidenceKind,
@@ -647,5 +699,81 @@ extension CoreAIProjectLibraryController {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         return try encoder.encode(value)
+    }
+}
+
+extension CoreAIProjectLibraryController: CoreAIProjectRunWriting {
+    func createRuntimeRun(
+        id: UUID,
+        in project: LabProject,
+        recipeRevision: CoreAIRecipeRevisionRecord?,
+        provenanceEvidence: CoreAIRuntimeProvenanceEvidence,
+        modelContext: ModelContext
+    ) throws -> CoreAIRunRecord {
+        if let recipeRevision {
+            try requireSameProject(project, recordProject: recipeRevision.project)
+        }
+        let descriptor = FetchDescriptor<CoreAIRunRecord>(
+            predicate: #Predicate { $0.id == id }
+        )
+        if let existing = try modelContext.fetch(descriptor).first {
+            try requireSameProject(project, recordProject: existing.project)
+            guard let status = existing.status else {
+                throw CoreAIProjectLibraryError.runStatusUnavailable
+            }
+            guard status == .running else {
+                throw CoreAIProjectLibraryError.invalidRunStatusTransition(
+                    from: status,
+                    to: .running
+                )
+            }
+            return existing
+        }
+        let metadataData = try encoded(provenanceEvidence.metadata)
+        let run = CoreAIRunRecord(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            id: id,
+            kind: .inference,
+            status: .running,
+            project: project,
+            recipeRevision: recipeRevision
+        )
+        let evidence = CoreAIEvidenceRecord(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            id: provenanceEvidence.id,
+            kind: .validation,
+            label: provenanceEvidence.label,
+            summary: provenanceEvidence.summary,
+            metadataData: metadataData,
+            project: project,
+            run: run
+        )
+        modelContext.insert(run)
+        modelContext.insert(evidence)
+        try saveDomainChange(project: project, modelContext: modelContext)
+        return run
+    }
+
+    func recoverInterruptedRuntimeRuns(
+        in project: LabProject,
+        endedAt: Date,
+        modelContext: ModelContext
+    ) throws -> Int {
+        let runs = try modelContext.fetch(FetchDescriptor<CoreAIRunRecord>())
+        let interruptedRuns = runs.filter {
+            $0.project?.id == project.id && $0.status == .running
+        }
+        guard !interruptedRuns.isEmpty else { return 0 }
+
+        for run in interruptedRuns {
+            run.update(
+                authorization: CoreAIProjectDomainWriteAuthorization(),
+                status: .failed,
+                summary: "Run was interrupted before completion and recovered when project recording resumed.",
+                endedAt: endedAt
+            )
+        }
+        try saveDomainChange(project: project, modelContext: modelContext)
+        return interruptedRuns.count
     }
 }
