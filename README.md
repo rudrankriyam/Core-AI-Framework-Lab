@@ -48,6 +48,8 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Features/Projects/` - persistent project library, artifact inventory, and Inspector/Workbench handoff
 - `CoreAILabCore/Projects/` - SwiftData project schema and atomic SHA-256 artifact storage
 - `CoreAILabCore/Manifests/` - versioned, Codable recipe, target, artifact, pipeline, and capacity contracts with reference and path validation
+- `CoreAILabCore/Recipes/` - public recipe-bundle schema, deterministic hash-verified import/export, curated trust metadata, and approval-gated code references
+- `CoreAILab/Features/Recipes/` - curated catalog and imported-bundle trust review surface
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
@@ -55,6 +57,7 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
 - `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
+- `Documentation/RECIPE_BUNDLES.md` - public recipe-bundle authoring and trust-boundary guide
 - `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
@@ -100,6 +103,28 @@ validated JSON contracts used by a run and survive reopening the SwiftData store
 Controller APIs keep recipe, target, run, and evidence ownership within one Lab
 Project. Current conversion and benchmark workspaces do not yet write those
 records automatically, so restart-safe execution remains later work.
+
+## Recipe Bundles and Trust
+
+Open **Recipes** to inspect the versioned curated index or import a recipe-bundle
+directory. Catalog entries report trust and verification separately, with notes
+that state exactly which evidence exists. Fixture validation does not imply a
+physical-device, performance, or Neural Engine result.
+
+The public version 1 bundle contract is documented in
+[`Documentation/RECIPE_BUNDLES.md`](Documentation/RECIPE_BUNDLES.md) and
+[`Documentation/recipe-bundle.schema.json`](Documentation/recipe-bundle.schema.json).
+Deterministic export inventories every payload, streams its SHA-256 digest,
+records immutable provenance, emits sorted-key JSON, verifies a staging copy,
+and promotes it atomically. Import rejects unsupported schema or family values,
+unsafe paths, symbolic links, undeclared files, and size or hash mismatches
+before copying only declared content into managed storage.
+
+Imported bundles always start untrusted. Python, Swift, and custom-code
+references cannot be resolved through the bundle session until the user grants
+explicit approval. Approval does not run the code, and the importer never starts
+a process or loads a package. Executing imported authoring code in an isolated
+worker and publishing hardware/SDK CI evidence remain separate work.
 
 ## Visual Conversion Workbench
 

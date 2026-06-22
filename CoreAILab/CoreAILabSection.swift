@@ -3,6 +3,7 @@ import Foundation
 enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case projects
     case appleModels
+    case recipes
     case conversion
     case chatterbox
     case diarization
@@ -17,6 +18,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "Projects"
         case .appleModels:
             "Apple Models"
+        case .recipes:
+            "Recipes"
         case .conversion:
             "Convert"
         case .chatterbox:
@@ -36,6 +39,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "folder"
         case .appleModels:
             "square.stack.3d.up"
+        case .recipes:
+            "books.vertical"
         case .conversion:
             "arrow.triangle.2.circlepath"
         case .chatterbox:

@@ -22,6 +22,13 @@ struct ContentView: View {
                         )
                     }
 
+                    NavigationLink(value: CoreAILabSection.recipes) {
+                        Label(
+                            CoreAILabSection.recipes.title,
+                            systemImage: CoreAILabSection.recipes.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.conversion) {
                         Label(
                             CoreAILabSection.conversion.title,
@@ -68,6 +75,8 @@ struct ContentView: View {
                 CoreAIProjectLibraryView()
             case .appleModels:
                 AppleModelLibraryView()
+            case .recipes:
+                CoreAIRecipeCatalogView()
             case .conversion:
                 NavigationStack {
                     CoreAIConversionWorkspaceView()

@@ -9,4 +9,7 @@ enum CoreAIStorageLocation {
 
     nonisolated static let artifactRootURL = rootURL
         .appending(path: "Artifacts", directoryHint: .isDirectory)
+
+    nonisolated static let recipeBundleRootURL = rootURL
+        .appending(path: "Recipe Bundles", directoryHint: .isDirectory)
 }

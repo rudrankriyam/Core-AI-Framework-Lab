@@ -1,0 +1,15 @@
+{
+  "entries": [
+    {
+      "familyID": "resemble/chatterbox-turbo",
+      "id": "resemble/chatterbox-turbo",
+      "revision": "chatterbox-tts-0.1.7",
+      "displayName": "Chatterbox Turbo",
+      "summary": "A bundled Core AI text-to-speech pipeline with a versioned manifest and deterministic contract fixtures.",
+      "trustState": "bundledCurated",
+      "verificationState": "fixturesValidated",
+      "verificationNotes": "The bundled manifest and local contract fixtures are validated by the repository test suite. This state does not claim a hardware CI result."
+    }
+  ],
+  "schemaVersion": 1
+}

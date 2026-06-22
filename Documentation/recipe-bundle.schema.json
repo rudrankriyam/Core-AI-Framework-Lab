@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/rudrankriyam/Core-AI-Framework-Lab/main/Documentation/recipe-bundle.schema.json",
+  "title": "Core AI Lab Recipe Bundle",
+  "description": "Declarative metadata for a reviewable Core AI recipe bundle. The manifest hashes every payload and explicitly labels all executable references.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "familyID",
+    "revision",
+    "displayName",
+    "summary",
+    "recipeManifestPath",
+    "provenance",
+    "files",
+    "codeReferences"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "familyID": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "revision": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "displayName": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "summary": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "recipeManifestPath": {
+      "$ref": "#/$defs/safeRelativePath"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceRepository", "sourceRevision", "license", "author"],
+      "properties": {
+        "sourceRepository": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "sourceRevision": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "license": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "author": {
+          "$ref": "#/$defs/nonemptyString"
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relativePath", "sha256", "byteCount", "role"],
+        "properties": {
+          "relativePath": {
+            "$ref": "#/$defs/safeRelativePath"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "byteCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "role": {
+            "enum": [
+              "recipeManifest",
+              "validationFixture",
+              "documentation",
+              "data",
+              "pythonSource",
+              "swiftSource",
+              "customCode"
+            ]
+          }
+        }
+      }
+    },
+    "codeReferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "relativePath", "language", "entryPoint"],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonemptyString"
+          },
+          "relativePath": {
+            "$ref": "#/$defs/safeRelativePath"
+          },
+          "language": {
+            "enum": ["python", "swift", "custom"]
+          },
+          "entryPoint": {
+            "$ref": "#/$defs/nonemptyString"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonemptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/|~)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)(?!.*//).+$"
+    }
+  }
+}

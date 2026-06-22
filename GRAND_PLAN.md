@@ -127,6 +127,11 @@ The first platform slice is now represented in the repository:
   greedy CTC decoding, timing, and direct conversion handoff.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
+- A versioned public recipe-bundle contract with canonical hash/provenance
+  export, strict declared-file import, a curated index whose trust and
+  verification states are independent, and an explicit approval gate before
+  imported Python, Swift, or custom code references can be resolved. Imported
+  code is not executed by this foundation.
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 0's
@@ -606,6 +611,17 @@ Deliverables:
 - Curated recipe index with trust and verification states.
 - CI verification on supported hardware/SDK matrices.
 - Import/export of recipe bundles without executing code until the user grants trust.
+
+Current foundation:
+
+- The public version 1 JSON and Swift bundle schemas, authoring guide,
+  deterministic exporter, managed importer, curated index, and trust review UI
+  are implemented.
+- Import rejects unsupported versions or families, traversal, symbolic links,
+  undeclared content, and hash or size mismatches. Executable references remain
+  locked behind per-session approval, and approval itself does not execute code.
+- Hardware/SDK CI verification and isolated worker execution remain separate
+  work; no catalog entry should imply either without durable evidence.
 
 Done bar:
 
