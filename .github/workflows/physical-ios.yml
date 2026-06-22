@@ -1,0 +1,131 @@
+name: Physical iOS 27 verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_hardware_run:
+        description: Run the fixture on the attached physical iOS device
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coreai-physical-ios-device
+  cancel-in-progress: false
+
+jobs:
+  physical-device-fixture:
+    name: Physical iOS 27 fixture
+    if: github.ref == 'refs/heads/main' && inputs.confirm_hardware_run
+    environment: coreai-ios-hardware
+    runs-on:
+      - self-hosted
+      - macOS
+      - ARM64
+      - coreai-xcode27
+      - coreai-ios-device
+    timeout-minutes: 45
+    env:
+      APPLE_TEAM_ID: ${{ secrets.COREAI_APPLE_TEAM_ID }}
+      DEVELOPER_DIR: /Applications/Xcode-beta.app/Contents/Developer
+      EVIDENCE_DIRECTORY: TestResults/CI/device
+      RESULT_BUNDLE: TestResults/CoreAIDeviceTests-${{ github.run_id }}-${{ github.run_attempt }}.xcresult
+    steps:
+      - name: Check out source without macOS model weights
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: false
+
+      - name: Select the declared Python runtime
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch only deterministic LFS fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          git lfs pull --include='CoreAILabTests/Fixtures/**' --exclude=''
+          remaining_pointers="$(
+            grep -RIl '^version https://git-lfs.github.com/spec/v1$' \
+              CoreAILabTests/Fixtures || true
+          )"
+          if [[ -n "$remaining_pointers" ]]; then
+            echo "::error::Unresolved fixture LFS pointers:"
+            echo "$remaining_pointers"
+            exit 1
+          fi
+
+      - name: Validate the versioned CI matrix
+        run: python3 Scripts/ci_matrix.py validate
+
+      - name: Record and verify the Xcode 27 environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIRECTORY"
+          {
+            echo "commit=$GITHUB_SHA"
+            echo "architecture=$(uname -m)"
+            sw_vers
+            python3 --version
+            xcodebuild -version
+            echo "iphoneos_sdk=$(xcrun --sdk iphoneos --show-sdk-version)"
+          } | tee "$EVIDENCE_DIRECTORY/environment.txt"
+
+          [[ "$(uname -m)" == "arm64" ]]
+          [[ "$(xcodebuild -version | awk 'NR == 1 { print $2 }')" == 27* ]]
+          [[ "$(xcrun --sdk iphoneos --show-sdk-version)" == 27.* ]]
+          normalized_team_id="$(
+            printf '%s' "$APPLE_TEAM_ID" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+          )"
+          if [[ ! "$normalized_team_id" =~ ^[A-Z0-9]{10}$ ]]; then
+            echo "::error::COREAI_APPLE_TEAM_ID must be a 10-character team ID"
+            exit 1
+          fi
+          printf 'APPLE_TEAM_ID=%s\n' "$normalized_team_id" >> "$GITHUB_ENV"
+
+      - name: Run the physical-device fixture with installed signing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_log="$RUNNER_TEMP/coreai-device-private.log"
+          if ! python3 Scripts/run_device_tests.py \
+            --team "$APPLE_TEAM_ID" \
+            --result-bundle "$RESULT_BUNDLE" \
+            >"$private_log" 2>&1
+          then
+            echo "::error::Physical-device verification failed; raw diagnostics are suppressed in public CI"
+            exit 1
+          fi
+
+      - name: Export identifier-free physical-device evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -d "$RESULT_BUNDLE" ]]
+          python3 Scripts/xcresult_public_summary.py \
+            --result-bundle "$RESULT_BUNDLE" \
+            --output "$EVIDENCE_DIRECTORY/test-summary.json" \
+            --kind physical-ios-fixture \
+            --expected-platform iOS
+
+      - name: Delete raw physical-device evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf -- "$RESULT_BUNDLE" build/DeviceTests
+          rm -f -- "$RUNNER_TEMP/coreai-device-private.log"
+
+      - name: Upload physical-device verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: physical-ios27-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIRECTORY }}
+          if-no-files-found: warn
+          retention-days: 14

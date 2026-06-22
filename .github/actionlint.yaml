@@ -1,0 +1,7 @@
+self-hosted-runner:
+  labels:
+    - coreai-xcode27
+    - coreai-ios-device
+    - coreai-macos-contracts
+
+config-variables: null

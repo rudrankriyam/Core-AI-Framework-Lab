@@ -539,20 +539,26 @@ class DeviceEvidenceTests(unittest.TestCase):
         self.assertEqual(evidence["configuration"], captured_configuration)
 
     def test_generated_dry_run_matches_the_cross_language_fixture(self) -> None:
-        evidence = harness.device_trial_evidence(
-            run_mode="dryRun",
-            device=harness.Device.from_document(device_document()),
-            execution_succeeded=False,
-            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
-        )
         fixture = (
             harness.REPOSITORY_ROOT
             / "CoreAILabTests"
             / "Fixtures"
             / "DeviceLabDryRunEvidence.json"
         )
+        fixture_document = json.loads(fixture.read_text())
+        fixture_artifact = fixture_document["artifact"]
+        evidence = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
+            artifact_identity=(
+                fixture_artifact["sha256Digest"],
+                fixture_artifact["byteCount"],
+            ),
+        )
 
-        self.assertEqual(json.loads(fixture.read_text()), evidence)
+        self.assertEqual(fixture_document, evidence)
 
     def test_evidence_writer_is_machine_readable_and_never_overwrites(self) -> None:
         evidence = harness.device_trial_evidence(
