@@ -595,10 +595,13 @@ Done bar:
 
 ### Milestone 5 — Optimization and evidence lab (4–5 weeks)
 
-Initial slice: the generic function workbench now provides a stable in-session
+Initial slices: the generic function workbench provides a stable in-session
 benchmark protocol for deterministic NDArray inputs and selected specialization
-configurations. Persistent evidence, generated variants, quality gates, and
-promotion rules remain part of this milestone.
+configurations, plus validated, deterministic, path-free JSON evidence export
+with artifact identity, full trial distributions, environment/toolchain data,
+trial-derived aggregate validation, phase-scoped benchmark environment data,
+and explicit unsupported metrics. Project-linked persistence, generated
+variants, quality gates, and promotion rules remain part of this milestone.
 
 Deliverables:
 
