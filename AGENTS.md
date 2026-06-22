@@ -89,6 +89,19 @@ uv run pytest -q
 - Run `Scripts/run_device_tests.py` only for physical iOS Core AI behavior and only when an unlocked iOS 27+ device and existing signing assets are available. Start with `--dry-run`; never enable provisioning updates automatically. See `README.md` for the exact contract.
 - Match validation to the change. Documentation-only changes do not need a full Xcode build; Swift behavior changes need the relevant build and tests, and platform-specific behavior needs validation on that platform. Report any unavailable hardware, model, signing, or toolchain prerequisite explicitly.
 
+## PR comment loop
+
+When asked to fix, address, or re-check PR comments, own the fix-forward loop rather than returning only a review summary.
+
+- Before editing, verify the repository, PR number, head branch, head SHA, and current worktree. If the checkout is not the PR branch or contains unrelated work, use an isolated worktree.
+- Fetch live review threads with a thread-aware GitHub API or GraphQL query, along with the current check rollup. Flat comments and review summaries are not enough to determine whether a thread is unresolved or outdated.
+- Queue only unresolved, non-outdated, actionable threads. Read the current diff and surrounding code before acting; record already-fixed comments, invalid suggestions, and bot status or rate-limit messages as non-actionable instead of changing code for them.
+- Handle one thread at a time: make the smallest complete fix, add or update a regression test when behavior changes, run the focused validation, create one logical commit, and push it before moving to the next issue.
+- Reply to and resolve a thread only after the pushed code and validation evidence fully address that exact comment. Do not bulk-resolve threads.
+- After every push, wait for checks and review bots to finish, then fetch the live threads again. Repeat the loop because a new commit can surface new feedback.
+- Do not stop after the first local green pass. Done means no unresolved actionable threads, required checks are green, the branch is pushed and clean, and GitHub reports the PR mergeable. Merge only when the user requested it or the standing task includes it.
+- In the handoff, list each thread's disposition, the commits pushed, the checks run, and any remaining external blocker.
+
 ## Review and handoff
 
 - Keep commits and pull requests single-purpose, with an imperative summary consistent with the repository history.
