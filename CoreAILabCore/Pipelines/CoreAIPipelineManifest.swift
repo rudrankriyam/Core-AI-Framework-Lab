@@ -1,12 +1,12 @@
 struct CoreAIPipelineManifest: Codable, Hashable, Sendable {
     static let currentSchemaVersion = 1
 
-    let schemaVersion: Int
-    let id: String
-    let displayName: String
-    let hostOperatorRegistryVersion: Int
-    let nodes: [CoreAIPipelineNode]
-    let edges: [CoreAIPipelineEdge]
+    var schemaVersion: Int
+    var id: String
+    var displayName: String
+    var hostOperatorRegistryVersion: Int
+    var nodes: [CoreAIPipelineNode]
+    var edges: [CoreAIPipelineEdge]
 
     init(
         schemaVersion: Int = Self.currentSchemaVersion,

@@ -565,11 +565,19 @@ Done bar:
 
 ### Milestone 4 — Custom Recipe Studio (5–7 weeks)
 
-Initial slice: the repository now has a versioned typed pipeline manifest,
-deterministic JSON codec, and structural validator for asset functions, host
-operators, explicit state, seeded randomness, and bounded loops. The visual
-editors, diagnostic worker, runtime executor, and Chatterbox migration remain
-part of this milestone.
+Foundation checkpoint: the repository now has a versioned typed pipeline
+manifest, deterministic JSON codec, and structural validator for asset
+functions, host operators, explicit state, seeded randomness, and bounded loops.
+Recipe Studio adds a deterministic authoring schema and native editors for
+PyTorch source/module configuration, example inputs, dynamic dimensions, state,
+externalization, and function entrypoints. Pipeline Studio edits the same typed
+asset-level graph. Attributed unsupported-op findings, an evidence-backed rewrite
+catalog, and deliberately failing custom-lowering/Metal stubs cover the manual
+resolution handoff.
+
+This is not Milestone 4 completion. The diagnostic worker, Lab Project recipe
+persistence, conversion execution, generic pipeline runtime, and complete
+Chatterbox migration remain part of this milestone.
 
 Deliverables:
 

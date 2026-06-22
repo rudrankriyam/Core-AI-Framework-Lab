@@ -260,15 +260,36 @@ CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
 ### Typed Pipeline Contract
 
 `CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
-future Recipe Studio, Pipeline Studio, and generated runtimes share. A pipeline
+Recipe Studio, Pipeline Studio, and future generated runtimes share. A pipeline
 is an asset-level directed graph with typed ports, explicit state ownership,
 seeded randomness, bounded loops, and a versioned host-operator registry.
 
 Validation rejects missing endpoints, incompatible value contracts, duplicate
 input wiring, cycles, ambiguous state ownership, randomness without exactly one
 seed source, and loops without both a finite iteration bound and stop input.
-This first slice is intentionally schema and validation only: it does not claim
-that the visual editor or generic pipeline executor has shipped yet.
+Pipeline Studio now edits that asset-level contract directly: nodes, typed
+ports, and compatible single-source edges remain under the same validator used
+by the deterministic JSON codec. This editor does not execute the graph; the
+generic pipeline runtime remains a separate milestone.
+
+### Custom Recipe Studio Foundation
+
+Recipe Studio provides a versioned, deterministic authoring manifest and native
+editors for a PyTorch source and module, concrete example inputs, bounded dynamic
+dimensions, explicit state bindings, externalization rules, and function
+entrypoints. Its validation keeps cross-references and the embedded pipeline
+contract honest before a recipe can be encoded.
+
+Unsupported-operation findings retain the operator, module path, source file,
+line, example shapes, and an optional built-in rewrite suggestion. The checked-in
+rewrite catalog records patterns already evidenced by the Chatterbox adapters.
+Generated Python custom-lowering and Metal-kernel files are deliberately failing
+stubs (`NotImplementedError` and `#error`) until an author implements and
+parity-tests them.
+
+This checkpoint is an in-memory authoring foundation. It does not yet run the
+diagnostic worker, persist recipe workspaces into Lab Projects, execute pipelines,
+or migrate Chatterbox conversion and runtime orchestration into the recipe system.
 
 ## Run Apple's YOLOS Tiny Example
 

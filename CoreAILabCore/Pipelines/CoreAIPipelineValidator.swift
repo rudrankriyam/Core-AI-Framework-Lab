@@ -156,7 +156,8 @@ enum CoreAIPipelineValidator {
         if containsCycle(adjacency: adjacency, indegree: indegree) {
             issues.append(issue(.cycle, at: "edges", "Pipeline graph contains a cycle."))
         }
-        return issues.sorted {
+        var seenIssues = Set<CoreAIPipelineValidationIssue>()
+        return issues.filter { seenIssues.insert($0).inserted }.sorted {
             if $0.location != $1.location { return $0.location < $1.location }
             if $0.code.rawValue != $1.code.rawValue {
                 return $0.code.rawValue < $1.code.rawValue

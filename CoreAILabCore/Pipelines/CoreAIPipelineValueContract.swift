@@ -1,8 +1,8 @@
 struct CoreAIPipelineValueContract: Codable, Hashable, Sendable {
-    let kind: CoreAIPipelineValueKind
-    let scalarType: String?
-    let shape: [CoreAIPipelineDimension]?
-    let semantic: String?
+    var kind: CoreAIPipelineValueKind
+    var scalarType: String?
+    var shape: [CoreAIPipelineDimension]?
+    var semantic: String?
 
     init(
         kind: CoreAIPipelineValueKind,
