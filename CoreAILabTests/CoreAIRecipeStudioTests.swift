@@ -6,7 +6,7 @@ import Testing
 struct CoreAIRecipeStudioTests {
     @Test
     func completeRecipeRoundTripsDeterministically() throws {
-        var recipe = CoreAIRecipeManifest.starter
+        var recipe = CoreAIRecipeAuthoringManifest.starter
         recipe.source = CoreAIRecipeSource(
             kind: .huggingFaceRepository,
             location: "organization/model",
@@ -54,7 +54,7 @@ struct CoreAIRecipeStudioTests {
 
     @Test
     func validationReportsDanglingAuthoringReferencesAndAttribution() {
-        var recipe = CoreAIRecipeManifest.starter
+        var recipe = CoreAIRecipeAuthoringManifest.starter
         recipe.dynamicDimensions[0].inputName = "missing_input"
         recipe.functionEntrypoints[0].stateNames = ["missing_state"]
         recipe.unsupportedOperations = [
@@ -251,7 +251,7 @@ struct CoreAIRecipeStudioTests {
             "features", "attention_mask"
         ])
 
-        var recipe = CoreAIRecipeManifest.starter
+        var recipe = CoreAIRecipeAuthoringManifest.starter
         let duplicateInput = try #require(recipe.exampleInputs.first)
         recipe.exampleInputs.append(duplicateInput)
         recipe.exampleInputs.append(duplicateInput)

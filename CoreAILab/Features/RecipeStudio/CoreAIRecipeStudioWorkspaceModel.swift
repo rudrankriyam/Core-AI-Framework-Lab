@@ -4,12 +4,12 @@ import Observation
 @MainActor
 @Observable
 final class CoreAIRecipeStudioWorkspaceModel {
-    var recipe: CoreAIRecipeManifest
+    var recipe: CoreAIRecipeAuthoringManifest
     var selectedSourceEndpoint: CoreAIPipelineEndpoint?
     var selectedDestinationEndpoint: CoreAIPipelineEndpoint?
     private(set) var generatedArtifacts: [CoreAIRecipeGeneratedArtifact] = []
 
-    init(recipe: CoreAIRecipeManifest = .starter) {
+    init(recipe: CoreAIRecipeAuthoringManifest = .starter) {
         self.recipe = recipe
     }
 

@@ -101,7 +101,11 @@ struct ContentView: View {
             for: [
                 LabProject.self,
                 ModelArtifactRecord.self,
-                ProjectArtifactLink.self
+                ProjectArtifactLink.self,
+                CoreAIRecipeRevisionRecord.self,
+                CoreAITargetProfileRecord.self,
+                CoreAIRunRecord.self,
+                CoreAIEvidenceRecord.self
             ],
             inMemory: true
         )

@@ -1,16 +1,16 @@
 import Foundation
 
 enum CoreAIRecipeValidator {
-    static func validate(_ recipe: CoreAIRecipeManifest) throws {
+    static func validate(_ recipe: CoreAIRecipeAuthoringManifest) throws {
         let issues = issues(in: recipe)
         guard issues.isEmpty else {
             throw CoreAIRecipeValidationError(issues: issues)
         }
     }
 
-    static func issues(in recipe: CoreAIRecipeManifest) -> [CoreAIRecipeValidationIssue] {
+    static func issues(in recipe: CoreAIRecipeAuthoringManifest) -> [CoreAIRecipeValidationIssue] {
         var issues: [CoreAIRecipeValidationIssue] = []
-        if recipe.schemaVersion != CoreAIRecipeManifest.currentSchemaVersion {
+        if recipe.schemaVersion != CoreAIRecipeAuthoringManifest.currentSchemaVersion {
             issues.append(issue(
                 .unsupportedSchemaVersion,
                 at: "schemaVersion",

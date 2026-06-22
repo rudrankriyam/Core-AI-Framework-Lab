@@ -5,17 +5,17 @@ enum CoreAIRecipeCodec {
         var schemaVersion: Int
     }
 
-    static func encode(_ recipe: CoreAIRecipeManifest) throws -> Data {
+    static func encode(_ recipe: CoreAIRecipeAuthoringManifest) throws -> Data {
         try CoreAIRecipeValidator.validate(recipe)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         return try encoder.encode(recipe)
     }
 
-    static func decode(_ data: Data) throws -> CoreAIRecipeManifest {
+    static func decode(_ data: Data) throws -> CoreAIRecipeAuthoringManifest {
         let decoder = JSONDecoder()
         let header = try decoder.decode(SchemaHeader.self, from: data)
-        guard header.schemaVersion == CoreAIRecipeManifest.currentSchemaVersion else {
+        guard header.schemaVersion == CoreAIRecipeAuthoringManifest.currentSchemaVersion else {
             throw CoreAIRecipeValidationError(issues: [
                 CoreAIRecipeValidationIssue(
                     code: .unsupportedSchemaVersion,
@@ -24,7 +24,7 @@ enum CoreAIRecipeCodec {
                 )
             ])
         }
-        let recipe = try decoder.decode(CoreAIRecipeManifest.self, from: data)
+        let recipe = try decoder.decode(CoreAIRecipeAuthoringManifest.self, from: data)
         try CoreAIRecipeValidator.validate(recipe)
         return recipe
     }

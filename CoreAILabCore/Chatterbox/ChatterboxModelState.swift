@@ -11,7 +11,9 @@ enum ChatterboxModelState: Equatable {
         case .preparing:
             "Optimizing for this Mac"
         case .ready(let inspection):
-            inspection.contractValidation.isComplete ? "Chatterbox is ready" : "Model contract is incomplete"
+            inspection.contractValidation.isComplete
+                ? "\(inspection.recipe.displayName) is ready"
+                : "Model contract is incomplete"
         case .failed:
             "Model preparation failed"
         }
@@ -22,13 +24,16 @@ enum ChatterboxModelState: Equatable {
         case .notLoaded:
             return "The complete Chatterbox Turbo pipeline ships inside the app."
         case .preparing:
-            return "Core AI is specializing and persistently caching four model assets on the GPU."
+            return "Core AI is specializing and persistently caching four model assets for this Mac."
         case .ready(let inspection):
             if inspection.contractValidation.isComplete {
                 return "\(inspection.formattedTotalSize) is bundled and every native entry point is available."
             } else {
                 let missing = inspection.contractValidation.missingStages
-                    .map(\.title)
+                    .map { stage in
+                        inspection.assets.first { $0.stage == stage }?.displayName
+                            ?? stage.rawValue
+                    }
                     .sorted()
                     .joined(separator: ", ")
                 return "Incomplete bundled stages: \(missing)"

@@ -37,5 +37,6 @@ struct AppleSegmentationQueryControlsView: View {
                 )
             }
         }
+        .disabled(workspace.isBusy)
     }
 }

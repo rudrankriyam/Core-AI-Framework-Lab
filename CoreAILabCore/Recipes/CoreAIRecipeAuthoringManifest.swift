@@ -1,4 +1,4 @@
-struct CoreAIRecipeManifest: Codable, Hashable, Sendable {
+struct CoreAIRecipeAuthoringManifest: Codable, Hashable, Sendable {
     static let currentSchemaVersion = 1
 
     var schemaVersion: Int

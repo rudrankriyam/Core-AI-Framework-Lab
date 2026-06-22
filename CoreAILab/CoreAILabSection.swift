@@ -29,7 +29,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         case .assetInspector:
             "Asset Inspector"
         case .runtime:
-            "Workbench"
+            "Runtime Studio"
         }
     }
 
@@ -50,7 +50,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
         case .assetInspector:
             "doc.text.magnifyingglass"
         case .runtime:
-            "function"
+            "play.square.stack"
         }
     }
 }

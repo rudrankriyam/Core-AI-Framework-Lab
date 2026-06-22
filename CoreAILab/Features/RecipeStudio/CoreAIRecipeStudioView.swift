@@ -4,7 +4,7 @@ struct CoreAIRecipeStudioView: View {
     @State private var workspace: CoreAIRecipeStudioWorkspaceModel
     @State private var selection: CoreAIRecipeStudioPanel? = .source
 
-    init(recipe: CoreAIRecipeManifest = .starter) {
+    init(recipe: CoreAIRecipeAuthoringManifest = .starter) {
         _workspace = State(initialValue: CoreAIRecipeStudioWorkspaceModel(recipe: recipe))
     }
 

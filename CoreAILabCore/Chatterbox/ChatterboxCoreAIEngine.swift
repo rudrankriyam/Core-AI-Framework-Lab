@@ -3,70 +3,6 @@ import Foundation
 import Tokenizers
 
 actor ChatterboxCoreAIEngine {
-    private enum Constants {
-        static let t3LayerCount = 24
-        static let t3HeadCount = 16
-        static let t3HeadDimension = 64
-        static let t3MaximumContextLength = 768
-        static let t3MaximumTextTokens = 256
-        static let t3StartSpeechToken = 6_561
-        static let t3StopSpeechToken = 6_562
-
-        static let s3GeneratedTokenCount = 256
-        static let s3EndSilenceTokenCount = 3
-        static let s3SilenceToken = 4_299
-        static let s3TotalMelFrames = 1_012
-
-        static let sourceChannelCount = 9
-        static let samplesPerMelFrame = 480
-    }
-
-    private struct BundledResources: Sendable {
-        let rootURL: URL
-        let tokenizerURL: URL
-        let assetURLs: [ChatterboxPipelineStage: URL]
-
-        init(bundle: Bundle) throws {
-            guard let rootURL = bundle.url(
-                forResource: "Chatterbox",
-                withExtension: nil
-            ) else {
-                throw ChatterboxCoreAIError.bundledResourcesMissing
-            }
-
-            var assetURLs = [ChatterboxPipelineStage: URL]()
-            for stage in ChatterboxPipelineStage.allCases {
-                let url = rootURL.appending(
-                    path: stage.assetFilename,
-                    directoryHint: .isDirectory
-                )
-                guard FileManager.default.fileExists(atPath: url.path) else {
-                    throw ChatterboxCoreAIError.bundledResourcesMissing
-                }
-                assetURLs[stage] = url
-            }
-
-            let tokenizerURL = rootURL.appending(
-                path: "tokenizer",
-                directoryHint: .isDirectory
-            )
-            guard FileManager.default.fileExists(atPath: tokenizerURL.path) else {
-                throw ChatterboxCoreAIError.bundledResourcesMissing
-            }
-
-            self.rootURL = rootURL
-            self.tokenizerURL = tokenizerURL
-            self.assetURLs = assetURLs
-        }
-
-        func assetURL(for stage: ChatterboxPipelineStage) throws -> URL {
-            guard let url = assetURLs[stage] else {
-                throw ChatterboxCoreAIError.bundledResourcesMissing
-            }
-            return url
-        }
-    }
-
     private struct SpeechTokenGeneration: Sendable {
         let tokens: [Int]
         let reachedStopToken: Bool
@@ -98,38 +34,51 @@ actor ChatterboxCoreAIEngine {
         let transformerPrefill: InferenceFunction
         let transformerDecode: InferenceFunction
         let s3GenURL: URL
+        let s3GenEntrypoint: String
         let vocoderURL: URL
+        let vocoderEntrypoint: String
+        let capacity: ChatterboxResolvedCapacity
     }
 
     private let bundle: Bundle
     private let fileManager = FileManager.default
     private var tokenizer: (any Tokenizer)?
     private var pipeline: PreparedPipeline?
+    private var preferredComputeUnit = CoreAIComputeUnitPreference.automatic
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
     }
 
+    func bundledRecipeManifest() throws -> CoreAIRecipeManifest {
+        try ChatterboxBundledRecipe(bundle: bundle).contract.manifest
+    }
+
     func prepareBundledModels() async throws -> ChatterboxModelInspection {
-        let resources = try BundledResources(bundle: bundle)
+        let resources = try ChatterboxBundledRecipe(bundle: bundle)
+        let contract = resources.contract
         let tokenizer = try await AutoTokenizer.from(
             modelFolder: resources.tokenizerURL
         )
         try validateTokenizer(tokenizer)
 
-        let options = specializationOptions
+        preferredComputeUnit = contract.target.preferredComputeUnit
+        let options = specializationOptions(for: preferredComputeUnit)
         var assets = [ChatterboxAssetInspection]()
         var functionNamesByStage = [
             ChatterboxPipelineStage: Set<String>
         ]()
         var models = [ChatterboxPipelineStage: AIModel]()
         var author = ""
-        var license = ""
+        var license = contract.manifest.source.license
 
         for stage in ChatterboxPipelineStage.allCases {
-            let url = try resources.assetURL(for: stage)
+            let resolvedStage = try contract.resolvedStage(stage)
+            let url = try resources.modelURL(for: stage)
             guard AIModelAsset.isValid(at: url) else {
-                throw ChatterboxCoreAIError.invalidModelAsset(stage.assetFilename)
+                throw ChatterboxCoreAIError.invalidModelAsset(
+                    resolvedStage.artifact.relativePath
+                )
             }
 
             let asset = try AIModelAsset(contentsOf: url)
@@ -141,12 +90,12 @@ actor ChatterboxCoreAIEngine {
             )
             let functionNames = model.functionNames.sorted()
             let functionNameSet = Set(functionNames)
-            let missingFunctions = stage.requiredFunctionNames
+            let missingFunctions = resolvedStage.requiredFunctionNames
                 .subtracting(functionNameSet)
                 .sorted()
             guard missingFunctions.isEmpty else {
                 throw ChatterboxCoreAIError.missingEntrypoints(
-                    asset: stage.assetFilename,
+                    asset: resolvedStage.artifact.relativePath,
                     names: missingFunctions
                 )
             }
@@ -156,6 +105,8 @@ actor ChatterboxCoreAIEngine {
             assets.append(
                 ChatterboxAssetInspection(
                     stage: stage,
+                    displayName: resolvedStage.manifest.displayName,
+                    detail: resolvedStage.manifest.detail,
                     sourceURL: url,
                     functionNames: functionNames,
                     sizeInBytes: try allocatedSize(of: url)
@@ -178,35 +129,43 @@ actor ChatterboxCoreAIEngine {
         }
         self.pipeline = PreparedPipeline(
             embeddingPrefill: try loadFunction(
-                "prefill",
+                contract.resolvedStage(.t3Embeddings).entrypoint(for: .prefill),
                 from: embeddingsModel
             ),
             embeddingDecode: try loadFunction(
-                "decode",
+                contract.resolvedStage(.t3Embeddings).entrypoint(for: .decode),
                 from: embeddingsModel
             ),
             transformerPrefill: try loadFunction(
-                "prefill",
+                contract.resolvedStage(.t3Transformer).entrypoint(for: .prefill),
                 from: transformerModel
             ),
             transformerDecode: try loadFunction(
-                "decode",
+                contract.resolvedStage(.t3Transformer).entrypoint(for: .decode),
                 from: transformerModel
             ),
-            s3GenURL: try resources.assetURL(for: .s3gen),
-            vocoderURL: try resources.assetURL(for: .vocoder)
+            s3GenURL: try resources.modelURL(for: .s3gen),
+            s3GenEntrypoint: try contract.resolvedStage(.s3gen)
+                .entrypoint(for: .generateMel),
+            vocoderURL: try resources.modelURL(for: .vocoder),
+            vocoderEntrypoint: try contract.resolvedStage(.vocoder)
+                .entrypoint(for: .synthesizeWaveform),
+            capacity: contract.capacity
         )
         _ = s3GenModel
         _ = vocoderModel
         self.tokenizer = tokenizer
 
         return ChatterboxModelInspection(
+            recipe: contract.manifest,
+            target: contract.target,
             assets: assets,
             author: author,
             license: license,
             deviceArchitectureName: AIModel.deviceArchitectureName,
             contractValidation: ChatterboxFunctionContract.validate(
-                functionNamesByStage: functionNamesByStage
+                functionNamesByStage: functionNamesByStage,
+                recipe: contract
             )
         )
     }
@@ -229,8 +188,12 @@ actor ChatterboxCoreAIEngine {
         let textPreparationStartedAt = ContinuousClock.now
         let normalizedText = ChatterboxTextNormalizer.normalize(trimmedText)
         let textTokens = tokenizer.encode(text: normalizedText)
-        guard textTokens.count <= Constants.t3MaximumTextTokens else {
-            throw ChatterboxCoreAIError.textTooLong(textTokens.count)
+        let capacity = pipeline.capacity
+        guard textTokens.count <= capacity.maximumTextTokens else {
+            throw ChatterboxCoreAIError.textTooLong(
+                tokenCount: textTokens.count,
+                maximumTokenCount: capacity.maximumTextTokens
+            )
         }
         let textPreparationTime = textPreparationStartedAt.duration(
             to: .now
@@ -238,7 +201,7 @@ actor ChatterboxCoreAIEngine {
 
         let maximumGeneratedTokens = min(
             max(request.maximumGeneratedTokens, 1),
-            Constants.s3GeneratedTokenCount - 3
+            capacity.maximumSpeechTokens
         )
         let random = ChatterboxRandomGenerator(seed: request.seed)
         let generation = try await generateSpeechTokens(
@@ -247,34 +210,42 @@ actor ChatterboxCoreAIEngine {
             maximumGeneratedTokens: maximumGeneratedTokens,
             random: random
         )
-        guard generation.reachedStopToken else {
+        if capacity.requiresStopToken && !generation.reachedStopToken {
             throw ChatterboxCoreAIError.generationLimitReached
         }
         let speechTokens = generation.tokens
         let melGeneration = try await generateMel(
             modelURL: pipeline.s3GenURL,
+            functionName: pipeline.s3GenEntrypoint,
             speechTokens: speechTokens,
+            capacity: capacity,
             random: random
         )
         let waveformGeneration = try await generateWaveform(
             modelURL: pipeline.vocoderURL,
+            functionName: pipeline.vocoderEntrypoint,
             mel: melGeneration.mel,
+            capacity: capacity,
             random: random
         )
         let audioPostprocessingStartedAt = ContinuousClock.now
         let fullWaveform = waveformGeneration.waveform
         let outputSampleCount = min(
             fullWaveform.count,
-            (speechTokens.count + Constants.s3EndSilenceTokenCount)
-                * 2
-                * Constants.samplesPerMelFrame
+            (speechTokens.count + capacity.endSilenceTokenCount)
+                * capacity.melFramesPerSpeechToken
+                * capacity.samplesPerMelFrame
         )
         let waveform = Array(fullWaveform.prefix(outputSampleCount))
 
         let outputURL = URL.temporaryDirectory
             .appending(path: "chatterbox-coreai-\(UUID().uuidString)")
             .appendingPathExtension("wav")
-        try ChatterboxWaveFile.write(samples: waveform, to: outputURL)
+        try ChatterboxWaveFile.write(
+            samples: waveform,
+            sampleRate: capacity.sampleRate,
+            to: outputURL
+        )
         let audioPostprocessingTime = audioPostprocessingStartedAt.duration(
             to: .now
         ).timeInterval
@@ -285,7 +256,7 @@ actor ChatterboxCoreAIEngine {
             normalizedText: normalizedText,
             generatedTokenCount: speechTokens.count,
             audioDuration: Double(waveform.count)
-                / Double(ChatterboxWaveFile.sampleRate),
+                / Double(capacity.sampleRate),
             elapsedTime: elapsedTime,
             metrics: ChatterboxGenerationMetrics(
                 textPreparation: textPreparationTime,
@@ -306,7 +277,9 @@ actor ChatterboxCoreAIEngine {
         )
     }
 
-    private var specializationOptions: SpecializationOptions {
+    private func specializationOptions(
+        for preference: CoreAIComputeUnitPreference
+    ) -> SpecializationOptions {
         let availableKinds = ComputeUnitKind.availableKinds
         let override = ProcessInfo.processInfo.environment[
             "CHATTERBOX_COMPUTE_UNIT"
@@ -318,13 +291,22 @@ actor ChatterboxCoreAIEngine {
         case "cpu" where availableKinds.contains(.cpu):
             preferredKind = .cpu
         default:
-            preferredKind = availableKinds.contains(.gpu) ? .gpu : .cpu
+            switch preference {
+            case .gpu where availableKinds.contains(.gpu):
+                preferredKind = .gpu
+            case .neuralEngine where availableKinds.contains(.neuralEngine):
+                preferredKind = .neuralEngine
+            case .cpu where availableKinds.contains(.cpu):
+                preferredKind = .cpu
+            case .automatic, .cpu, .gpu, .neuralEngine:
+                preferredKind = availableKinds.contains(.gpu) ? .gpu : .cpu
+            }
         }
         return SpecializationOptions(preferredComputeUnitKind: preferredKind)
     }
 
     private func loadModel(at url: URL) async throws -> AIModel {
-        let options = specializationOptions
+        let options = specializationOptions(for: preferredComputeUnit)
         if let cached = try AIModelCache.default.model(
             for: url,
             options: options
@@ -345,6 +327,7 @@ actor ChatterboxCoreAIEngine {
         maximumGeneratedTokens: Int,
         random: ChatterboxRandomGenerator
     ) async throws -> SpeechTokenGeneration {
+        let capacity = pipeline.capacity
         let setupStartedAt = ContinuousClock.now
         let embeddingPrefill = pipeline.embeddingPrefill
         let embeddingDecode = pipeline.embeddingDecode
@@ -368,7 +351,7 @@ actor ChatterboxCoreAIEngine {
         }
 
         var sequenceLength = inputEmbeddings.shape[1]
-        let availableGeneratedTokens = Constants.t3MaximumContextLength
+        let availableGeneratedTokens = capacity.maximumContextLength
             - sequenceLength
             - 1
         let generationBudget = min(
@@ -376,15 +359,18 @@ actor ChatterboxCoreAIEngine {
             availableGeneratedTokens
         )
         guard generationBudget > 0 else {
-            throw ChatterboxCoreAIError.textTooLong(textTokens.count)
+            throw ChatterboxCoreAIError.textTooLong(
+                tokenCount: textTokens.count,
+                maximumTokenCount: capacity.maximumTextTokens
+            )
         }
 
         let cacheShape = [
-            Constants.t3LayerCount,
+            capacity.t3LayerCount,
             1,
-            Constants.t3HeadCount,
-            Constants.t3MaximumContextLength,
-            Constants.t3HeadDimension,
+            capacity.t3HeadCount,
+            capacity.maximumContextLength,
+            capacity.t3HeadDimension,
         ]
         var keyCache = ChatterboxNDArray.zerosFloat16(shape: cacheShape)
         var valueCache = ChatterboxNDArray.zerosFloat16(shape: cacheShape)
@@ -418,11 +404,11 @@ actor ChatterboxCoreAIEngine {
         var generatedTokens = [Int]()
         var token = try ChatterboxSampler.sample(
             logits: ChatterboxNDArray.lastLogits(from: prefillResult.logits),
-            generatedTokens: [Constants.t3StartSpeechToken],
+            generatedTokens: [capacity.t3StartSpeechToken],
             random: random
         )
         let prefillTime = prefillStartedAt.duration(to: .now).timeInterval
-        if token == Constants.t3StopSpeechToken {
+        if token == capacity.t3StopSpeechToken {
             return SpeechTokenGeneration(
                 tokens: [],
                 reachedStopToken: true,
@@ -500,7 +486,7 @@ actor ChatterboxCoreAIEngine {
             decodeHostTime += decodeHostStartedAt.duration(
                 to: .now
             ).timeInterval
-            if token == Constants.t3StopSpeechToken {
+            if token == capacity.t3StopSpeechToken {
                 return SpeechTokenGeneration(
                     tokens: generatedTokens,
                     reachedStopToken: true,
@@ -531,43 +517,45 @@ actor ChatterboxCoreAIEngine {
 
     private func generateMel(
         modelURL: URL,
+        functionName: String,
         speechTokens: [Int],
+        capacity: ChatterboxResolvedCapacity,
         random: ChatterboxRandomGenerator
     ) async throws -> MelGeneration {
         var paddedTokens = [Int32](
-            repeating: Int32(Constants.s3SilenceToken),
-            count: Constants.s3GeneratedTokenCount
+            repeating: Int32(capacity.silenceToken),
+            count: capacity.speechTokenBufferCount
         )
         let validTokens = speechTokens
-            .filter { $0 < Constants.t3StartSpeechToken }
+            .filter { $0 < capacity.t3StartSpeechToken }
             .prefix(
-                Constants.s3GeneratedTokenCount
-                    - Constants.s3EndSilenceTokenCount
+                capacity.speechTokenBufferCount
+                    - capacity.endSilenceTokenCount
             )
         for (index, token) in validTokens.enumerated() {
             paddedTokens[index] = Int32(token)
         }
 
         let noiseStartedAt = ContinuousClock.now
-        let noiseCount = 80 * Constants.s3TotalMelFrames
+        let noiseCount = 80 * capacity.melNoiseFrameCount
         let noise = (0..<noiseCount).map { _ in
             Float16(random.nextNormal())
         }
         let noiseTime = noiseStartedAt.duration(to: .now).timeInterval
         let setupStartedAt = ContinuousClock.now
         let model = try await loadModel(at: modelURL)
-        let function = try loadFunction("main", from: model)
+        let function = try loadFunction(functionName, from: model)
         let setupTime = setupStartedAt.duration(to: .now).timeInterval
         let inferenceStartedAt = ContinuousClock.now
         var outputs = try await function.run(
             inputs: [
                 "speechTokens": NDArray(
                     scalars: paddedTokens,
-                    shape: [1, Constants.s3GeneratedTokenCount]
+                    shape: [1, capacity.speechTokenBufferCount]
                 ),
                 "noise": NDArray(
                     scalars: noise,
-                    shape: [1, 80, Constants.s3TotalMelFrames]
+                    shape: [1, 80, capacity.melNoiseFrameCount]
                 ),
             ]
         )
@@ -584,35 +572,38 @@ actor ChatterboxCoreAIEngine {
 
     private func generateWaveform(
         modelURL: URL,
+        functionName: String,
         mel: NDArray,
+        capacity: ChatterboxResolvedCapacity,
         random: ChatterboxRandomGenerator
     ) async throws -> WaveformGeneration {
-        guard let melFrameCount = mel.shape.last, melFrameCount > 0 else {
+        guard let melFrameCount = mel.shape.last,
+              melFrameCount == capacity.generatedMelFrameCount else {
             throw ChatterboxCoreAIError.invalidOutputShape(
-                "S3Gen returned an empty mel spectrogram."
+                "S3Gen returned \(mel.shape.last ?? 0) mel frames; the recipe requires \(capacity.generatedMelFrameCount)."
             )
         }
 
         let noiseStartedAt = ContinuousClock.now
         var phase = [Float16](
             repeating: 0,
-            count: Constants.sourceChannelCount
+            count: capacity.sourceChannelCount
         )
-        for channel in 1..<Constants.sourceChannelCount {
+        for channel in 1..<capacity.sourceChannelCount {
             phase[channel] = Float16(
                 (random.nextUnitDouble() * 2 - 1) * Double.pi
             )
         }
 
-        let sampleCount = melFrameCount * Constants.samplesPerMelFrame
-        let noiseCount = Constants.sourceChannelCount * sampleCount
+        let sampleCount = melFrameCount * capacity.samplesPerMelFrame
+        let noiseCount = capacity.sourceChannelCount * sampleCount
         let noise = (0..<noiseCount).map { _ in
             Float16(random.nextNormal())
         }
         let noiseTime = noiseStartedAt.duration(to: .now).timeInterval
         let setupStartedAt = ContinuousClock.now
         let model = try await loadModel(at: modelURL)
-        let function = try loadFunction("vocoder", from: model)
+        let function = try loadFunction(functionName, from: model)
         let setupTime = setupStartedAt.duration(to: .now).timeInterval
         let inferenceStartedAt = ContinuousClock.now
         var outputs = try await function.run(
@@ -620,13 +611,13 @@ actor ChatterboxCoreAIEngine {
                 "speech_feat": mel,
                 "phase": NDArray(
                     scalars: phase,
-                    shape: [1, Constants.sourceChannelCount, 1]
+                    shape: [1, capacity.sourceChannelCount, 1]
                 ),
                 "noise": NDArray(
                     scalars: noise,
                     shape: [
                         1,
-                        Constants.sourceChannelCount,
+                        capacity.sourceChannelCount,
                         sampleCount,
                     ]
                 ),

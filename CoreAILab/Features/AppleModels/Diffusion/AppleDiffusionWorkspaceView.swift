@@ -5,13 +5,28 @@ struct AppleDiffusionWorkspaceView: View {
     @State private var workspace: AppleDiffusionWorkspaceModel
     @State private var isImportingPipeline = false
     private let initialModelURL: URL?
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleDiffusionExample,
-        initialModelURL: URL? = nil
+        initialModelURL: URL? = nil,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        _workspace = State(initialValue: AppleDiffusionWorkspaceModel(example: example))
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-diffusion-\(example.rawValue)",
+            title: example.title,
+            modelIdentifier: example.rawValue
+        )
+        _workspace = State(
+            initialValue: AppleDiffusionWorkspaceModel(
+                example: example,
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
         self.initialModelURL = initialModelURL
+        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -31,6 +46,11 @@ struct AppleDiffusionWorkspaceView: View {
                 Label(workspace.example.title, systemImage: "wand.and.sparkles")
             }
 
+            CoreAIRuntimeLifecycleView(
+                coordinator: workspace.runCoordinator,
+                context: runContext
+            )
+
             Section("Pipeline Bundle") {
                 Button(
                     "Import Diffusion Bundle",
@@ -44,19 +64,24 @@ struct AppleDiffusionWorkspaceView: View {
             Section("Prompt") {
                 TextField("Describe an image", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
+                    .disabled(!workspace.canEditGenerationInputs)
                 if workspace.modelInfo?.supportsNegativePrompt == false {
                     Text("FLUX.2 does not consume a negative prompt.")
                         .foregroundStyle(.secondary)
                 } else {
                     TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
                         .lineLimit(2...5)
+                        .disabled(!workspace.canEditGenerationInputs)
                 }
 
                 Stepper("Seed: \(workspace.seed)", value: $workspace.seed, in: 0...Int(UInt32.max))
+                    .disabled(!workspace.canEditGenerationInputs)
                 Stepper("Steps: \(workspace.stepCount)", value: $workspace.stepCount, in: 1...100)
+                    .disabled(!workspace.canEditGenerationInputs)
                 LabeledContent("Guidance: \(workspace.guidanceScale.formatted(.number.precision(.fractionLength(1))))") {
                     Slider(value: $workspace.guidanceScale, in: 0...20, step: 0.5)
                         .frame(minWidth: 160)
+                        .disabled(!workspace.canEditGenerationInputs)
                 }
 
                 HStack {
