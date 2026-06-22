@@ -36,3 +36,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 No Apple catalog model weights are redistributed by this repository. Assets
 exported by users retain their upstream licenses and access terms. The verified
 `hustvl/yolos-tiny` example reports Apache-2.0 metadata.
+
+## CAM++ speaker embedding
+
+`Conversion/Diarization/model.py` adapts the CAM++ architecture from
+[modelscope/3D-Speaker](https://github.com/modelscope/3D-Speaker).
+
+Copyright 3D-Speaker. Licensed under the Apache License, Version 2.0. The
+adapted file identifies the converter-specific modifications. A copy of the
+license is provided at
+`Conversion/Diarization/LICENSES/Apache-2.0.txt`.
+
+The conversion recipe downloads `funasr/campplus` at immutable revision
+`e4b6ede7ce16997aff4ae69fbca1f0175e2afede`. Its official model card identifies
+the checkpoint as Apache-2.0. The checkpoint and generated Core AI assets are
+not redistributed by this repository.

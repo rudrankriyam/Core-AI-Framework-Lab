@@ -5,7 +5,10 @@ build/
 xcuserdata/
 Conversion/Chatterbox/exports/
 Conversion/Chatterbox/.venv/
+Conversion/Diarization/exports/
+Conversion/Diarization/.venv/
 __pycache__/
+.pytest_cache/
 *.pyc
 *.xcresult
 TestResults/

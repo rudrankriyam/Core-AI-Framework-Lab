@@ -5,6 +5,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case appleModels
     case conversion
     case chatterbox
+    case diarization
     case assetInspector
     case runtime
 
@@ -20,6 +21,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "Convert"
         case .chatterbox:
             "Chatterbox"
+        case .diarization:
+            "Diarization"
         case .assetInspector:
             "Asset Inspector"
         case .runtime:
@@ -37,6 +40,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "arrow.triangle.2.circlepath"
         case .chatterbox:
             "waveform"
+        case .diarization:
+            "person.wave.2"
         case .assetInspector:
             "doc.text.magnifyingglass"
         case .runtime:
