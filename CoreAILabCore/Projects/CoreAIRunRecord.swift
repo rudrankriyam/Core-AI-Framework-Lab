@@ -28,7 +28,8 @@ enum CoreAIRunStatus: String, Codable, CaseIterable, Sendable {
 
     func canTransition(to nextStatus: CoreAIRunStatus) -> Bool {
         switch (self, nextStatus) {
-        case (.pending, _):
+        case (.pending, .pending),
+             (.pending, .running):
             true
         case (.running, .running),
              (.running, .cancelled),
@@ -36,6 +37,9 @@ enum CoreAIRunStatus: String, Codable, CaseIterable, Sendable {
              (.running, .succeeded):
             true
         case (.running, .pending),
+             (.pending, .cancelled),
+             (.pending, .failed),
+             (.pending, .succeeded),
              (.cancelled, _),
              (.failed, _),
              (.succeeded, _):

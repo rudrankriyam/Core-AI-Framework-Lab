@@ -58,7 +58,9 @@ final class ChatterboxWorkspaceModel {
             statusMessage = "Specializing \(manifest.pipeline.stages.count) models for \(targetName)"
             modelState = .ready(try await engine.prepareBundledModels())
         } catch {
+            recipeManifest = nil
             modelState = .failed(error.localizedDescription)
+            statusMessage = "Core AI preparation failed"
             present(error)
         }
         isWorking = false

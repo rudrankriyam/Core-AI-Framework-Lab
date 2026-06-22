@@ -285,6 +285,37 @@ struct CoreAIProjectPersistenceTests {
     }
 
     @Test
+    func pendingRunMustEnterRunningBeforeATerminalStatus() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Pending run lifecycle",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            in: project,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .pending,
+                to: .succeeded
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .succeeded,
+                modelContext: context
+            )
+        }
+        #expect(run.status == .pending)
+        #expect(run.endedAt == nil)
+    }
+
+    @Test
     func terminalRunsMustTransitionThroughUpdate() throws {
         let container = try makeContainer()
         let context = container.mainContext
