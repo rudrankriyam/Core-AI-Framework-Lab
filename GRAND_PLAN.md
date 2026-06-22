@@ -60,7 +60,9 @@ The limiting architecture is also clear:
 
 - `ContentView` is a two-tab demo shell.
 - `CoreAIRuntimeView` is a static list rather than a real asset explorer.
-- `ChatterboxCoreAIEngine`, `ChatterboxPipelineStage`, and the UI hardcode one model family.
+- `ChatterboxCoreAIEngine` remains a model-specific runtime adapter, but its asset
+  paths, native entrypoints, display metadata, target preference, tokenizer, and
+  capacity now come from a validated bundled recipe manifest.
 - Conversion is reproducible from the terminal but invisible to the app.
 - Large assets live in the app bundle and Git history rather than a managed artifact library.
 - Experiments and benchmarks exist as chat/terminal evidence, not durable project records.
@@ -76,6 +78,15 @@ The first platform slice is now represented in the repository:
   imports, cross-project deduplication, safe last-reference cleanup, corruption
   checks, and direct Inspector/Workbench handoff. Completed conversion outputs
   can be promoted into projects without depending on their original folder.
+- A versioned Codable recipe vocabulary for targets, artifacts, typed pipeline
+  stages, and capacity, with strict schema, reference, entrypoint, and safe-path
+  validation. Chatterbox Turbo ships the first concrete manifest.
+- Persistent recipe-revision snapshots, target profiles, typed run state, and
+  evidence metadata connected to Lab Projects, with reopen coverage and
+  migration-safe defaults for the additive schema.
+- Chatterbox resolves all four model paths, six native entrypoints, tokenizer,
+  target preference, presentation metadata, and generation capacity from its
+  manifest. Neither its UI nor engine enumerates bundled model filenames.
 - A generated, pinned snapshot of all 33 presets in Apple’s open-source `coreai-models` registry.
 - Search, category filters, recipe provenance, exact conversion defaults, and Swift runtime-product mapping.
 - Generic `.aimodel` import and inspection.
@@ -118,11 +129,13 @@ The first platform slice is now represented in the repository:
 - A reproducible catalog-refresh script and gated integration test.
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
-loop without pretending that Apple distributes converted weights. Milestone 1
-is still incomplete until imports, provenance, and outputs live in persistent
-Lab Projects. The next vertical slices should add that persistence and
-restart-safe jobs, then the multi-model SAM3 plus Qwen composition shown in
-Apple’s Core AI material.
+loop without pretending that Apple distributes converted weights. Milestone 0's
+schema, manifest, and persistence foundation slice is implemented; automatic
+workspace run/evidence capture remains follow-up integration. Milestone 1
+remains incomplete because generic resource-folder metadata, descriptor
+snapshots, provenance editing, and specialization-cache ownership are not yet
+unified in the project library. Restart-safe conversion execution remains
+Milestone 3 work.
 
 ## 4. Product boundary
 
@@ -453,6 +466,13 @@ Estimates assume one focused senior engineer and include product-quality tests. 
 
 ### Milestone 0 — Extract the platform foundation (2 weeks)
 
+Implementation status: the platform-foundation slice is implemented as of June
+22, 2026. The existing opt-in Chatterbox model smoke remains the hardware-backed
+audio and generation-limit regression gate; the default suite validates manifest
+mapping, bounded capacity relationships, and storage contracts without
+performing expensive specialization. Automatic run/evidence capture from the
+Chatterbox workspace remains follow-up integration work.
+
 Deliverables:
 
 - Introduce `LabProject`, recipe, target, artifact, run, and evidence models.
@@ -460,7 +480,9 @@ Deliverables:
 - Move Chatterbox’s asset/function/capacity metadata into a versioned recipe manifest.
 - Add Environment Doctor and remove fixed Xcode-path assumptions from documentation and scripts.
 - Make the current Chatterbox experience load through the new project/manifest layer with no audio regression.
-- Move to Swift 6.2-or-newer project settings and keep the existing actor isolation.
+- Keep Swift 6 language mode on a Swift 6.2-or-newer toolchain and preserve the
+  existing actor isolation. (`SWIFT_VERSION` names the language mode, so `6.0`
+  is the correct Xcode setting even when the selected compiler is Swift 6.4.)
 
 Done bar:
 

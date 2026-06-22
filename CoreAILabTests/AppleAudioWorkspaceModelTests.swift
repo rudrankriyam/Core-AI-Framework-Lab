@@ -58,7 +58,11 @@ struct AppleAudioWorkspaceModelTests {
         let sourceSamples = (0..<2_400).map { index in
             Float(sin(Double(index) * 0.05) * 0.2)
         }
-        try ChatterboxWaveFile.write(samples: sourceSamples, to: url)
+        try ChatterboxWaveFile.write(
+            samples: sourceSamples,
+            sampleRate: 24_000,
+            to: url
+        )
 
         let converted = try AppleAudioSampleLoader.loadMono16k(
             from: url,

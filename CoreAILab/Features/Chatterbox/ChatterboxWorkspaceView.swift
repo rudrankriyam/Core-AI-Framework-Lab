@@ -8,13 +8,13 @@ struct ChatterboxWorkspaceView: View {
 
         NavigationStack {
             Form {
-                ChatterboxHeroView()
+                ChatterboxHeroView(manifest: model.recipeManifest)
 
                 ChatterboxModelSection(state: model.modelState)
 
                 ChatterboxPromptSection(prompt: $model.prompt)
 
-                ChatterboxPipelineSection(inspection: model.inspection)
+                ChatterboxPipelineSection(state: model.modelState)
 
                 ChatterboxGenerationSection(
                     canGenerate: model.canGenerate,
@@ -27,7 +27,7 @@ struct ChatterboxWorkspaceView: View {
                 )
             }
             .formStyle(.grouped)
-            .navigationTitle("Chatterbox")
+            .navigationTitle(model.recipeManifest?.displayName ?? "Text to Speech")
             .task {
                 await model.prepare()
             }

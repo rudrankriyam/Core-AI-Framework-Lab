@@ -47,6 +47,7 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
 - `CoreAILab/Features/Projects/` - persistent project library, artifact inventory, and Inspector/Workbench handoff
 - `CoreAILabCore/Projects/` - SwiftData project schema and atomic SHA-256 artifact storage
+- `CoreAILabCore/Manifests/` - versioned, Codable recipe, target, artifact, pipeline, and capacity contracts with reference and path validation
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
@@ -92,6 +93,13 @@ projects. Removing the last project reference reclaims the stored copy; deleting
 one of several references does not. Stored `.aimodel` packages open directly in
 Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
 Project** action instead of remaining tied to their original output folder.
+
+The project schema also stores immutable recipe-manifest revisions, target
+profiles, typed run status, and evidence metadata. These records retain the exact
+validated JSON contracts used by a run and survive reopening the SwiftData store.
+Controller APIs keep recipe, target, run, and evidence ownership within one Lab
+Project. Current conversion and benchmark workspaces do not yet write those
+records automatically, so restart-safe execution remains later work.
 
 ## Visual Conversion Workbench
 
@@ -320,7 +328,10 @@ language, diffusion, or segmentation resource folders.
 
 ## Chatterbox Workspace
 
-The macOS target embeds four `.aimodel` assets and a Hugging Face tokenizer:
+The macOS target embeds a versioned `recipe.json`, four `.aimodel` assets, and a
+Hugging Face tokenizer. The recipe is the source of truth for display metadata,
+asset paths, native entrypoints, tokenizer location, preferred target, and the
+complete generation-capacity contract:
 
 | Asset | Precision | Entrypoints | Role |
 | --- | --- | --- | --- |
@@ -330,8 +341,10 @@ The macOS target embeds four `.aimodel` assets and a Hugging Face tokenizer:
 | HiFT vocoder | FP16 | `vocoder` | 80-bin mel frames to 24 kHz waveform audio |
 
 The bundle occupies about 600 MiB on disk and reports 625.1 MB of allocated
-model data on the tested Mac. The app validates all six native entrypoints
-before enabling generation and persistently caches Core AI specialization.
+model data on the tested Mac. The app validates the manifest and all six native
+entrypoints before enabling generation, then persistently caches Core AI
+specialization using the recipe's target preference. Chatterbox UI and engine
+code no longer enumerate asset filenames or native function names.
 
 The production export has capacity for 253 generated speech tokens plus three
 end-silence tokens. That is a 10.24-second graph window. The WAV writer trims
@@ -483,8 +496,9 @@ device; an empty or misrouted filtered run fails the harness.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
-- Projects and imported artifacts persist across launches. Conversion job
-  execution and benchmark evidence are not restart-safe yet.
+- Projects, imported artifacts, recipe revisions, target profiles, run records,
+  and evidence metadata persist across launches. Conversion job execution and
+  benchmark capture are not wired to those records or restart-safe yet.
 - The generic function workbench currently generates NDArray inputs only.
   Stateful execution, image-input adaptation, imported fixtures, persisted
   benchmark evidence, and raw-output export remain later Runtime Studio work.

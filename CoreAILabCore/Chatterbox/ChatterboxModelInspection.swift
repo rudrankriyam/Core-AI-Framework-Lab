@@ -2,6 +2,8 @@ import Foundation
 
 struct ChatterboxAssetInspection: Identifiable, Sendable, Equatable {
     let stage: ChatterboxPipelineStage
+    let displayName: String
+    let detail: String
     let sourceURL: URL
     let functionNames: [String]
     let sizeInBytes: Int64
@@ -19,6 +21,8 @@ struct ChatterboxAssetInspection: Identifiable, Sendable, Equatable {
 }
 
 struct ChatterboxModelInspection: Sendable, Equatable {
+    let recipe: CoreAIRecipeManifest
+    let target: CoreAITargetManifest
     let assets: [ChatterboxAssetInspection]
     let author: String
     let license: String

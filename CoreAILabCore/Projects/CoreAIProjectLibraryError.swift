@@ -6,6 +6,9 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
     case projectUnavailable
     case artifactUnavailable
     case inconsistentArtifactRecord
+    case domainRecordProjectMismatch
+    case terminalRunRequiresUpdate
+    case evidenceLabelRequired
 
     var errorDescription: String? {
         switch self {
@@ -19,6 +22,12 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
             "The artifact is no longer available."
         case .inconsistentArtifactRecord:
             "The artifact metadata does not match its content-addressed storage path."
+        case .domainRecordProjectMismatch:
+            "The recipe, target, run, and evidence records must belong to the same project."
+        case .terminalRunRequiresUpdate:
+            "Create a pending or running run, then record its terminal status through updateRun."
+        case .evidenceLabelRequired:
+            "Enter an evidence label."
         }
     }
 }
