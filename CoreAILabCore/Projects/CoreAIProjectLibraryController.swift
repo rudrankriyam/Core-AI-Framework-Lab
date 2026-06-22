@@ -232,7 +232,7 @@ final class CoreAIProjectLibraryController {
         return try modelContext.fetch(descriptor).first
     }
 
-    private func clearError() {
+    func clearError() {
         errorMessage = nil
         isShowingError = false
     }

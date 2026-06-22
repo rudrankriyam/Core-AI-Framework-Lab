@@ -6,6 +6,104 @@ import Testing
 @MainActor
 struct CoreAIProjectPersistenceTests {
     @Test
+    func recipeTargetRunAndEvidenceSurviveReopeningThePersistentStore() throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        let storeURL = directory.appending(path: "projects.store")
+        let manifest = ChatterboxRecipeFixture.manifest
+        let target = try #require(manifest.defaultTarget)
+        let projectID: UUID
+        let runID: UUID
+        let evidenceID: UUID
+
+        do {
+            let container = try CoreAIProjectModelContainer.makePersistent(
+                storeURL: storeURL
+            )
+            let controller = CoreAIProjectLibraryController(
+                artifactStore: CoreAIArtifactStore(
+                    rootURL: directory.appending(path: "artifacts")
+                )
+            )
+            let project = try controller.createProject(
+                named: "Persistent Chatterbox Lab",
+                modelContext: container.mainContext
+            )
+            projectID = project.id
+            let recipeRecord = try controller.addRecipeRevision(
+                manifest,
+                to: project,
+                modelContext: container.mainContext
+            )
+            let targetRecord = try controller.addTargetProfile(
+                target,
+                to: project,
+                modelContext: container.mainContext
+            )
+            let run = try controller.createRun(
+                kind: .inference,
+                status: .running,
+                in: project,
+                recipeRevision: recipeRecord,
+                targetProfile: targetRecord,
+                modelContext: container.mainContext
+            )
+            runID = run.id
+            let evidence = try controller.recordEvidence(
+                kind: .output,
+                label: "Generated speech",
+                relativePath: "outputs/sample.wav",
+                sha256Digest: String(repeating: "a", count: 64),
+                mediaType: "audio/wav",
+                metadata: ["seed": "42"],
+                for: run,
+                modelContext: container.mainContext
+            )
+            evidenceID = evidence.id
+            try controller.updateRun(
+                run,
+                status: .succeeded,
+                summary: "Stop token reached",
+                modelContext: container.mainContext
+            )
+        }
+
+        do {
+            let reopenedContainer = try CoreAIProjectModelContainer.makePersistent(
+                storeURL: storeURL
+            )
+            let context = reopenedContainer.mainContext
+            let project = try #require(
+                try context.fetch(FetchDescriptor<LabProject>()).first
+            )
+            let run = try #require(
+                try context.fetch(FetchDescriptor<CoreAIRunRecord>()).first
+            )
+            let evidence = try #require(
+                try context.fetch(FetchDescriptor<CoreAIEvidenceRecord>()).first
+            )
+
+            #expect(project.id == projectID)
+            #expect(project.recipeRevisions.count == 1)
+            #expect(project.targetProfiles.count == 1)
+            #expect(project.runs.map(\.id) == [runID])
+            #expect(project.evidence.map(\.id) == [evidenceID])
+            #expect(try project.recipeRevisions.first?.decodedManifest() == manifest)
+            #expect(try project.targetProfiles.first?.decodedManifest() == target)
+            #expect(run.status == .succeeded)
+            #expect(run.recipeRevision?.recipeIdentifier == manifest.id)
+            #expect(run.targetProfile?.targetIdentifier == target.id)
+            #expect(run.evidence.map(\.id) == [evidenceID])
+            #expect(evidence.run?.id == runID)
+            #expect(try evidence.decodedMetadata() == ["seed": "42"])
+        }
+    }
+
+    @Test
     func projectMetadataSurvivesReopeningThePersistentStore() throws {
         let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -30,14 +128,211 @@ struct CoreAIProjectPersistenceTests {
             projectID = project.id
         }
 
-        let reopenedContainer = try CoreAIProjectModelContainer.makePersistent(
-            storeURL: storeURL
+        do {
+            let reopenedContainer = try CoreAIProjectModelContainer.makePersistent(
+                storeURL: storeURL
+            )
+            let projects = try reopenedContainer.mainContext.fetch(
+                FetchDescriptor<LabProject>()
+            )
+            #expect(projects.count == 1)
+            #expect(projects.first?.id == projectID)
+            #expect(projects.first?.name == "Persistent Qwen Lab")
+            #expect(projects.first?.schemaVersion == 1)
+        }
+    }
+
+    @Test
+    func runRejectsARecipeRevisionOwnedByAnotherProject() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let firstProject = try controller.createProject(
+            named: "First",
+            modelContext: context
         )
-        let projects = try reopenedContainer.mainContext.fetch(FetchDescriptor<LabProject>())
-        #expect(projects.count == 1)
-        #expect(projects.first?.id == projectID)
-        #expect(projects.first?.name == "Persistent Qwen Lab")
-        #expect(projects.first?.schemaVersion == 1)
+        let secondProject = try controller.createProject(
+            named: "Second",
+            modelContext: context
+        )
+        let manifest = ChatterboxRecipeFixture.manifest
+        let recipe = try controller.addRecipeRevision(
+            manifest,
+            to: firstProject,
+            modelContext: context
+        )
+
+        #expect(throws: CoreAIProjectLibraryError.domainRecordProjectMismatch) {
+            _ = try controller.createRun(
+                kind: .inference,
+                in: secondProject,
+                recipeRevision: recipe,
+                modelContext: context
+            )
+        }
+    }
+
+    @Test
+    func nonterminalRunCannotRetainAnEndDate() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Run lifecycle",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            in: project,
+            modelContext: context
+        )
+
+        try controller.updateRun(
+            run,
+            status: .running,
+            endedAt: .distantPast,
+            modelContext: context
+        )
+
+        #expect(run.status == .running)
+        #expect(run.endedAt == nil)
+    }
+
+    @Test
+    func statusOnlyUpdatePreservesTheExistingSummary() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Run summary",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            in: project,
+            modelContext: context
+        )
+
+        try controller.updateRun(
+            run,
+            status: .running,
+            summary: "Model loaded",
+            modelContext: context
+        )
+        try controller.updateRun(
+            run,
+            status: .running,
+            modelContext: context
+        )
+
+        #expect(run.summary == "Model loaded")
+    }
+
+    @Test
+    func runLifecycleRejectsBackwardAndPostTerminalTransitions() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Immutable terminal run",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            status: .running,
+            in: project,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .running,
+                to: .pending
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .pending,
+                modelContext: context
+            )
+        }
+
+        let endedAt = Date(timeIntervalSince1970: 42)
+        try controller.updateRun(
+            run,
+            status: .succeeded,
+            summary: "Final result",
+            endedAt: endedAt,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .succeeded,
+                to: .running
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .running,
+                summary: "Mutated",
+                modelContext: context
+            )
+        }
+        #expect(run.status == .succeeded)
+        #expect(run.summary == "Final result")
+        #expect(run.endedAt == endedAt)
+    }
+
+    @Test
+    func pendingRunMustEnterRunningBeforeATerminalStatus() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Pending run lifecycle",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            in: project,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .pending,
+                to: .succeeded
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .succeeded,
+                modelContext: context
+            )
+        }
+        #expect(run.status == .pending)
+        #expect(run.endedAt == nil)
+    }
+
+    @Test
+    func terminalRunsMustTransitionThroughUpdate() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Run transitions",
+            modelContext: context
+        )
+
+        #expect(throws: CoreAIProjectLibraryError.terminalRunRequiresUpdate) {
+            _ = try controller.createRun(
+                kind: .inference,
+                status: .succeeded,
+                in: project,
+                modelContext: context
+            )
+        }
     }
 
     @Test
@@ -221,7 +516,11 @@ struct CoreAIProjectPersistenceTests {
         let schema = Schema([
             LabProject.self,
             ModelArtifactRecord.self,
-            ProjectArtifactLink.self
+            ProjectArtifactLink.self,
+            CoreAIRecipeRevisionRecord.self,
+            CoreAITargetProfileRecord.self,
+            CoreAIRunRecord.self,
+            CoreAIEvidenceRecord.self
         ])
         let configuration = ModelConfiguration(
             "CoreAIProjectPersistenceTests",

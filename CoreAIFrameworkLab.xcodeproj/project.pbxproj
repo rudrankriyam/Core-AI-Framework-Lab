@@ -56,6 +56,7 @@
 		149F83755B1BD5478AFDC966 /* AppleLanguageModelEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67557D8F65A9034709891B85 /* AppleLanguageModelEngine.swift */; };
 		157B52F1DE52344905FB4F88 /* AppleAudioIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D48CDF1BD4B260F8CCFC2B /* AppleAudioIntegrationTests.swift */; };
 		16044AAFE6718487B8A908CB /* SpeakerDiarizationMediaAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C2504746B549B2B4803779 /* SpeakerDiarizationMediaAnalyzer.swift */; };
+		16114303058ECCB0DF7CBA89 /* CoreAIRecipeManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */; };
 		16870DE9AB31759E7511B9F4 /* CoreAIConversionPathRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EA6AE25B89D96A9EEFFC36 /* CoreAIConversionPathRow.swift */; };
 		16F2F0AD77098B95C0803A67 /* AppleSegmentationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776D33387BF7F6A1FB1A1899 /* AppleSegmentationError.swift */; };
 		188E0DB066E48D4119892EF0 /* CoreAIFunctionRuntimeServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8D3A73A9EFE1C07DB0B32E /* CoreAIFunctionRuntimeServicing.swift */; };
@@ -69,6 +70,7 @@
 		1C23BFC4FC006C195C230FF9 /* ChatterboxSampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */; };
 		1C7C6CF25B702539271A5827 /* AppleAudioTranscriptionResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EE1BC2A9212E889CD1F8E5 /* AppleAudioTranscriptionResultView.swift */; };
 		1D41A38DD205941F5FBB30B2 /* CoreAIImageContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35F01E7144657A345920814 /* CoreAIImageContract.swift */; };
+		1DAF01C463D7432DB1B29887 /* CoreAIRecipeManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9CEBD86DD914FD60094D4AD /* CoreAIRecipeManifest.swift */; };
 		1E47E4AC36499204DCB60F58 /* CoreAIFunctionBenchmarkReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C79B5BFB81A19FEA54CDDD3 /* CoreAIFunctionBenchmarkReportView.swift */; };
 		1F1919995AED760D31612F39 /* AppleDiffusionWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D333F714C6F86110E7F1669F /* AppleDiffusionWorkspaceView.swift */; };
 		1F98CAFF7744ACAE139F762F /* CoreAISegmentation in Frameworks */ = {isa = PBXBuildFile; productRef = 947FD36701569B9445DA9E64 /* CoreAISegmentation */; };
@@ -120,14 +122,17 @@
 		3714D2DFF172E9C46BFC187E /* CoreAISpecializationServiceStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78A357768C661CED3486E6A0 /* CoreAISpecializationServiceStub.swift */; };
 		37942EE60DCE101A7AEF3A5A /* AppleObjectDetectionWorkspaceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF89078D1D96F9D225C439B /* AppleObjectDetectionWorkspaceModelTests.swift */; };
 		37DDCF2882E22224FC3AA298 /* CoreAIArtifactProjectPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF38A52569A14F6FEB2BC94 /* CoreAIArtifactProjectPickerView.swift */; };
+		38482D9936AB6DFD10385EF6 /* CoreAIRecipeRevisionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD05B149B31031E7965DFB5 /* CoreAIRecipeRevisionRecord.swift */; };
 		384E95E4A3D8EC70901C9524 /* Chatterbox in Resources */ = {isa = PBXBuildFile; fileRef = A1E1F350924813824143F274 /* Chatterbox */; };
 		3876F511A90D777F678AE582 /* SpeakerDiarizationMacVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3560A61F3B0F8D868924FB /* SpeakerDiarizationMacVideoPlayer.swift */; };
+		3916FB03E9DECF001E6FDDE8 /* CoreAITargetProfileRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EE1979736965B395DF2D23 /* CoreAITargetProfileRecord.swift */; };
 		393B42CC808B541ED8C86421 /* CoreAIConversionEnvironmentCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684365536B8911599017ADF5 /* CoreAIConversionEnvironmentCheckView.swift */; };
 		3C6A3FD54A527998F4417690 /* CoreAIFunctionBenchmarkActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21993FF1353B6B602CDDFEE4 /* CoreAIFunctionBenchmarkActionsView.swift */; };
 		3CEC6808B98BF2CF1B76DD21 /* SpeakerDiarizationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE95AFF0D6BA3F445A4CFD5 /* SpeakerDiarizationError.swift */; };
 		3D57B7FA09DA131CB4847940 /* AppleLanguageWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025B583E54E095690C6B231A /* AppleLanguageWorkspaceView.swift */; };
 		3D6F4E6C6BFF9D48D7449D15 /* SpeakerDiarizationMacVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3560A61F3B0F8D868924FB /* SpeakerDiarizationMacVideoPlayer.swift */; };
 		3D7F4C21D82F7C85BD03DDD4 /* AppleLanguageWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6311C42A3B43D96960E1AEB0 /* AppleLanguageWorkspaceModel.swift */; };
+		3E0E7F6F7A73B3F343D696E0 /* CoreAICapacityManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E311C2688ED85F866D04F82C /* CoreAICapacityManifest.swift */; };
 		3E304691CA10D2A74645FCFD /* CoreAIFunctionBenchmarkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5913C1A2939098525E22D5B3 /* CoreAIFunctionBenchmarkResult.swift */; };
 		3E682C6B70D19395DAFE10A1 /* CoreAIFunctionValueKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB04F943311AA32BBCD7E95D /* CoreAIFunctionValueKind.swift */; };
 		3F0C34F96B21DE35BE1E9A04 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7FB5157DD183D55DA2447D /* ContentView.swift */; };
@@ -174,11 +179,13 @@
 		521F64B62179A8B32CEC5A38 /* SpeakerDiarizationWatcherModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C345FB7B547E05A39C2F7CFD /* SpeakerDiarizationWatcherModel.swift */; };
 		52DC8641C5D3128308D83A7E /* AppleDiffusionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9322FC307DF9E4EECB1E1652 /* AppleDiffusionError.swift */; };
 		5356CF8AC959D8F74803953B /* CoreAIFunctionBenchmarkControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7399AD99A5A20E256CD3C83 /* CoreAIFunctionBenchmarkControlsView.swift */; };
+		54A196E1D5E24171D6F17F92 /* CoreAIEvidenceRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE8CDEE0A5F39F435A67F77 /* CoreAIEvidenceRecord.swift */; };
 		55723F32E20DA6FFFF971223 /* CoreAIObjectDetection in Frameworks */ = {isa = PBXBuildFile; productRef = 9E586F19D2F31C7277583ADC /* CoreAIObjectDetection */; };
 		557FD51189DA0BAAC6A5C131 /* CoreAIConversionCommandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F74693ABA5C90BABD19CC2C /* CoreAIConversionCommandView.swift */; };
 		55CB01D149E049C6C9CE41CC /* CoreAIArtifactStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503D2A369317D2B46913BF61 /* CoreAIArtifactStoreError.swift */; };
 		568AE02FD27794216180A3DC /* AppleLanguageWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025B583E54E095690C6B231A /* AppleLanguageWorkspaceView.swift */; };
 		5707004980AEC14B35272407 /* AppleModelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C7221A920D4CC1FDD97229 /* AppleModelDetailView.swift */; };
+		572F03D8C5E3A46C2DCC4E1D /* CoreAITargetManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3542C11F20E5AD561963F9E5 /* CoreAITargetManifest.swift */; };
 		57796CE237AF27B14CDDFBBB /* AppleCoreAIModelGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E26A4618478E9C3C25B8C3B /* AppleCoreAIModelGroup.swift */; };
 		57DEB1EA5AF9BB96ECCFB8C1 /* CoreAIConversionWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368DAE996BEB46C1180A09E7 /* CoreAIConversionWorkspaceView.swift */; };
 		587CB62099E976FDBC8CEE4D /* ChatterboxGenerationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813EBCF1FD7AC7EFCB06DA62 /* ChatterboxGenerationSection.swift */; };
@@ -194,11 +201,14 @@
 		5A76008011A96CCF71E51B12 /* CoreAIAssetWorkspacePhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8620D4330D98C8B68E96A17F /* CoreAIAssetWorkspacePhase.swift */; };
 		5AB5077F52E1CBBF1421EC45 /* AppleAudioWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6477EAA2EA1702FD20B60C /* AppleAudioWorkspaceModel.swift */; };
 		5AE8174047911FD46EA80FB5 /* CoreAIConversionEnvironmentCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9477920C54294E7E07969EC9 /* CoreAIConversionEnvironmentCheck.swift */; };
+		5B0939406F44E0C4A92037F7 /* CoreAIProjectDomainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF01C26184150B5CBC6998 /* CoreAIProjectDomainController.swift */; };
 		5B40C3E9C781C95BF34DE707 /* CoreAIModelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234F40171B26730AFEE83D19 /* CoreAIModelLoader.swift */; };
+		5B69617F15BCBFA109B8DE4C /* CoreAIRecipeManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */; };
 		5C4B3D0B6DCD0E0B813B7D2E /* AppleSegmentationQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5C127BB1F8DE339EE608BE /* AppleSegmentationQuery.swift */; };
 		5CCC20A2176CAA56D63FB424 /* ChatterboxFunctionContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */; };
 		5CFE901530A69BFF93791F35 /* AppleAudioTranscribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2808CC77D71A168E5C3EFD /* AppleAudioTranscribing.swift */; };
 		5D25639075D5DEE564C9B969 /* SpeakerDiarizationTurnRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607C5A830C6DEA6D84B454E4 /* SpeakerDiarizationTurnRow.swift */; };
+		5D077A365ED11C35E1DD3422 /* CoreAITargetProfileRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EE1979736965B395DF2D23 /* CoreAITargetProfileRecord.swift */; };
 		5E01AA5B3485C6BE04D6973D /* CoreAIArtifactKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94068C6806164002620EA85C /* CoreAIArtifactKind.swift */; };
 		5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EF809F4325A5DED84D6974 /* CoreAILabApp.swift */; };
 		5E3A8EE77DAFA2FC267563A5 /* CoreAIFunctionContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4C85D1FB50E64EAE4B12E5 /* CoreAIFunctionContract.swift */; };
@@ -252,6 +262,7 @@
 		75817E0A3D993B30EBF87ECA /* SpeakerDiarizationVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D4DA193FC98304A58C1A95 /* SpeakerDiarizationVideoPlayer.swift */; };
 		75D58355F36882F2C1AC88C7 /* SpeakerDiarizationResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7258AB7C76D5FEF3EB0933DB /* SpeakerDiarizationResultsView.swift */; };
 		75FE2CE34EF2EBA4E15C2EF2 /* AppleObjectDetectorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA340B1C9F75B1AFB62487CB /* AppleObjectDetectorEngine.swift */; };
+		768D70972CEF3A39161E5E42 /* CoreAIRecipeRevisionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD05B149B31031E7965DFB5 /* CoreAIRecipeRevisionRecord.swift */; };
 		76FC66CC0138E8139B0DB099 /* AppleAudioError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2425EA40286743A214DC115C /* AppleAudioError.swift */; };
 		7762F3AE7760A68C0B54AF0B /* AppleModelLibraryRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327173698A0058BB175CFD04 /* AppleModelLibraryRoute.swift */; };
 		77AFBBE930FC95F7FA2E5996 /* AppleObjectDetectionWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DFB625E32BA95D22036801 /* AppleObjectDetectionWorkspaceView.swift */; };
@@ -269,10 +280,13 @@
 		7A61F5F8013556AA2568DC10 /* ChatterboxFunctionContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13289EC5D8CF1ACDF270AC0 /* ChatterboxFunctionContract.swift */; };
 		7A9E807FF90C09C253FC353C /* AppleModels in Resources */ = {isa = PBXBuildFile; fileRef = 975C1A9A635873D4ABE63B7A /* AppleModels */; };
 		7AA3EFB2411402D8C0FF5224 /* CoreAIStorageLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF55683762FFE284E42358FB /* CoreAIStorageLocation.swift */; };
+		7AF5337F3B8E3DBC57192AC2 /* CoreAIEvidenceRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE8CDEE0A5F39F435A67F77 /* CoreAIEvidenceRecord.swift */; };
+		7B71854B014324040DC97D56 /* CoreAIRunRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296EFAD21443A7E90DF68F32 /* CoreAIRunRecord.swift */; };
 		7B863871574C5194F5C4867E /* CoreAIProjectLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBEB17964FE90E8320DE4DE8 /* CoreAIProjectLibraryView.swift */; };
 		7C3F5D30B5F2573E46F393BE /* AppleLanguageIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938D23477F0CF944354D6945 /* AppleLanguageIntegrationTests.swift */; };
 		7C5873171AFD4BD81F49B8C2 /* CoreAIFunctionContractValuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097B9780F525F59E5647B280 /* CoreAIFunctionContractValuesView.swift */; };
 		7CC544AAD0428ABAE7BB8EAC /* ChatterboxPipelineSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC50CC0AD3A4D0AD5FBB90D /* ChatterboxPipelineSection.swift */; };
+		7EB39419A5998C50B833E46F /* CoreAIManifestValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346A65A8F5A813BF989F0554 /* CoreAIManifestValidationError.swift */; };
 		7F393CE8EEF0B94FF50F05C4 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 0CE061745E062E1D6345ABCA /* Fixtures */; };
 		7F5F2C3719005677A7114C15 /* SpeakerDiarizationMediaAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8A271910FDCB3925DB7BF5 /* SpeakerDiarizationMediaAnalysis.swift */; };
 		7F9E6295EBEEC92904F880EC /* AppleAudioWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EC963BC2193E7302D57E6C /* AppleAudioWorkspaceView.swift */; };
@@ -301,6 +315,7 @@
 		88E2C5A1C5443A862F0B79EF /* AppleDiffusionGenerating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D3142A635BAD0FC3A37809 /* AppleDiffusionGenerating.swift */; };
 		89411DE0B2AEB1C717FF1B81 /* CoreAIPipelineNodeKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08558C29608DBC62AF129E2 /* CoreAIPipelineNodeKind.swift */; };
 		898900F085D711549EE8D4D2 /* ProjectArtifactLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51EB15700F2CF33E605A152 /* ProjectArtifactLink.swift */; };
+		89D3FEE82DE78793AF95D0F8 /* CoreAITargetManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3542C11F20E5AD561963F9E5 /* CoreAITargetManifest.swift */; };
 		89E3F40F717733515D2E3D63 /* CoreAIBenchmarkStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14B1F52EC0B580DBC823EE8 /* CoreAIBenchmarkStatistics.swift */; };
 		8AF9921E27A591218D310526 /* CoreAITensorShapeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C78274BBC11D6D2ACA7A9E /* CoreAITensorShapeValidator.swift */; };
 		8B4BE83F101F4877477B0E50 /* CoreAIProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06D88CBADAECF0BF7A81EBA7 /* CoreAIProjectPersistenceTests.swift */; };
@@ -320,6 +335,7 @@
 		916B4266CEEF3FED8ACEC552 /* CoreAIPipelineManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA8FF45B2845DE9E39B8EB6 /* CoreAIPipelineManifestTests.swift */; };
 		92F02F61A4EBA54FE86D2BE4 /* CoreAIFunctionInputGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304A07222AD8ED0F6B66D6EF /* CoreAIFunctionInputGenerator.swift */; };
 		930A7256C918C0A991961C3D /* CoreAIPipelineCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5B304A4D84B06BFE71C5A8 /* CoreAIPipelineCodec.swift */; };
+		93150E79B202780706A59CD7 /* CoreAIManifestValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346A65A8F5A813BF989F0554 /* CoreAIManifestValidationError.swift */; };
 		931E45047A41F6CC9017BBF6 /* CoreAIConversionPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E12486967BBD65EA08DB3A /* CoreAIConversionPlanner.swift */; };
 		9380EF667962EDAA36761D0E /* AppleDiffusionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C91D5B92128C8A11B21DC3 /* AppleDiffusionIntegrationTests.swift */; };
 		9387DD1B5BF1B03D3AAF35A9 /* SpeakerDiarizationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE95AFF0D6BA3F445A4CFD5 /* SpeakerDiarizationError.swift */; };
@@ -354,11 +370,13 @@
 		9F42A3C6B8B15980D5E36AA5 /* CoreAITensorFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8418DDD49555EF0BAC9875D /* CoreAITensorFactory.swift */; };
 		9FB2947A2AC2EEA5E8F4653C /* AppleDiffusionWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B026AF8A744E5490885938 /* AppleDiffusionWorkspaceModel.swift */; };
 		9FE10CBB64415E37D41CAF94 /* SpeakerDiarizationWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418FC72214B3AA71CFDE48E9 /* SpeakerDiarizationWaveform.swift */; };
+		9FDA3B4CC427FFCF16AB672F /* ChatterboxBundledRecipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA257271BC6A8ADE8DEB91E7 /* ChatterboxBundledRecipe.swift */; };
 		A0BCBB1FD8EDF6F761B4E99F /* CoreAITensorScalarSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D016EBAA024026EC05DF16A /* CoreAITensorScalarSupport.swift */; };
 		A0FD8352183246D45AE02CF6 /* CoreAIPipelineValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80FF8526856580D7D361C87 /* CoreAIPipelineValidator.swift */; };
 		A14C0717E13DB5897958F306 /* AppleCoreAIModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB347BADEBE78A7439A796D /* AppleCoreAIModelCatalog.swift */; };
 		A1AB8EF940C477A42362E0AF /* AppleSegmentationPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BFB75F871C91B995B23415 /* AppleSegmentationPreviewView.swift */; };
 		A282A0775612CEAB4AAD38B9 /* ChatterboxWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6356D08377A950FCD28A1D53 /* ChatterboxWorkspaceView.swift */; };
+		A285A9A5F5BC47F315BD73D4 /* CoreAIArtifactManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C4FC3FC7442174304F884DB /* CoreAIArtifactManifest.swift */; };
 		A322C454F6F307B2FB33C39E /* AppleModels in Resources */ = {isa = PBXBuildFile; fileRef = 975C1A9A635873D4ABE63B7A /* AppleModels */; };
 		A32EDF65B8EC08DEB1C1A644 /* CoreAIConversionWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368DAE996BEB46C1180A09E7 /* CoreAIConversionWorkspaceView.swift */; };
 		A3A7F03E8F2720EF45DB603F /* CoreAIFunctionBenchmarkInputsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B8B86C2094D160E57AE1AF /* CoreAIFunctionBenchmarkInputsView.swift */; };
@@ -379,10 +397,12 @@
 		AA6F193006F46E51ED39D8BD /* CoreAIModelContentType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049AE23D6177E45D51F5DFA5 /* CoreAIModelContentType.swift */; };
 		AA8DCD1D4AB4B4B96CCF79BB /* CoreAIAssetSignatureValuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5428B2E271B3CFB1CD96648D /* CoreAIAssetSignatureValuesView.swift */; };
 		AB153F6A9DF85D5C786E8E9E /* CoreAIModelAssetInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D98C0A701759EE92245EB5 /* CoreAIModelAssetInspector.swift */; };
+		AB1B94250716AA72C50FADAB /* ChatterboxRecipeContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FB74DC6D6C340288631DBF9 /* ChatterboxRecipeContract.swift */; };
 		AB2429BEB4FF595379D12CE4 /* CoreAIFunctionWorkbenchError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4F9A488FF3C33AC0FB38B1 /* CoreAIFunctionWorkbenchError.swift */; };
 		ADB2271B2E403C39C2C07ACF /* AppleObjectDetectionWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A38174154D394714C111912 /* AppleObjectDetectionWorkspaceModel.swift */; };
 		AE28E84A6712F1F921E3442F /* CoreAIConversionProcessEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C64E05BE9C31ED8C4EBE3199 /* CoreAIConversionProcessEvent.swift */; };
 		AE5532C7EFA7133278533EBA /* CoreAIConversionArtifactKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EECE28E4D05F84E1B0F3A /* CoreAIConversionArtifactKind.swift */; };
+		AE63DC6596379DB1468FCCF8 /* CoreAICapacityManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E311C2688ED85F866D04F82C /* CoreAICapacityManifest.swift */; };
 		AE883B2BF724FCF81D8BEA8D /* CoreAIPipelineCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5B304A4D84B06BFE71C5A8 /* CoreAIPipelineCodec.swift */; };
 		AF74FF3FB3973E20AB346081 /* AppleCoreAIRuntimeSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD83BBF140C1A6932437015 /* AppleCoreAIRuntimeSupport.swift */; };
 		B02AD8E5DD7C6F62B42C16CF /* CoreAIBenchmarkDurationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1438163CE65AE1151F738A3 /* CoreAIBenchmarkDurationRow.swift */; };
@@ -401,9 +421,11 @@
 		B4FDE44823764A31AE029BDE /* AppleSegmentationWorkspaceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8026AF6D9531CCFBFF53263 /* AppleSegmentationWorkspaceModelTests.swift */; };
 		B5DC914E8011E156BBE10FE4 /* CoreAIFunctionBenchmarkActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21993FF1353B6B602CDDFEE4 /* CoreAIFunctionBenchmarkActionsView.swift */; };
 		B60FE56C3DE3647287182DAC /* CoreAIConversionPrecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3A39F1A29EC629ABFA95A3B /* CoreAIConversionPrecision.swift */; };
+		B634E0B4EF66BB32B63F5214 /* CoreAIRunRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296EFAD21443A7E90DF68F32 /* CoreAIRunRecord.swift */; };
 		B6B3DB3A17642948BDDA1400 /* CoreAIAssetWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D1384C86E6E6E4D947F310 /* CoreAIAssetWorkspaceModel.swift */; };
 		B7000E09AD94D170224F692D /* AppleCoreAIModelCatalogError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4C7BF606D037116E46243E /* AppleCoreAIModelCatalogError.swift */; };
 		B74F14EFCEF91A2AE0486AC8 /* AppleSegmentationWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C746A8DBF06E58900214936 /* AppleSegmentationWorkspaceModel.swift */; };
+		B78C589BE03DFBE74437E57F /* CoreAIArtifactManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C4FC3FC7442174304F884DB /* CoreAIArtifactManifest.swift */; };
 		B7F3268527A30171612E896F /* CoreAIConversionArtifactDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150D8C7AB01F0AB3096D3813 /* CoreAIConversionArtifactDestinationView.swift */; };
 		B830F0A829E8C3CC0AAA2D41 /* CoreAITestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44227D7D04CC46A70F323D36 /* CoreAITestFixtures.swift */; };
 		B85B7D18550DCA160F6873C5 /* CoreAITensorContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD10D1C62F044F919F00E8C5 /* CoreAITensorContract.swift */; };
@@ -425,6 +447,7 @@
 		BFCF8F80F29B85D6E26D8596 /* CoreAIArtifactStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503D2A369317D2B46913BF61 /* CoreAIArtifactStoreError.swift */; };
 		BFD693FCE8C14C327F0FD71C /* AppleAudioError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2425EA40286743A214DC115C /* AppleAudioError.swift */; };
 		C1712811FA6F2132C9044D9F /* CoreAINewProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8337DE8B97255177FB01AAEE /* CoreAINewProjectView.swift */; };
+		C184D84E35783171FA94483B /* ChatterboxRecipeFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF770F42385A08EA89FC217 /* ChatterboxRecipeFixture.swift */; };
 		C192F1703C0A772D0636385B /* CoreAIInferenceExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A4C7E5DB748B1EC8C600AC /* CoreAIInferenceExamples.swift */; };
 		C1D97B58FC4F8DC7009E2C76 /* AppleModelLibraryRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327173698A0058BB175CFD04 /* AppleModelLibraryRoute.swift */; };
 		C2AEC467F0F5736AD98700DA /* CoreAIAssetWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D1384C86E6E6E4D947F310 /* CoreAIAssetWorkspaceModel.swift */; };
@@ -457,10 +480,12 @@
 		D2161EC474E52CDD3CDED045 /* CoreAIAssetValueSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3B6499B590E26EF2999C80 /* CoreAIAssetValueSignature.swift */; };
 		D236381C42FD8790C405E461 /* CoreAIAheadOfTimeCompileScriptGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1287187AFE25372AC4137932 /* CoreAIAheadOfTimeCompileScriptGenerator.swift */; };
 		D348277166BFE359C87B3A42 /* SpeakerDiarizationWatcherSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581248362A92A86E951D16BC /* SpeakerDiarizationWatcherSection.swift */; };
+		D331C952DF7D891B9EFFA93F /* ChatterboxRecipeContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FB74DC6D6C340288631DBF9 /* ChatterboxRecipeContract.swift */; };
 		D3E5D4660AE6118C7BE309E3 /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = 946B71584A8D8FDAD3C13EBC /* Transformers */; };
 		D3F9B9A54B4740D3C1047A97 /* CoreAIBenchmarkStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14B1F52EC0B580DBC823EE8 /* CoreAIBenchmarkStatistics.swift */; };
 		D41A4AAEB418EEDCEE98574D /* CoreAIFunctionContractBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0CA7038D13FD6A9418A1E /* CoreAIFunctionContractBuilder.swift */; };
 		D493D855A112D531C0C0D41C /* CoreAIConversionOutputsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0682CDCCF83CED72CF4368B3 /* CoreAIConversionOutputsView.swift */; };
+		D551A13529B853F253C675C0 /* CoreAIRecipePipelineManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A4268CC28FA5F216EC48BB /* CoreAIRecipePipelineManifest.swift */; };
 		D5FB0FD16DFD82F919D12976 /* CoreAIPipelineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64AD470AAD59637616448EC /* CoreAIPipelineNode.swift */; };
 		D63F063DAB8DE6BAB0593C3C /* CoreAISpecializationServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC36D77A932309CE98154BA /* CoreAISpecializationServicing.swift */; };
 		D69BF1288A0C7C42F621C4C0 /* CoreAIFunctionWorkbenchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4AAA279B34FF4E6DE2884F /* CoreAIFunctionWorkbenchTests.swift */; };
@@ -493,6 +518,7 @@
 		E3E03FB4572CF23C6772949B /* CoreAIDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = F5342EC1792948D4825554C9 /* CoreAIDiffusion */; };
 		E5CA323BFAFD66BDB225D4BB /* CoreAISpecializationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D5506974D4D1C9C254BC2E /* CoreAISpecializationService.swift */; };
 		E633A28BBBA2AF46E876D5D3 /* CoreAIFunctionWorkbenchWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FECFC950ABB2633628354A6 /* CoreAIFunctionWorkbenchWorkspaceModel.swift */; };
+		E6AEA313797FBEE086B681F0 /* CoreAIRecipeManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9CEBD86DD914FD60094D4AD /* CoreAIRecipeManifest.swift */; };
 		E6E1233959EC7B2F3078DF26 /* AppleObjectDetectionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8943FFF6A3CC23B8FA792CDE /* AppleObjectDetectionError.swift */; };
 		E7084D8A428E87AFF868B42E /* CoreAIProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68243136E8EDCF10CC62087 /* CoreAIProjectDetailView.swift */; };
 		E71B10DC8F3631820861C816 /* CoreAIPipelineEdge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8208C854BE307A72C54658E /* CoreAIPipelineEdge.swift */; };
@@ -505,6 +531,7 @@
 		EA2F7656C5F719B0459784C2 /* CoreAISpecializationControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81E1470F10D1B3D9E80ADDAB /* CoreAISpecializationControlsView.swift */; };
 		EAA6F22F633F1435C0402B09 /* CoreAIConversionPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E12486967BBD65EA08DB3A /* CoreAIConversionPlanner.swift */; };
 		EAD01F6DDB725DF4C7CEEAF9 /* CoreAIFunctionInputDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8DABDD2A2CEB1620665CE35 /* CoreAIFunctionInputDraft.swift */; };
+		EB072115D1CD7BAF36388BA6 /* CoreAIProjectDomainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF01C26184150B5CBC6998 /* CoreAIProjectDomainController.swift */; };
 		EB67C2C173EE370D15CA7A84 /* CoreAIFunctionInputDraftView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81813A2FEA37AC2C4B95DDF5 /* CoreAIFunctionInputDraftView.swift */; };
 		EBF15C5A7BF48283962ABB52 /* CoreAIProjectDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593B20A690A7D97998D21103 /* CoreAIProjectDestinationView.swift */; };
 		EC3E727882D39DDC6937A5A2 /* AppleLanguageIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938D23477F0CF944354D6945 /* AppleLanguageIntegrationTests.swift */; };
@@ -541,6 +568,8 @@
 		F8C811B56C78178661991BFC /* CoreAIConversionArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA14BF8E83DF34E60DE24B90 /* CoreAIConversionArtifact.swift */; };
 		F8FE5F03371B78E3DEF9711B /* AppleSegmentationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDE761FBC88D5FC4BEA366F /* AppleSegmentationIntegrationTests.swift */; };
 		F9095830285960BC944BCBB9 /* SpeakerDiarizationWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32139D988BB4F1F511F69C70 /* SpeakerDiarizationWorkspaceModel.swift */; };
+		F9665363F56598837FCD0208 /* ChatterboxBundledRecipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA257271BC6A8ADE8DEB91E7 /* ChatterboxBundledRecipe.swift */; };
+		F967EA5903446064DB147D08 /* ChatterboxRecipeFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF770F42385A08EA89FC217 /* ChatterboxRecipeFixture.swift */; };
 		F9A563BFC2634C603273D0AE /* AppleAudioWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6477EAA2EA1702FD20B60C /* AppleAudioWorkspaceModel.swift */; };
 		F9DDFB7B6E95EBA034059F4C /* CoreAIConversionArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA14BF8E83DF34E60DE24B90 /* CoreAIConversionArtifact.swift */; };
 		F9E58EF9188D44C162DFD433 /* CoreAIConversionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D5B902049D4DE578422769 /* CoreAIConversionPhase.swift */; };
@@ -554,6 +583,7 @@
 		FDF2A4BB4282DF9454B17944 /* CoreAIProjectLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBEB17964FE90E8320DE4DE8 /* CoreAIProjectLibraryView.swift */; };
 		FDF6688424D6E9905D5C3733 /* CoreAIAssetFunctionSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE4D2406029A2A41246F1CB /* CoreAIAssetFunctionSignature.swift */; };
 		FE62262C0C77E54FCE03CAFD /* ChatterboxPresentedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */; };
+		FEB628920C6AC8247EBF0A40 /* CoreAIRecipePipelineManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A4268CC28FA5F216EC48BB /* CoreAIRecipePipelineManifest.swift */; };
 		FEE4B18809758363BB6B5B0C /* CoreAICachePolicyChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 387B72C1C6963EACF70FC40C /* CoreAICachePolicyChoice.swift */; };
 		FF7E4338AD441E4D3D0728AB /* CoreAICachePolicyChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 387B72C1C6963EACF70FC40C /* CoreAICachePolicyChoice.swift */; };
 /* End PBXBuildFile section */
@@ -611,6 +641,7 @@
 		1A38174154D394714C111912 /* AppleObjectDetectionWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleObjectDetectionWorkspaceModel.swift; sourceTree = "<group>"; };
 		1A703CE6D6932A0175E84265 /* CoreAIResourceBundleSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIResourceBundleSummaryView.swift; sourceTree = "<group>"; };
 		1B48297E4A1FEC26AC8DFEFE /* SpeakerDiarizationTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerDiarizationTimelineView.swift; sourceTree = "<group>"; };
+		1C4FC3FC7442174304F884DB /* CoreAIArtifactManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIArtifactManifest.swift; sourceTree = "<group>"; };
 		1D4AAA279B34FF4E6DE2884F /* CoreAIFunctionWorkbenchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionWorkbenchTests.swift; sourceTree = "<group>"; };
 		1D728740800449D877DF583E /* CoreAIBenchmarkEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIBenchmarkEnvironment.swift; sourceTree = "<group>"; };
 		1E26A4618478E9C3C25B8C3B /* AppleCoreAIModelGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCoreAIModelGroup.swift; sourceTree = "<group>"; };
@@ -622,6 +653,7 @@
 		2425EA40286743A214DC115C /* AppleAudioError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAudioError.swift; sourceTree = "<group>"; };
 		27FFE002D90DF84704AC91E2 /* CoreAISeededRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAISeededRandomNumberGenerator.swift; sourceTree = "<group>"; };
 		2887BECC7B29F28CBFD841C3 /* CoreAIExampleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIExampleCatalog.swift; sourceTree = "<group>"; };
+		296EFAD21443A7E90DF68F32 /* CoreAIRunRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRunRecord.swift; sourceTree = "<group>"; };
 		29C91D5B92128C8A11B21DC3 /* AppleDiffusionIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDiffusionIntegrationTests.swift; sourceTree = "<group>"; };
 		2C79B5BFB81A19FEA54CDDD3 /* CoreAIFunctionBenchmarkReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionBenchmarkReportView.swift; sourceTree = "<group>"; };
 		2C93E157BE3E8D8BCD2631D9 /* CoreAIFunctionInputPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionInputPlan.swift; sourceTree = "<group>"; };
@@ -638,7 +670,9 @@
 		327173698A0058BB175CFD04 /* AppleModelLibraryRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleModelLibraryRoute.swift; sourceTree = "<group>"; };
 		3292E3BCBD0F14A1AA4B608E /* CoreAIPipelineManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineManifest.swift; sourceTree = "<group>"; };
 		3348D81D2B84CC6162AE39AB /* AppleLanguageResponseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLanguageResponseView.swift; sourceTree = "<group>"; };
+		346A65A8F5A813BF989F0554 /* CoreAIManifestValidationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIManifestValidationError.swift; sourceTree = "<group>"; };
 		3482F22F9F41D9A4669CE61D /* CoreAICacheEntryStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAICacheEntryStatus.swift; sourceTree = "<group>"; };
+		3542C11F20E5AD561963F9E5 /* CoreAITargetManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAITargetManifest.swift; sourceTree = "<group>"; };
 		368DAE996BEB46C1180A09E7 /* CoreAIConversionWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionWorkspaceView.swift; sourceTree = "<group>"; };
 		37C1F6713907CB086832F024 /* CoreAIConversionEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionEnvironmentDetector.swift; sourceTree = "<group>"; };
 		3865FA28608466F39B8B3251 /* CoreAILabSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAILabSection.swift; sourceTree = "<group>"; };
@@ -698,6 +732,7 @@
 		6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxCoreAIEngine.swift; sourceTree = "<group>"; };
 		6C746A8DBF06E58900214936 /* AppleSegmentationWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSegmentationWorkspaceModel.swift; sourceTree = "<group>"; };
 		6D4C7BF606D037116E46243E /* AppleCoreAIModelCatalogError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCoreAIModelCatalogError.swift; sourceTree = "<group>"; };
+		6FB74DC6D6C340288631DBF9 /* ChatterboxRecipeContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxRecipeContract.swift; sourceTree = "<group>"; };
 		705BC76954890ED8C24AE89E /* CoreAIPipelineValidationIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineValidationIssue.swift; sourceTree = "<group>"; };
 		71E935DF95E4483AC45C5268 /* CoreAIFunctionResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionResultsView.swift; sourceTree = "<group>"; };
 		7258AB7C76D5FEF3EB0933DB /* SpeakerDiarizationResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerDiarizationResultsView.swift; sourceTree = "<group>"; };
@@ -718,6 +753,7 @@
 		81813A2FEA37AC2C4B95DDF5 /* CoreAIFunctionInputDraftView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionInputDraftView.swift; sourceTree = "<group>"; };
 		81E1470F10D1B3D9E80ADDAB /* CoreAISpecializationControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAISpecializationControlsView.swift; sourceTree = "<group>"; };
 		8337DE8B97255177FB01AAEE /* CoreAINewProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAINewProjectView.swift; sourceTree = "<group>"; };
+		83FF01C26184150B5CBC6998 /* CoreAIProjectDomainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIProjectDomainController.swift; sourceTree = "<group>"; };
 		849CA38A0916DB97D02BD9A3 /* CoreAIFunctionBenchmarkResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionBenchmarkResultsView.swift; sourceTree = "<group>"; };
 		8620D4330D98C8B68E96A17F /* CoreAIAssetWorkspacePhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIAssetWorkspacePhase.swift; sourceTree = "<group>"; };
 		8943FFF6A3CC23B8FA792CDE /* AppleObjectDetectionError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleObjectDetectionError.swift; sourceTree = "<group>"; };
@@ -755,6 +791,7 @@
 		A4592805C54E337236CBA632 /* AppleModelRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleModelRow.swift; sourceTree = "<group>"; };
 		A51EB15700F2CF33E605A152 /* ProjectArtifactLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectArtifactLink.swift; sourceTree = "<group>"; };
 		A5AD763E01DD0782B99DFC31 /* AppleDiffusionWorkspaceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDiffusionWorkspaceModelTests.swift; sourceTree = "<group>"; };
+		A5EE1979736965B395DF2D23 /* CoreAITargetProfileRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAITargetProfileRecord.swift; sourceTree = "<group>"; };
 		A63E2FF6512383B12E812915 /* ChatterboxWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxWorkspaceModel.swift; sourceTree = "<group>"; };
 		A6EE1BC2A9212E889CD1F8E5 /* AppleAudioTranscriptionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAudioTranscriptionResultView.swift; sourceTree = "<group>"; };
 		A8026AF6D9531CCFBFF53263 /* AppleSegmentationWorkspaceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSegmentationWorkspaceModelTests.swift; sourceTree = "<group>"; };
@@ -767,11 +804,13 @@
 		ADA8FF45B2845DE9E39B8EB6 /* CoreAIPipelineManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineManifestTests.swift; sourceTree = "<group>"; };
 		AE2808CC77D71A168E5C3EFD /* AppleAudioTranscribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAudioTranscribing.swift; sourceTree = "<group>"; };
 		AE2F4D8FD97BB6B3D1274E41 /* CoreAIConversionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionRequest.swift; sourceTree = "<group>"; };
+		AEF770F42385A08EA89FC217 /* ChatterboxRecipeFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxRecipeFixture.swift; sourceTree = "<group>"; };
 		AF0AF89287C5CF9652C8CA6B /* CoreAIFunctionContractView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionContractView.swift; sourceTree = "<group>"; };
 		AF3BA34D94A4A1DF52097202 /* CoreAISwiftInvocationGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAISwiftInvocationGenerator.swift; sourceTree = "<group>"; };
 		AF817C4907EB57FF0E8E5B6B /* CoreAIPipelineEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineEndpoint.swift; sourceTree = "<group>"; };
 		AFB7FB19ED44E0DC62904313 /* CoreAIAssetInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIAssetInspectorView.swift; sourceTree = "<group>"; };
 		B17671048931C350AFA7CBB0 /* CoreAIConversionWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionWorkspaceModel.swift; sourceTree = "<group>"; };
+		B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeManifestTests.swift; sourceTree = "<group>"; };
 		B285F598A3E1BF896F38622B /* ChatterboxPresentedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPresentedError.swift; sourceTree = "<group>"; };
 		B2C78274BBC11D6D2ACA7A9E /* CoreAITensorShapeValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAITensorShapeValidator.swift; sourceTree = "<group>"; };
 		B366CC8AE595C6841FD862AC /* CoreAIStoredArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIStoredArtifact.swift; sourceTree = "<group>"; };
@@ -797,9 +836,12 @@
 		C8208C854BE307A72C54658E /* CoreAIPipelineEdge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineEdge.swift; sourceTree = "<group>"; };
 		C842BB5FDAA799B9D02EFC79 /* CoreAIConversionProcessResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionProcessResult.swift; sourceTree = "<group>"; };
 		C876B4250B82DD34C6DCA873 /* CoreAISpecializationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAISpecializationProfile.swift; sourceTree = "<group>"; };
+		C9CEBD86DD914FD60094D4AD /* CoreAIRecipeManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeManifest.swift; sourceTree = "<group>"; };
+		CA257271BC6A8ADE8DEB91E7 /* ChatterboxBundledRecipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxBundledRecipe.swift; sourceTree = "<group>"; };
 		CA7439DDFE2CF3557A823662 /* CoreAIModelCacheExamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIModelCacheExamples.swift; sourceTree = "<group>"; };
 		CAC778B589272E18662D305E /* ChatterboxPromptSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxPromptSection.swift; sourceTree = "<group>"; };
 		CB04F943311AA32BBCD7E95D /* CoreAIFunctionValueKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionValueKind.swift; sourceTree = "<group>"; };
+		CCE8CDEE0A5F39F435A67F77 /* CoreAIEvidenceRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIEvidenceRecord.swift; sourceTree = "<group>"; };
 		CD4C85D1FB50E64EAE4B12E5 /* CoreAIFunctionContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionContract.swift; sourceTree = "<group>"; };
 		CDB347BADEBE78A7439A796D /* AppleCoreAIModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCoreAIModelCatalog.swift; sourceTree = "<group>"; };
 		CE6A6AF39EF8E554D7946EF0 /* AppleSegmentationExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSegmentationExample.swift; sourceTree = "<group>"; };
@@ -821,6 +863,7 @@
 		DE2B2010E2C61657701D1351 /* AppleDiffusionPipelineEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDiffusionPipelineEngine.swift; sourceTree = "<group>"; };
 		E08558C29608DBC62AF129E2 /* CoreAIPipelineNodeKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIPipelineNodeKind.swift; sourceTree = "<group>"; };
 		E13C4728697979047CE2979F /* CoreAIFunctionWorkbenchErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionWorkbenchErrorPresenter.swift; sourceTree = "<group>"; };
+		E311C2688ED85F866D04F82C /* CoreAICapacityManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAICapacityManifest.swift; sourceTree = "<group>"; };
 		E3A39F1A29EC629ABFA95A3B /* CoreAIConversionPrecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionPrecision.swift; sourceTree = "<group>"; };
 		E4D5B902049D4DE578422769 /* CoreAIConversionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIConversionPhase.swift; sourceTree = "<group>"; };
 		E7881B58C09953834D29E6D7 /* SpeakerDiarizationMediaSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerDiarizationMediaSummary.swift; sourceTree = "<group>"; };
@@ -842,6 +885,7 @@
 		F2B80ADBBDE1BDA3F9F28B34 /* SpeakerDiarizationImportSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerDiarizationImportSection.swift; sourceTree = "<group>"; };
 		F393CCA5E3B55E5946204903 /* AppleLanguageModelError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLanguageModelError.swift; sourceTree = "<group>"; };
 		F533B1C23D3096BC1615AF88 /* CoreAILab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreAILab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5A4268CC28FA5F216EC48BB /* CoreAIRecipePipelineManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipePipelineManifest.swift; sourceTree = "<group>"; };
 		FA340B1C9F75B1AFB62487CB /* AppleObjectDetectorEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleObjectDetectorEngine.swift; sourceTree = "<group>"; };
 		FC890FDDDCDA0A53EB9BE15F /* CoreAIFunctionBenchmarkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionBenchmarkConfiguration.swift; sourceTree = "<group>"; };
 		FC8D50D95290062DF1002B04 /* CoreAIFunctionWorkbenchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFunctionWorkbenchView.swift; sourceTree = "<group>"; };
@@ -850,6 +894,7 @@
 		FE268B64DC868D3534FCC63A /* CoreAIFloatingPointArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIFloatingPointArray.swift; sourceTree = "<group>"; };
 		FED22859185F784C24FFBCA8 /* ChatterboxGenerationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxGenerationRequest.swift; sourceTree = "<group>"; };
 		FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxModelState.swift; sourceTree = "<group>"; };
+		FFD05B149B31031E7965DFB5 /* CoreAIRecipeRevisionRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAIRecipeRevisionRecord.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1036,11 +1081,16 @@
 				94068C6806164002620EA85C /* CoreAIArtifactKind.swift */,
 				51CA9D7E863DF5580B016574 /* CoreAIArtifactStore.swift */,
 				503D2A369317D2B46913BF61 /* CoreAIArtifactStoreError.swift */,
+				CCE8CDEE0A5F39F435A67F77 /* CoreAIEvidenceRecord.swift */,
+				83FF01C26184150B5CBC6998 /* CoreAIProjectDomainController.swift */,
 				552B7E3F675B787F009682E6 /* CoreAIProjectLibraryController.swift */,
 				06B84CE9D46E6A2504020593 /* CoreAIProjectLibraryError.swift */,
 				42CBCE5BA053ADAD93D97C9C /* CoreAIProjectModelContainer.swift */,
+				FFD05B149B31031E7965DFB5 /* CoreAIRecipeRevisionRecord.swift */,
+				296EFAD21443A7E90DF68F32 /* CoreAIRunRecord.swift */,
 				BF55683762FFE284E42358FB /* CoreAIStorageLocation.swift */,
 				B366CC8AE595C6841FD862AC /* CoreAIStoredArtifact.swift */,
+				A5EE1979736965B395DF2D23 /* CoreAITargetProfileRecord.swift */,
 				E9FD91F67175F6F51BE5C15E /* LabProject.swift */,
 				A3920632C7B6E431A66AA442 /* ModelArtifactRecord.swift */,
 				A51EB15700F2CF33E605A152 /* ProjectArtifactLink.swift */,
@@ -1063,6 +1113,7 @@
 				1E3BD640315DF10A599327D3 /* Examples */,
 				2EB33672CD5FBC47A7FA9106 /* Export */,
 				449DCA0643FF48D65A69DDCE /* FunctionWorkbench */,
+				A53906FB126FDA40C9898F31 /* Manifests */,
 				7EB60B28EB9200E83DD6E742 /* Pipelines */,
 				3ADD6C544755D90C43AC6892 /* Projects */,
 				E5931FB122B8B661F87F6FC6 /* Specialization */,
@@ -1187,6 +1238,7 @@
 				BBDE761FBC88D5FC4BEA366F /* AppleSegmentationIntegrationTests.swift */,
 				A8026AF6D9531CCFBFF53263 /* AppleSegmentationWorkspaceModelTests.swift */,
 				9CCED69CFF38B65430D9575B /* ChatterboxFunctionContractTests.swift */,
+				AEF770F42385A08EA89FC217 /* ChatterboxRecipeFixture.swift */,
 				1EAC6F9003416A4E491A762A /* CoreAICacheControlsTests.swift */,
 				C6749C73158A9F2D0184026A /* CoreAIConversionPlannerTests.swift */,
 				A85FD5FCF37A50C3C1841C1B /* CoreAIConversionProcessRunnerTests.swift */,
@@ -1196,6 +1248,7 @@
 				D2E03061354DCABE5C7CD3EC /* CoreAIIntegrationExportTests.swift */,
 				ADA8FF45B2845DE9E39B8EB6 /* CoreAIPipelineManifestTests.swift */,
 				06D88CBADAECF0BF7A81EBA7 /* CoreAIProjectPersistenceTests.swift */,
+				B1CA5DD8461C1AE9BC4B5D68 /* CoreAIRecipeManifestTests.swift */,
 				78A357768C661CED3486E6A0 /* CoreAISpecializationServiceStub.swift */,
 				44227D7D04CC46A70F323D36 /* CoreAITestFixtures.swift */,
 				557698D00909463400ECB5E4 /* SpeakerDiarizationLabTests.swift */,
@@ -1322,6 +1375,19 @@
 			path = Audio;
 			sourceTree = "<group>";
 		};
+		A53906FB126FDA40C9898F31 /* Manifests */ = {
+			isa = PBXGroup;
+			children = (
+				1C4FC3FC7442174304F884DB /* CoreAIArtifactManifest.swift */,
+				E311C2688ED85F866D04F82C /* CoreAICapacityManifest.swift */,
+				346A65A8F5A813BF989F0554 /* CoreAIManifestValidationError.swift */,
+				C9CEBD86DD914FD60094D4AD /* CoreAIRecipeManifest.swift */,
+				F5A4268CC28FA5F216EC48BB /* CoreAIRecipePipelineManifest.swift */,
+				3542C11F20E5AD561963F9E5 /* CoreAITargetManifest.swift */,
+			);
+			path = Manifests;
+			sourceTree = "<group>";
+		};
 		B289954012C148B375571BFF /* Conversion */ = {
 			isa = PBXGroup;
 			children = (
@@ -1369,6 +1435,7 @@
 		C0FDD2697D38EB3E494B3037 /* Chatterbox */ = {
 			isa = PBXGroup;
 			children = (
+				CA257271BC6A8ADE8DEB91E7 /* ChatterboxBundledRecipe.swift */,
 				8BA19B4067C60A0A537331EB /* ChatterboxContractValidation.swift */,
 				6C5241491CCDAC0F3255769C /* ChatterboxCoreAIEngine.swift */,
 				DDA28FD73B2E27F575A75A28 /* ChatterboxCoreAIError.swift */,
@@ -1379,6 +1446,7 @@
 				FF38E9EDDBF287D9331CA92F /* ChatterboxModelState.swift */,
 				58D1A13D87AB37EF81055D40 /* ChatterboxNDArray.swift */,
 				C4CB94E1104082F6644C44F8 /* ChatterboxPipelineStage.swift */,
+				6FB74DC6D6C340288631DBF9 /* ChatterboxRecipeContract.swift */,
 				622B3DE8189445EFB66EE989 /* ChatterboxSampling.swift */,
 				F2A04618A4B5052304398F09 /* ChatterboxTextNormalizer.swift */,
 				9107CFB7DE7898B9BF2709DE /* ChatterboxWaveFile.swift */,
@@ -1613,6 +1681,7 @@
 				05BDDC9E9853C4B629CE0B21 /* AppleSegmentationIntegrationTests.swift in Sources */,
 				B4FDE44823764A31AE029BDE /* AppleSegmentationWorkspaceModelTests.swift in Sources */,
 				5CCC20A2176CAA56D63FB424 /* ChatterboxFunctionContractTests.swift in Sources */,
+				C184D84E35783171FA94483B /* ChatterboxRecipeFixture.swift in Sources */,
 				9A83413476712006773D02B9 /* CoreAICacheControlsTests.swift in Sources */,
 				345DC4850A4C6426DDDA30F3 /* CoreAIConversionPlannerTests.swift in Sources */,
 				30BAD0FEB59A034C82586BD9 /* CoreAIConversionProcessRunnerTests.swift in Sources */,
@@ -1622,6 +1691,7 @@
 				7879F2D2D09B9623C9909807 /* CoreAIIntegrationExportTests.swift in Sources */,
 				916B4266CEEF3FED8ACEC552 /* CoreAIPipelineManifestTests.swift in Sources */,
 				8B4BE83F101F4877477B0E50 /* CoreAIProjectPersistenceTests.swift in Sources */,
+				5B69617F15BCBFA109B8DE4C /* CoreAIRecipeManifestTests.swift in Sources */,
 				3714D2DFF172E9C46BFC187E /* CoreAISpecializationServiceStub.swift in Sources */,
 				B830F0A829E8C3CC0AAA2D41 /* CoreAITestFixtures.swift in Sources */,
 				6B854E75AF83396D6C555C2F /* SpeakerDiarizationLabTests.swift in Sources */,
@@ -1644,6 +1714,7 @@
 				F8FE5F03371B78E3DEF9711B /* AppleSegmentationIntegrationTests.swift in Sources */,
 				4846D999D43E4A8832AFBBDE /* AppleSegmentationWorkspaceModelTests.swift in Sources */,
 				ED5233DFD76904694C22FA1B /* ChatterboxFunctionContractTests.swift in Sources */,
+				F967EA5903446064DB147D08 /* ChatterboxRecipeFixture.swift in Sources */,
 				6ABAFE8248BA09C46ACF09E2 /* CoreAICacheControlsTests.swift in Sources */,
 				83F57B5DB9D6E04B5053EC7D /* CoreAIConversionPlannerTests.swift in Sources */,
 				CB6AAE32677D8F611EDEF792 /* CoreAIConversionProcessRunnerTests.swift in Sources */,
@@ -1653,6 +1724,7 @@
 				40715262D442B036AE300364 /* CoreAIIntegrationExportTests.swift in Sources */,
 				F43EF014C4CADAD1F3CA94D9 /* CoreAIPipelineManifestTests.swift in Sources */,
 				A715C30379BDE480AFB11103 /* CoreAIProjectPersistenceTests.swift in Sources */,
+				16114303058ECCB0DF7CBA89 /* CoreAIRecipeManifestTests.swift in Sources */,
 				191C2790FB8CE54E28E71E38 /* CoreAISpecializationServiceStub.swift in Sources */,
 				58D5C7E6E1AA3432A2FB4CAF /* CoreAITestFixtures.swift in Sources */,
 				795AA41578D3748C8AAD874F /* SpeakerDiarizationLabTests.swift in Sources */,
@@ -1716,6 +1788,7 @@
 				ECE8BEA205D520CDB3E307EC /* AppleSegmentationWorkspaceModel.swift in Sources */,
 				6C8B9799D308365F5806CE41 /* AppleSegmentationWorkspaceView.swift in Sources */,
 				A4EBF9735DF9063829F8BC9A /* AppleWav2Vec2Engine.swift in Sources */,
+				9FDA3B4CC427FFCF16AB672F /* ChatterboxBundledRecipe.swift in Sources */,
 				5E7436BA605A59122B138AD3 /* ChatterboxContractValidation.swift in Sources */,
 				120B0455418BA762E89D0FA1 /* ChatterboxCoreAIEngine.swift in Sources */,
 				0B87E67DCA445215F20FF05C /* ChatterboxCoreAIError.swift in Sources */,
@@ -1732,6 +1805,7 @@
 				E7C962C5368A73F55B8A740A /* ChatterboxPipelineStage.swift in Sources */,
 				8FF8F11628F482621C447CBA /* ChatterboxPresentedError.swift in Sources */,
 				D932221AADD71587DBF6C18D /* ChatterboxPromptSection.swift in Sources */,
+				D331C952DF7D891B9EFFA93F /* ChatterboxRecipeContract.swift in Sources */,
 				1C23BFC4FC006C195C230FF9 /* ChatterboxSampling.swift in Sources */,
 				F620ACDD1D14D4E1968E87EB /* ChatterboxTextNormalizer.swift in Sources */,
 				E1CD0865862C56565ED7C755 /* ChatterboxWaveFile.swift in Sources */,
@@ -1740,6 +1814,7 @@
 				3F0C34F96B21DE35BE1E9A04 /* ContentView.swift in Sources */,
 				D236381C42FD8790C405E461 /* CoreAIAheadOfTimeCompileScriptGenerator.swift in Sources */,
 				5E01AA5B3485C6BE04D6973D /* CoreAIArtifactKind.swift in Sources */,
+				B78C589BE03DFBE74437E57F /* CoreAIArtifactManifest.swift in Sources */,
 				37DDCF2882E22224FC3AA298 /* CoreAIArtifactProjectPickerView.swift in Sources */,
 				87494F03FC45FCDC98678DAB /* CoreAIArtifactStore.swift in Sources */,
 				BFCF8F80F29B85D6E26D8596 /* CoreAIArtifactStoreError.swift in Sources */,
@@ -1758,6 +1833,7 @@
 				1088441AD2D1847CF3F67326 /* CoreAICacheEntryStatus.swift in Sources */,
 				FEE4B18809758363BB6B5B0C /* CoreAICachePolicyChoice.swift in Sources */,
 				8C497FA051FDA4003C7102DE /* CoreAICacheRemovalScope.swift in Sources */,
+				AE63DC6596379DB1468FCCF8 /* CoreAICapacityManifest.swift in Sources */,
 				F9DDFB7B6E95EBA034059F4C /* CoreAIConversionArtifact.swift in Sources */,
 				B7F3268527A30171612E896F /* CoreAIConversionArtifactDestinationView.swift in Sources */,
 				0F4C8CE547D817CE3503B5DB /* CoreAIConversionArtifactDiscoverer.swift in Sources */,
@@ -1787,6 +1863,7 @@
 				635E1F8FBBBCD35AFAD1E9D6 /* CoreAIConversionWorkspaceModel.swift in Sources */,
 				A32EDF65B8EC08DEB1C1A644 /* CoreAIConversionWorkspaceView.swift in Sources */,
 				E94827A704AE915035A0F3E0 /* CoreAIDiscoverySnapshot.swift in Sources */,
+				7AF5337F3B8E3DBC57192AC2 /* CoreAIEvidenceRecord.swift in Sources */,
 				452965CC869EB0A21201C0B0 /* CoreAIExampleCatalog.swift in Sources */,
 				C3072ECD9518C74F6B1CD126 /* CoreAIExportManifest.swift in Sources */,
 				213B390DC6979D270A89F869 /* CoreAIFloatingPointArray.swift in Sources */,
@@ -1830,6 +1907,7 @@
 				C761498CB016911B8C834B11 /* CoreAIIntegrationExporter.swift in Sources */,
 				82E4212D0D5569A32A2633BB /* CoreAILabApp.swift in Sources */,
 				6756EB7440412676DE389B26 /* CoreAILabSection.swift in Sources */,
+				93150E79B202780706A59CD7 /* CoreAIManifestValidationError.swift in Sources */,
 				AB153F6A9DF85D5C786E8E9E /* CoreAIModelAssetInspector.swift in Sources */,
 				0A95113F0B0CF7B0678487A6 /* CoreAIModelCacheExamples.swift in Sources */,
 				369F191127A8B158B11D9E04 /* CoreAIModelContentType.swift in Sources */,
@@ -1854,14 +1932,19 @@
 				62AEACF6FAA29C490007B0B5 /* CoreAIProjectArtifactRowView.swift in Sources */,
 				61E35FFB596220D794227799 /* CoreAIProjectDestinationView.swift in Sources */,
 				BAB318CE4E92A8876D94BF04 /* CoreAIProjectDetailView.swift in Sources */,
+				EB072115D1CD7BAF36388BA6 /* CoreAIProjectDomainController.swift in Sources */,
 				C5C9FA7EC74BA63F9326BE2F /* CoreAIProjectLibraryController.swift in Sources */,
 				052F7BB1B3F8143798EE328D /* CoreAIProjectLibraryError.swift in Sources */,
 				7B863871574C5194F5C4867E /* CoreAIProjectLibraryView.swift in Sources */,
 				EDC5694AC7258E0B585631A7 /* CoreAIProjectModelContainer.swift in Sources */,
 				4743B801900DF29933B52B96 /* CoreAIProjectRoute.swift in Sources */,
 				456120EE7A59D0233224F911 /* CoreAIProjectRowView.swift in Sources */,
+				1DAF01C463D7432DB1B29887 /* CoreAIRecipeManifest.swift in Sources */,
+				D551A13529B853F253C675C0 /* CoreAIRecipePipelineManifest.swift in Sources */,
+				38482D9936AB6DFD10385EF6 /* CoreAIRecipeRevisionRecord.swift in Sources */,
 				60FCA9DF456CE06C7FD6A47E /* CoreAIResourceBundleHeader.swift in Sources */,
 				6AC7AB63532D2593841B4C87 /* CoreAIResourceBundleSummaryView.swift in Sources */,
+				7B71854B014324040DC97D56 /* CoreAIRunRecord.swift in Sources */,
 				81AA80DAD456B43FC29A1CD9 /* CoreAIRuntimeView.swift in Sources */,
 				D95DC86DD00106628E198A69 /* CoreAISeededRandomNumberGenerator.swift in Sources */,
 				6FBDAC15CFD8341DA1522DBD /* CoreAISpecializationConfiguration.swift in Sources */,
@@ -1873,6 +1956,8 @@
 				EDBFFF1510ED356E0ACC9AC1 /* CoreAIStorageLocation.swift in Sources */,
 				58899518DBA40056D1CED533 /* CoreAIStoredArtifact.swift in Sources */,
 				FD00B9F67E405BF999C42FE8 /* CoreAISwiftInvocationGenerator.swift in Sources */,
+				89D3FEE82DE78793AF95D0F8 /* CoreAITargetManifest.swift in Sources */,
+				5D077A365ED11C35E1DD3422 /* CoreAITargetProfileRecord.swift in Sources */,
 				B85B7D18550DCA160F6873C5 /* CoreAITensorContract.swift in Sources */,
 				9F42A3C6B8B15980D5E36AA5 /* CoreAITensorFactory.swift in Sources */,
 				0EA3F7ACB5DB93864BEB972F /* CoreAITensorScalarSupport.swift in Sources */,
@@ -1965,6 +2050,7 @@
 				B74F14EFCEF91A2AE0486AC8 /* AppleSegmentationWorkspaceModel.swift in Sources */,
 				2729E321CD6C35167A592AFE /* AppleSegmentationWorkspaceView.swift in Sources */,
 				C641A5EE9ACF55B773ABEC21 /* AppleWav2Vec2Engine.swift in Sources */,
+				F9665363F56598837FCD0208 /* ChatterboxBundledRecipe.swift in Sources */,
 				E7DEDE4CE9FFC20A85A0F72F /* ChatterboxContractValidation.swift in Sources */,
 				41F376E188A8FAD6DC6FA2CB /* ChatterboxCoreAIEngine.swift in Sources */,
 				C458DDB432749AFC64CC9FC5 /* ChatterboxCoreAIError.swift in Sources */,
@@ -1981,6 +2067,7 @@
 				02B13AC886CCC8EABD95A560 /* ChatterboxPipelineStage.swift in Sources */,
 				FE62262C0C77E54FCE03CAFD /* ChatterboxPresentedError.swift in Sources */,
 				CCAB00B7E37FEE6395D2EC8E /* ChatterboxPromptSection.swift in Sources */,
+				AB1B94250716AA72C50FADAB /* ChatterboxRecipeContract.swift in Sources */,
 				6810C0469276B0BEE9AC9009 /* ChatterboxSampling.swift in Sources */,
 				B26D48F172BEDF966CE2F752 /* ChatterboxTextNormalizer.swift in Sources */,
 				5050463651E9CD18150B9332 /* ChatterboxWaveFile.swift in Sources */,
@@ -1989,6 +2076,7 @@
 				0D4A159FDF138A057E6FBD05 /* ContentView.swift in Sources */,
 				9969D80D026481CEAD9F51CF /* CoreAIAheadOfTimeCompileScriptGenerator.swift in Sources */,
 				45692BB9D3E1111FD39DEE2A /* CoreAIArtifactKind.swift in Sources */,
+				A285A9A5F5BC47F315BD73D4 /* CoreAIArtifactManifest.swift in Sources */,
 				6721AE9C32C03CD673C46AEA /* CoreAIArtifactProjectPickerView.swift in Sources */,
 				4C40097B5B1D474AD2FD6450 /* CoreAIArtifactStore.swift in Sources */,
 				55CB01D149E049C6C9CE41CC /* CoreAIArtifactStoreError.swift in Sources */,
@@ -2007,6 +2095,7 @@
 				1FA7CF64564BF0DB09CE59B4 /* CoreAICacheEntryStatus.swift in Sources */,
 				FF7E4338AD441E4D3D0728AB /* CoreAICachePolicyChoice.swift in Sources */,
 				B8DEFF96A4F078B0C02DD05A /* CoreAICacheRemovalScope.swift in Sources */,
+				3E0E7F6F7A73B3F343D696E0 /* CoreAICapacityManifest.swift in Sources */,
 				F8C811B56C78178661991BFC /* CoreAIConversionArtifact.swift in Sources */,
 				DCE60149A80076C803976CE7 /* CoreAIConversionArtifactDestinationView.swift in Sources */,
 				780FB98C06279E696971C551 /* CoreAIConversionArtifactDiscoverer.swift in Sources */,
@@ -2036,6 +2125,7 @@
 				6CA1A15B0889851C79059C0B /* CoreAIConversionWorkspaceModel.swift in Sources */,
 				57DEB1EA5AF9BB96ECCFB8C1 /* CoreAIConversionWorkspaceView.swift in Sources */,
 				DEAC20E57B30F70636E2596B /* CoreAIDiscoverySnapshot.swift in Sources */,
+				54A196E1D5E24171D6F17F92 /* CoreAIEvidenceRecord.swift in Sources */,
 				497F922B1E7636C4085F0C08 /* CoreAIExampleCatalog.swift in Sources */,
 				E3C3618BCC014DE848DEC19D /* CoreAIExportManifest.swift in Sources */,
 				5115098073981B125B2417E8 /* CoreAIFloatingPointArray.swift in Sources */,
@@ -2079,6 +2169,7 @@
 				B92E34E78D387EB1653D877B /* CoreAIIntegrationExporter.swift in Sources */,
 				5E11F1DB78484C456C45AD2D /* CoreAILabApp.swift in Sources */,
 				41057D99E69E9D51CC44BC98 /* CoreAILabSection.swift in Sources */,
+				7EB39419A5998C50B833E46F /* CoreAIManifestValidationError.swift in Sources */,
 				85F9A7E385952219927593EF /* CoreAIModelAssetInspector.swift in Sources */,
 				997F86A32E5C9170CFC7C2A6 /* CoreAIModelCacheExamples.swift in Sources */,
 				AA6F193006F46E51ED39D8BD /* CoreAIModelContentType.swift in Sources */,
@@ -2103,14 +2194,19 @@
 				F24BB41E0A540A70BFFC70F0 /* CoreAIProjectArtifactRowView.swift in Sources */,
 				EBF15C5A7BF48283962ABB52 /* CoreAIProjectDestinationView.swift in Sources */,
 				E7084D8A428E87AFF868B42E /* CoreAIProjectDetailView.swift in Sources */,
+				5B0939406F44E0C4A92037F7 /* CoreAIProjectDomainController.swift in Sources */,
 				257DDC6E05235AF30107A5AC /* CoreAIProjectLibraryController.swift in Sources */,
 				63B3C9C7654C8C8AF8EEFB69 /* CoreAIProjectLibraryError.swift in Sources */,
 				FDF2A4BB4282DF9454B17944 /* CoreAIProjectLibraryView.swift in Sources */,
 				66098758A51A40B963345885 /* CoreAIProjectModelContainer.swift in Sources */,
 				C6C20E87F63F1AF5A39DEA7F /* CoreAIProjectRoute.swift in Sources */,
 				CC52C8EAC57DB7CB3FC949BC /* CoreAIProjectRowView.swift in Sources */,
+				E6AEA313797FBEE086B681F0 /* CoreAIRecipeManifest.swift in Sources */,
+				FEB628920C6AC8247EBF0A40 /* CoreAIRecipePipelineManifest.swift in Sources */,
+				768D70972CEF3A39161E5E42 /* CoreAIRecipeRevisionRecord.swift in Sources */,
 				8636942E2DE7CCEC4E8F6B71 /* CoreAIResourceBundleHeader.swift in Sources */,
 				FC49917D484520CD4B2CC1D4 /* CoreAIResourceBundleSummaryView.swift in Sources */,
+				B634E0B4EF66BB32B63F5214 /* CoreAIRunRecord.swift in Sources */,
 				4277CDE729A7FF2D57E27606 /* CoreAIRuntimeView.swift in Sources */,
 				246072E3299D5575096ADCB7 /* CoreAISeededRandomNumberGenerator.swift in Sources */,
 				97EEDA0402DCC6E520AF47D9 /* CoreAISpecializationConfiguration.swift in Sources */,
@@ -2122,6 +2218,8 @@
 				7AA3EFB2411402D8C0FF5224 /* CoreAIStorageLocation.swift in Sources */,
 				B929F1F771984301F9258481 /* CoreAIStoredArtifact.swift in Sources */,
 				E9175B017FF9ACC1588FEA4F /* CoreAISwiftInvocationGenerator.swift in Sources */,
+				572F03D8C5E3A46C2DCC4E1D /* CoreAITargetManifest.swift in Sources */,
+				3916FB03E9DECF001E6FDDE8 /* CoreAITargetProfileRecord.swift in Sources */,
 				A821078BDBB8A6226310C5BD /* CoreAITensorContract.swift in Sources */,
 				9448B954C343B78009CFD46A /* CoreAITensorFactory.swift in Sources */,
 				A0BCBB1FD8EDF6F761B4E99F /* CoreAITensorScalarSupport.swift in Sources */,

@@ -12,6 +12,7 @@ final class ChatterboxWorkspaceModel {
     var isPlaying = false
     var statusMessage = "Preparing Core AI"
     var presentedError: ChatterboxPresentedError?
+    private(set) var recipeManifest: CoreAIRecipeManifest?
 
     @ObservationIgnored
     private let engine: ChatterboxCoreAIEngine
@@ -48,13 +49,18 @@ final class ChatterboxWorkspaceModel {
         }
         hasPrepared = true
         isWorking = true
-        statusMessage = "Specializing four models for the Apple GPU"
         modelState = .preparing
 
         do {
+            let manifest = try await engine.bundledRecipeManifest()
+            recipeManifest = manifest
+            let targetName = manifest.defaultTarget?.displayName ?? "selected target"
+            statusMessage = "Specializing \(manifest.pipeline.stages.count) models for \(targetName)"
             modelState = .ready(try await engine.prepareBundledModels())
         } catch {
+            recipeManifest = nil
             modelState = .failed(error.localizedDescription)
+            statusMessage = "Core AI preparation failed"
             present(error)
         }
         isWorking = false
