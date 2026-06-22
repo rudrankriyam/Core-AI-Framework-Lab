@@ -33,7 +33,7 @@ struct CoreAIArtifactProjectPickerView: View {
                             CoreAIProjectRowView(project: project)
                         }
                         .buttonStyle(.plain)
-                        .disabled(controller.isImporting)
+                        .disabled(controller.isPerformingOperation)
                     }
                 }
             }
@@ -44,7 +44,7 @@ struct CoreAIArtifactProjectPickerView: View {
                 }
             }
             .overlay {
-                if controller.isImporting {
+                if controller.isPerformingOperation {
                     ProgressView("Hashing and storing artifact…")
                         .padding()
                         .background(.regularMaterial, in: .rect(cornerRadius: 12))

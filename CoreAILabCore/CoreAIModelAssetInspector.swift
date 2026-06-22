@@ -8,7 +8,9 @@ struct CoreAIModelAssetReport: Sendable, Equatable {
     let license: String
     let description: String
     let functions: [CoreAIAssetFunctionSignature]
+    let storageTypes: [CoreAIAssetStorageTypeSummary]
     let computeTypes: [String]
+    let operationDistribution: [CoreAIAssetOperationCount]
 
     var functionNames: [String] {
         functions.map(\.name)
@@ -21,7 +23,9 @@ struct CoreAIModelAssetReport: Sendable, Equatable {
         license: String,
         description: String,
         functions: [CoreAIAssetFunctionSignature],
-        computeTypes: [String]
+        storageTypes: [CoreAIAssetStorageTypeSummary] = [],
+        computeTypes: [String],
+        operationDistribution: [CoreAIAssetOperationCount] = []
     ) {
         self.url = url
         self.isValid = isValid
@@ -29,7 +33,9 @@ struct CoreAIModelAssetReport: Sendable, Equatable {
         self.license = license
         self.description = description
         self.functions = functions
+        self.storageTypes = storageTypes
         self.computeTypes = computeTypes
+        self.operationDistribution = operationDistribution
     }
 
     init(
@@ -81,7 +87,19 @@ enum CoreAIModelAssetInspector {
                     outputs: function.outputs.map(signature)
                 )
             } ?? [],
-            computeTypes: summary?.computeTypes ?? []
+            storageTypes: summary?.storageTypes.map {
+                CoreAIAssetStorageTypeSummary(
+                    typeName: $0.typeName,
+                    count: $0.count
+                )
+            }.sorted { $0.typeName < $1.typeName } ?? [],
+            computeTypes: summary?.computeTypes ?? [],
+            operationDistribution: summary?.operationDistribution.map {
+                CoreAIAssetOperationCount(
+                    operationName: $0.operationName,
+                    count: $0.count
+                )
+            }.sorted { $0.operationName < $1.operationName } ?? []
         )
     }
 

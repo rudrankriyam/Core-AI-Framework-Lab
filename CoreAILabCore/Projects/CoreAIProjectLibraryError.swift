@@ -11,6 +11,10 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
     case runStatusUnavailable
     case invalidRunStatusTransition(from: CoreAIRunStatus, to: CoreAIRunStatus)
     case evidenceLabelRequired
+    case descriptorSourceMismatch
+    case invalidSourceProvenance(String)
+    case invalidSpecializationCacheRecord
+    case modelAssetRequired
 
     var errorDescription: String? {
         switch self {
@@ -34,6 +38,14 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
             "A run cannot transition from \(from.rawValue) to \(to.rawValue)."
         case .evidenceLabelRequired:
             "Enter an evidence label."
+        case .descriptorSourceMismatch:
+            "The inspected descriptor does not belong to this stored artifact."
+        case .invalidSourceProvenance(let reason):
+            "The source provenance is invalid: \(reason)"
+        case .invalidSpecializationCacheRecord:
+            "The specialization cache record contains an unsupported configuration."
+        case .modelAssetRequired:
+            "This operation requires a stored Core AI model asset."
         }
     }
 }

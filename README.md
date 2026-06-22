@@ -97,6 +97,14 @@ one of several references does not. Stored `.aimodel` packages open directly in
 Asset Inspector or Function Workbench. Conversion outputs expose a **Store in
 Project** action instead of remaining tied to their original output folder.
 
+Directory imports also retain a versioned manifest of safe relative paths,
+streamed per-file SHA-256 digests, and byte counts. Model inspection snapshots
+function descriptors, storage and compute types, and operation distribution into
+the project library. Source provenance remains editable per project artifact,
+while successful
+specializations register project-owned cache configurations that can be browsed
+and removed without deleting cache entries still referenced by another project.
+
 The project schema also stores immutable recipe-manifest revisions, target
 profiles, typed run status, and evidence metadata. These records retain the exact
 validated JSON contracts used by a run and survive reopening the SwiftData store.
@@ -238,6 +246,19 @@ non-executed `compile-model.sh` for optional iOS and macOS 27 ahead-of-time
 compilation with the selected GPU or Neural Engine preference and reshape hint.
 CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
 `coreai-build compile` does not expose a CPU-only flag.
+
+### Typed Pipeline Contract
+
+`CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
+future Recipe Studio, Pipeline Studio, and generated runtimes share. A pipeline
+is an asset-level directed graph with typed ports, explicit state ownership,
+seeded randomness, bounded loops, and a versioned host-operator registry.
+
+Validation rejects missing endpoints, incompatible value contracts, duplicate
+input wiring, cycles, ambiguous state ownership, randomness without exactly one
+seed source, and loops without both a finite iteration bound and stop input.
+This first slice is intentionally schema and validation only: it does not claim
+that the visual editor or generic pipeline executor has shipped yet.
 
 ## Run Apple's YOLOS Tiny Example
 

@@ -144,14 +144,15 @@ The first platform slice is now represented in the repository:
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 0's
-schema, manifest, and persistence foundation slice is implemented. Milestone 2
-now has a shared registry and lifecycle slice, while embeddings, persistent
-output files, real modality-aware comparisons, imported bookmarks, and
-cross-launch active-run recovery remain open. Milestone 1
-remains incomplete because generic resource-folder metadata, descriptor
-snapshots, provenance editing, and specialization-cache ownership are not yet
-unified in the project library. Restart-safe conversion execution remains
-Milestone 3 work.
+schema, manifest, and persistence foundation slice is implemented; automatic
+workspace run/evidence capture remains follow-up integration. Milestone 1's
+project-library slice now unifies deterministic resource-folder metadata,
+durable descriptor snapshots, editable source provenance, and project-owned
+specialization-cache cleanup with the existing generic function workbench and
+integration export. Milestone 2 now has a shared registry and lifecycle slice,
+while embeddings, persistent output files, real modality-aware comparisons,
+imported bookmarks, and cross-launch active-run recovery remain open.
+Restart-safe conversion execution remains Milestone 3 work.
 
 ## 4. Product boundary
 
@@ -507,6 +508,11 @@ Done bar:
 
 ### Milestone 1 — Model Library and universal inspector (3 weeks)
 
+Implementation status: complete for the project-library and generic-runtime
+boundary. Hardware specialization and inference remain capability-dependent,
+and are exercised by the existing real Core AI fixture rather than simulated by
+the library persistence tests.
+
 Deliverables:
 
 - Import `.aimodel` assets and Core AI resource folders.
@@ -549,6 +555,12 @@ Done bar:
 - A supported Qwen preset can be selected and converted from the app on a clean machine, then run in Runtime Studio.
 
 ### Milestone 4 — Custom Recipe Studio (5–7 weeks)
+
+Initial slice: the repository now has a versioned typed pipeline manifest,
+deterministic JSON codec, and structural validator for asset functions, host
+operators, explicit state, seeded randomness, and bounded loops. The visual
+editors, diagnostic worker, runtime executor, and Chatterbox migration remain
+part of this milestone.
 
 Deliverables:
 

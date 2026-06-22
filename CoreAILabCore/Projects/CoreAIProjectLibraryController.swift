@@ -6,17 +6,26 @@ import SwiftData
 @Observable
 final class CoreAIProjectLibraryController {
     private(set) var activeProjectID: UUID?
+    private(set) var activeOperation: CoreAIProjectLibraryOperation?
     private(set) var errorMessage: String?
     var isShowingError = false
 
     @ObservationIgnored
     private let artifactStore: CoreAIArtifactStore
+    @ObservationIgnored
+    private let specializationCacheManager: any CoreAISpecializationCacheManaging
+    @ObservationIgnored
+    private let mutationCoordinator = CoreAIProjectLibraryMutationCoordinator.shared
 
-    init(artifactStore: CoreAIArtifactStore = .shared) {
+    init(
+        artifactStore: CoreAIArtifactStore = .shared,
+        specializationCacheManager: any CoreAISpecializationCacheManaging = CoreAISpecializationService()
+    ) {
         self.artifactStore = artifactStore
+        self.specializationCacheManager = specializationCacheManager
     }
 
-    var isImporting: Bool {
+    var isPerformingOperation: Bool {
         activeProjectID != nil
     }
 
@@ -84,62 +93,29 @@ final class CoreAIProjectLibraryController {
         }
         let projectID = project.id
         activeProjectID = projectID
-        defer { activeProjectID = nil }
-
-        let storedArtifact = try await artifactStore.importArtifact(from: sourceURL)
-        guard project.id == projectID else {
-            throw CoreAIProjectLibraryError.projectUnavailable
+        activeOperation = .importingArtifact
+        defer {
+            activeProjectID = nil
+            activeOperation = nil
         }
 
-        let existingRecord = try artifactRecord(
-            sha256Digest: storedArtifact.sha256Digest,
-            modelContext: modelContext
-        )
-        if let existingRecord,
-           existingRecord.storageRelativePath != storedArtifact.storageRelativePath {
-            throw CoreAIProjectLibraryError.inconsistentArtifactRecord
-        }
-        if let existingLink = project.artifactLinks.first(where: {
-            $0.artifact?.sha256Digest == storedArtifact.sha256Digest
-        }) {
-            project.updatedAt = .now
-            try modelContext.save()
-            clearError()
-            return existingLink
-        }
-
-        let record = existingRecord ?? ModelArtifactRecord(
-            sha256Digest: storedArtifact.sha256Digest,
-            storageRelativePath: storedArtifact.storageRelativePath,
-            originalFilename: storedArtifact.originalFilename,
-            kind: storedArtifact.kind,
-            byteCount: storedArtifact.byteCount,
-            fileCount: storedArtifact.fileCount
-        )
-        let link = ProjectArtifactLink(
-            displayName: sourceURL.lastPathComponent,
-            project: project,
-            artifact: record
-        )
-
-        if existingRecord == nil {
-            modelContext.insert(record)
-        }
-        modelContext.insert(link)
-        project.updatedAt = .now
-
-        do {
-            try modelContext.save()
-            clearError()
-            return link
-        } catch {
-            modelContext.rollback()
-            if existingRecord == nil && !storedArtifact.wasAlreadyStored {
-                try? await artifactStore.removeArtifact(
-                    at: storedArtifact.storageRelativePath
+        return try await mutationCoordinator.withLock(key: storageMutationKey) {
+            let storedArtifact = try await artifactStore.importArtifact(from: sourceURL)
+            do {
+                return try persistImportedArtifact(
+                    storedArtifact,
+                    sourceURL: sourceURL,
+                    projectID: projectID,
+                    modelContext: modelContext
                 )
+            } catch {
+                if !storedArtifact.wasAlreadyStored {
+                    try? await artifactStore.removeArtifact(
+                        at: storedArtifact.storageRelativePath
+                    )
+                }
+                throw error
             }
-            throw error
         }
     }
 
@@ -151,32 +127,60 @@ final class CoreAIProjectLibraryController {
             throw CoreAIProjectLibraryError.operationInProgress
         }
         guard let project = link.project,
-              let artifact = link.artifact else {
+              link.artifact != nil else {
             throw CoreAIProjectLibraryError.artifactUnavailable
         }
         activeProjectID = project.id
-        defer { activeProjectID = nil }
+        activeOperation = .removingArtifact
+        defer {
+            activeProjectID = nil
+            activeOperation = nil
+        }
 
-        let shouldRemoveStoredArtifact = artifact.projectLinks.allSatisfy {
-            $0.id == link.id
-        }
-        let storageRelativePath = artifact.storageRelativePath
-        modelContext.delete(link)
-        if shouldRemoveStoredArtifact {
-            modelContext.delete(artifact)
-        }
-        project.updatedAt = .now
+        try await mutationCoordinator.withLock(key: storageMutationKey) {
+            guard let currentLink = try artifactLink(
+                id: link.id,
+                modelContext: modelContext
+            ),
+                  let currentProject = currentLink.project,
+                  let currentArtifact = currentLink.artifact else {
+                throw CoreAIProjectLibraryError.artifactUnavailable
+            }
+            let currentLinks = try artifactLinks(
+                sha256Digest: currentArtifact.sha256Digest,
+                modelContext: modelContext
+            )
+            let survivingLinks = currentLinks.filter { $0.id != currentLink.id }
+            let shouldRemoveStoredArtifact = survivingLinks.isEmpty
+            let storageRelativePath = currentArtifact.storageRelativePath
+            if shouldRemoveStoredArtifact {
+                _ = try validatedStoredURL(
+                    for: currentArtifact,
+                    requireExisting: false
+                )
+            }
+            try await removeUnsharedSpecializationCaches(
+                ownedBy: currentLink,
+                survivingLinks: survivingLinks,
+                artifact: currentArtifact
+            )
+            modelContext.delete(currentLink)
+            if shouldRemoveStoredArtifact {
+                modelContext.delete(currentArtifact)
+            }
+            currentProject.updatedAt = .now
 
-        do {
-            try modelContext.save()
-        } catch {
-            modelContext.rollback()
-            throw error
+            do {
+                try modelContext.save()
+            } catch {
+                modelContext.rollback()
+                throw error
+            }
+            if shouldRemoveStoredArtifact {
+                try await artifactStore.removeArtifact(at: storageRelativePath)
+            }
+            clearError()
         }
-        if shouldRemoveStoredArtifact {
-            try await artifactStore.removeArtifact(at: storageRelativePath)
-        }
-        clearError()
     }
 
     func deleteProject(
@@ -187,31 +191,80 @@ final class CoreAIProjectLibraryController {
             throw CoreAIProjectLibraryError.operationInProgress
         }
         activeProjectID = project.id
-        defer { activeProjectID = nil }
-
-        let orphanedArtifacts = project.artifactLinks.compactMap(\.artifact).filter { artifact in
-            artifact.projectLinks.allSatisfy { $0.project?.id == project.id }
-        }
-        let storagePaths = Array(Set(orphanedArtifacts.map(\.storageRelativePath)))
-        modelContext.delete(project)
-        for artifact in orphanedArtifacts {
-            modelContext.delete(artifact)
+        activeOperation = .deletingProject
+        defer {
+            activeProjectID = nil
+            activeOperation = nil
         }
 
-        do {
-            try modelContext.save()
-        } catch {
-            modelContext.rollback()
-            throw error
+        try await mutationCoordinator.withLock(key: storageMutationKey) {
+            guard let currentProject = try persistedProject(
+                id: project.id,
+                modelContext: modelContext
+            ) else {
+                throw CoreAIProjectLibraryError.projectUnavailable
+            }
+            let projectLinks = currentProject.artifactLinks
+            var orphanedArtifacts: [ModelArtifactRecord] = []
+            for currentLink in projectLinks {
+                guard let artifact = currentLink.artifact else { continue }
+                let currentLinks = try artifactLinks(
+                    sha256Digest: artifact.sha256Digest,
+                    modelContext: modelContext
+                )
+                let survivingLinks = currentLinks.filter {
+                    $0.project?.id != currentProject.id
+                }
+                try await removeUnsharedSpecializationCaches(
+                    ownedBy: currentLink,
+                    survivingLinks: survivingLinks,
+                    artifact: artifact
+                )
+                if survivingLinks.isEmpty {
+                    _ = try validatedStoredURL(
+                        for: artifact,
+                        requireExisting: false
+                    )
+                    orphanedArtifacts.append(artifact)
+                }
+            }
+            let storagePaths = Array(Set(orphanedArtifacts.map(\.storageRelativePath)))
+            modelContext.delete(currentProject)
+            for artifact in orphanedArtifacts {
+                modelContext.delete(artifact)
+            }
+
+            do {
+                try modelContext.save()
+            } catch {
+                modelContext.rollback()
+                throw error
+            }
+            for storagePath in storagePaths {
+                try await artifactStore.removeArtifact(at: storagePath)
+            }
+            clearError()
         }
-        for storagePath in storagePaths {
-            try await artifactStore.removeArtifact(at: storagePath)
-        }
-        clearError()
     }
 
-    func storedURL(for artifact: ModelArtifactRecord) -> URL {
-        artifactStore.url(for: artifact.storageRelativePath)
+    func validatedStoredURL(
+        for artifact: ModelArtifactRecord,
+        requireExisting: Bool = true
+    ) throws -> URL {
+        try artifactStore.validatedURL(
+            for: artifact.storageRelativePath,
+            requireExisting: requireExisting
+        )
+    }
+
+    func validatedStoredURL(
+        for storedArtifact: CoreAIStoredArtifact,
+        requireExisting: Bool = true
+    ) throws -> URL {
+        try artifactStore.validatedURL(
+            for: storedArtifact.storageRelativePath,
+            requireExisting: requireExisting
+        )
     }
 
     func present(_ error: any Error) {
@@ -220,20 +273,153 @@ final class CoreAIProjectLibraryController {
         isShowingError = true
     }
 
-    private func artifactRecord(
+    private func artifactLink(
+        id: UUID,
+        modelContext: ModelContext
+    ) throws -> ProjectArtifactLink? {
+        try modelContext.fetch(FetchDescriptor<ProjectArtifactLink>())
+            .first { $0.id == id }
+    }
+
+    private func artifactLinks(
         sha256Digest: String,
         modelContext: ModelContext
-    ) throws -> ModelArtifactRecord? {
-        let digest = sha256Digest
-        var descriptor = FetchDescriptor<ModelArtifactRecord>(
-            predicate: #Predicate { $0.sha256Digest == digest }
-        )
-        descriptor.fetchLimit = 1
-        return try modelContext.fetch(descriptor).first
+    ) throws -> [ProjectArtifactLink] {
+        try modelContext.fetch(FetchDescriptor<ProjectArtifactLink>()).filter {
+            $0.artifact?.sha256Digest == sha256Digest
+        }
+    }
+
+    private func persistedProject(
+        id: UUID,
+        modelContext: ModelContext
+    ) throws -> LabProject? {
+        try modelContext.fetch(FetchDescriptor<LabProject>())
+            .first { $0.id == id }
     }
 
     func clearError() {
         errorMessage = nil
         isShowingError = false
+    }
+
+    func beginProjectOperation(projectID: UUID) -> Bool {
+        guard activeProjectID == nil else { return false }
+        activeProjectID = projectID
+        activeOperation = .managingSpecializationCache
+        return true
+    }
+
+    func endProjectOperation(projectID: UUID) {
+        guard activeProjectID == projectID else { return }
+        activeProjectID = nil
+        activeOperation = nil
+    }
+
+    func removeSystemCacheEntry(
+        at url: URL,
+        configuration: CoreAISpecializationConfiguration
+    ) async throws {
+        try await specializationCacheManager.removeCachedEntry(
+            at: url,
+            configuration: configuration
+        )
+    }
+
+    func removeAllSystemCacheEntries(at url: URL) async throws {
+        try await specializationCacheManager.removeCachedEntries(at: url)
+    }
+
+    func performSerializedStorageMutation<T>(
+        _ operation: @MainActor () async throws -> T
+    ) async rethrows -> T {
+        try await mutationCoordinator.withLock(
+            key: storageMutationKey,
+            operation: operation
+        )
+    }
+
+    private var storageMutationKey: String {
+        "artifact-store:\(artifactStore.rootURL.resolvingSymlinksInPath().standardizedFileURL.path)"
+    }
+
+    private func removeUnsharedSpecializationCaches(
+        ownedBy link: ProjectArtifactLink,
+        survivingLinks: [ProjectArtifactLink],
+        artifact: ModelArtifactRecord
+    ) async throws {
+        guard !link.specializationCaches.isEmpty else { return }
+        let artifactURL = try validatedStoredURL(for: artifact)
+        if survivingLinks.isEmpty {
+            do {
+                try await specializationCacheManager.removeCachedEntries(at: artifactURL)
+            } catch where CoreAISpecializationService.isMissingCacheEntry(error) {
+                // The project records can be deleted when the OS cache is already empty.
+            }
+            return
+        }
+
+        for record in link.specializationCaches {
+            guard let configuration = record.configuration else {
+                throw CoreAIProjectLibraryError.invalidSpecializationCacheRecord
+            }
+            let isRetained = survivingLinks.contains { survivingLink in
+                survivingLink.specializationCaches.contains {
+                    $0.configuration == configuration
+                }
+            }
+            guard !isRetained else { continue }
+            do {
+                try await specializationCacheManager.removeCachedEntry(
+                    at: artifactURL,
+                    configuration: configuration
+                )
+            } catch where CoreAISpecializationService.isMissingCacheEntry(error) {
+                // The project records can be deleted when the OS cache is already empty.
+            }
+        }
+    }
+}
+
+@MainActor
+private final class CoreAIProjectLibraryMutationCoordinator {
+    static let shared = CoreAIProjectLibraryMutationCoordinator()
+
+    private var heldKeys = Set<String>()
+    private var waiters: [String: [CheckedContinuation<Void, Never>]] = [:]
+
+    func withLock<T>(
+        key: String,
+        operation: @MainActor () async throws -> T
+    ) async rethrows -> T {
+        await acquire(key)
+        do {
+            let result = try await operation()
+            release(key)
+            return result
+        } catch {
+            release(key)
+            throw error
+        }
+    }
+
+    private func acquire(_ key: String) async {
+        if heldKeys.insert(key).inserted {
+            return
+        }
+        await withCheckedContinuation { continuation in
+            waiters[key, default: []].append(continuation)
+        }
+    }
+
+    private func release(_ key: String) {
+        guard var keyWaiters = waiters[key], !keyWaiters.isEmpty else {
+            heldKeys.remove(key)
+            waiters[key] = nil
+            return
+        }
+        let nextWaiter = keyWaiters.removeFirst()
+        waiters[key] = keyWaiters.isEmpty ? nil : keyWaiters
+        nextWaiter.resume()
     }
 }
