@@ -1,6 +1,6 @@
 import Foundation
 
-enum CoreAIBuildConfiguration: String, Sendable, Equatable {
+enum CoreAIBuildConfiguration: String, Codable, Sendable, Equatable {
     case debug = "Debug"
     case release = "Release"
 
@@ -13,7 +13,7 @@ enum CoreAIBuildConfiguration: String, Sendable, Equatable {
     }
 }
 
-enum CoreAIThermalState: String, Sendable, Equatable {
+enum CoreAIThermalState: String, Codable, Sendable, Equatable {
     case nominal
     case fair
     case serious
@@ -46,9 +46,12 @@ struct CoreAIBenchmarkEnvironment: Sendable, Equatable {
     let operatingSystem: String
     let deviceArchitectureName: String
     let availableComputeUnits: [String]
+    let processorCount: Int
+    let physicalMemoryBytes: UInt64
     let buildConfiguration: CoreAIBuildConfiguration
     let startedThermalState: CoreAIThermalState
     let endedThermalState: CoreAIThermalState
+    let toolchain: CoreAIBenchmarkToolchain
 
     static func current(
         startedThermalState: CoreAIThermalState,
@@ -61,9 +64,12 @@ struct CoreAIBenchmarkEnvironment: Sendable, Equatable {
             operatingSystem: ProcessInfo.processInfo.operatingSystemVersionString,
             deviceArchitectureName: discovery.deviceArchitectureName,
             availableComputeUnits: discovery.availableComputeUnits,
+            processorCount: ProcessInfo.processInfo.processorCount,
+            physicalMemoryBytes: ProcessInfo.processInfo.physicalMemory,
             buildConfiguration: .current,
             startedThermalState: startedThermalState,
-            endedThermalState: endedThermalState
+            endedThermalState: endedThermalState,
+            toolchain: .current
         )
     }
 

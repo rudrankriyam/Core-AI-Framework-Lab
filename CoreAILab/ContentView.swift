@@ -36,6 +36,13 @@ struct ContentView: View {
                         )
                     }
 
+                    NavigationLink(value: CoreAILabSection.recipeStudio) {
+                        Label(
+                            CoreAILabSection.recipeStudio.title,
+                            systemImage: CoreAILabSection.recipeStudio.systemImage
+                        )
+                    }
+
                     NavigationLink(value: CoreAILabSection.chatterbox) {
                         Label(
                             CoreAILabSection.chatterbox.title,
@@ -65,6 +72,13 @@ struct ContentView: View {
                             systemImage: CoreAILabSection.runtime.systemImage
                         )
                     }
+
+                    NavigationLink(value: CoreAILabSection.deviceLab) {
+                        Label(
+                            CoreAILabSection.deviceLab.title,
+                            systemImage: CoreAILabSection.deviceLab.systemImage
+                        )
+                    }
                 }
             }
             .navigationTitle("Core AI Lab")
@@ -81,6 +95,8 @@ struct ContentView: View {
                 NavigationStack {
                     CoreAIConversionWorkspaceView()
                 }
+            case .recipeStudio:
+                CoreAIRecipeStudioView()
             case .chatterbox:
                 ChatterboxWorkspaceView()
             case .diarization:
@@ -89,6 +105,10 @@ struct ContentView: View {
                 CoreAIAssetInspectorView()
             case .runtime:
                 CoreAIRuntimeView()
+            case .deviceLab:
+                NavigationStack {
+                    CoreAIDeviceLabView()
+                }
             }
         }
         .navigationSplitViewStyle(.prominentDetail)

@@ -143,6 +143,52 @@ struct CoreAIFunctionWorkbenchTests {
         #expect(workspace.selectedFunctionName == "recovered")
     }
 
+    @MainActor
+    @Test
+    func directRunsUseTheInjectedRuntimeLifecycleCoordinator() async throws {
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[contract(named: "main")]]
+        )
+        let persistence = CoreAIFunctionRunPersistenceSpy()
+        let coordinator = CoreAIRunLifecycleCoordinator(
+            persistence: persistence
+        )
+        let runContext = CoreAIRuntimeRunContext.workspaceDefault(
+            experienceID: "generic-function-workbench",
+            title: "Function Workbench",
+            modelIdentifier: "imported-coreai-asset"
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime,
+            runContext: runContext,
+            runCoordinator: coordinator
+        )
+        await workspace.loadAsset(from: URL(filePath: "/tmp/valid.aimodel"))
+        await workspace.assetWorkspace.specialize()
+        let specialization = try #require(
+            workspace.assetWorkspace.specializationResult
+        )
+        await workspace.specializationChanged(specialization)
+
+        await workspace.runSelectedFunction()
+        await workspace.runSelectedFunction()
+
+        #expect(workspace.runCoordinator === coordinator)
+        #expect(coordinator.history.count == 2)
+        #expect(coordinator.history.map(\.state) == [.succeeded, .succeeded])
+        #expect(coordinator.history.map(\.timingClass) == [.warm, .cold])
+        #expect(coordinator.history.allSatisfy { $0.context == runContext })
+        #expect(
+            coordinator.history.allSatisfy {
+                $0.modelIdentity == "valid.aimodel"
+            }
+        )
+        #expect(persistence.starts.count == 2)
+        #expect(persistence.finishedRuns.map(\.state) == [.succeeded, .succeeded])
+        #expect(persistence.finishedRuns.map(\.timingClass) == [.cold, .warm])
+    }
+
     @Test
     func allNonFiniteOutputKeepsItsDiagnosticCount() {
         let array = NDArray(
@@ -243,5 +289,27 @@ struct CoreAIFunctionWorkbenchTests {
             outputs: [],
             unsupportedReason: nil
         )
+    }
+}
+
+@MainActor
+private final class CoreAIFunctionRunPersistenceSpy: CoreAIRunPersisting {
+    private(set) var starts: [CoreAIRuntimeRunStart] = []
+    private(set) var finishedRuns: [CoreAIRuntimeRunSummary] = []
+
+    func startRun(start: CoreAIRuntimeRunStart) -> UUID {
+        starts.append(start)
+        return start.id
+    }
+
+    func finishRun(
+        persistentRunID _: UUID,
+        summary: CoreAIRuntimeRunSummary
+    ) {
+        finishedRuns.append(summary)
+    }
+
+    func recoverInterruptedRuns(endedAt _: Date) -> Int {
+        0
     }
 }

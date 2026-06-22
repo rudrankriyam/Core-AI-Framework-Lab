@@ -4,6 +4,7 @@ enum CoreAIArtifactStoreError: LocalizedError, Equatable {
     case sourceMissing(String)
     case unsupportedItem(String)
     case symbolicLink(String)
+    case unsafeRelativePath(String)
     case sourceChangedDuringImport
     case corruptedStoredArtifact(String)
     case invalidStoredPath
@@ -16,6 +17,8 @@ enum CoreAIArtifactStoreError: LocalizedError, Equatable {
             "\(name) is not a regular file or directory."
         case .symbolicLink(let path):
             "Symbolic links are not imported into project storage: \(path)"
+        case .unsafeRelativePath(let path):
+            "The resource folder contains an unsafe or ambiguous relative path: \(path)"
         case .sourceChangedDuringImport:
             "The artifact changed while it was being imported. Try again after the producing process finishes."
         case .corruptedStoredArtifact(let digest):

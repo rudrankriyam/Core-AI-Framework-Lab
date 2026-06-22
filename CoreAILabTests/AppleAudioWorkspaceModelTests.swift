@@ -31,6 +31,8 @@ struct AppleAudioWorkspaceModelTests {
         #expect(await engine.audioURLs == [URL(filePath: "/tmp/speech.wav")])
         #expect(workspace.result?.transcript == "HELLO")
         #expect(!workspace.isShowingError)
+        #expect(workspace.runCoordinator.history.first?.state == .succeeded)
+        #expect(workspace.runCoordinator.history.first?.timingClass == .cold)
     }
 
     @Test
@@ -48,6 +50,26 @@ struct AppleAudioWorkspaceModelTests {
         #expect(workspace.modelName == "valid-wav2vec2.aimodel")
         #expect(workspace.result?.transcript == "STILL READY")
         #expect(!workspace.isShowingError)
+    }
+
+    @Test
+    func cancelingTranscriptionRecordsACanceledRun() async throws {
+        let engine = AppleAudioTranscriberStub(
+            transcript: "TOO LATE",
+            responseDelay: .milliseconds(100)
+        )
+        let workspace = AppleAudioWorkspaceModel(engine: engine)
+        await workspace.loadModel(from: URL(filePath: "/tmp/wav2vec2.aimodel"))
+        workspace.selectAudio(URL(filePath: "/tmp/speech.wav"))
+
+        workspace.startTranscription()
+        try await Task.sleep(for: .milliseconds(10))
+        workspace.cancelTranscription()
+        await waitForTranscription(workspace)
+
+        #expect(workspace.result == nil)
+        #expect(workspace.statusMessage == "Transcription canceled.")
+        #expect(workspace.runCoordinator.history.first?.state == .canceled)
     }
 
     @Test
@@ -127,11 +149,13 @@ struct AppleAudioWorkspaceModelTests {
 
 private actor AppleAudioTranscriberStub: AppleAudioTranscribing {
     private let transcript: String
+    private let responseDelay: Duration?
     private(set) var audioURLs: [URL] = []
     private var isLoaded = false
 
-    init(transcript: String) {
+    init(transcript: String, responseDelay: Duration? = nil) {
         self.transcript = transcript
+        self.responseDelay = responseDelay
     }
 
     func loadModel(at url: URL) throws -> AppleAudioModelInfo {
@@ -149,6 +173,9 @@ private actor AppleAudioTranscriberStub: AppleAudioTranscribing {
     func transcribe(audioAt url: URL) async throws -> AppleAudioTranscriptionResult {
         guard isLoaded else { throw AppleAudioError.modelNotLoaded }
         audioURLs.append(url)
+        if let responseDelay {
+            try await Task.sleep(for: responseDelay)
+        }
         return AppleAudioTranscriptionResult(
             transcript: transcript,
             audioDurationSeconds: 1,

@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "mappings": [
+    {
+      "recipeIdentifier": "apple.coreai-models.qwen3-0.6b",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-qwen3-0.6b-language",
+        "title": "Qwen3 0.6B",
+        "summary": "Generate text locally with Apple's CoreAILM adapter and an exported Qwen resource bundle.",
+        "workload": "textGeneration",
+        "adapter": "appleLanguage",
+        "modelIdentifier": "qwen3-0.6b",
+        "systemImage": "text.bubble.fill",
+        "capabilities": [
+          "textPrompt",
+          "sessionReset",
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.yolos-tiny",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-yolos-tiny-detection",
+        "title": "YOLOS Tiny",
+        "summary": "Detect COCO objects in an imported image with Apple's object-detection runtime.",
+        "workload": "objectDetection",
+        "adapter": "appleObjectDetection",
+        "modelIdentifier": "yolos-tiny",
+        "systemImage": "viewfinder",
+        "capabilities": [
+          "imageInput",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.efficient-sam-vitt",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-efficient-sam-segmentation",
+        "title": "EfficientSAM",
+        "summary": "Segment an imported image from a point prompt with Apple's shared segmentation adapter.",
+        "workload": "segmentation",
+        "adapter": "appleSegmentation",
+        "modelIdentifier": "efficient-sam-vitt",
+        "systemImage": "scope",
+        "capabilities": [
+          "imageInput",
+          "pointPrompt",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.sam3",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-sam3-segmentation",
+        "title": "SAM 3",
+        "summary": "Segment an imported image from a text prompt after providing the gated upstream model bundle.",
+        "workload": "segmentation",
+        "adapter": "appleSegmentation",
+        "modelIdentifier": "sam3",
+        "systemImage": "square.stack.3d.up",
+        "capabilities": [
+          "imageInput",
+          "textPrompt",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.wav2vec2-base",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-wav2vec2-transcription",
+        "title": "Wav2Vec2 Base",
+        "summary": "Transcribe a short local recording with Apple's exported static-shape Wav2Vec2 recipe.",
+        "workload": "audioTranscription",
+        "adapter": "appleAudioTranscription",
+        "modelIdentifier": "wav2vec2-base",
+        "systemImage": "waveform.badge.mic",
+        "capabilities": [
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.sd-1.5",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-sd15-generation",
+        "title": "Stable Diffusion 1.5",
+        "summary": "Generate an image with Apple's Stable Diffusion pipeline adapter.",
+        "workload": "imageGeneration",
+        "adapter": "appleDiffusion",
+        "modelIdentifier": "sd-1.5",
+        "systemImage": "wand.and.sparkles",
+        "capabilities": [
+          "textPrompt",
+          "negativePrompt",
+          "deterministicSeed",
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.sd-2.1",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-sd21-generation",
+        "title": "Stable Diffusion 2.1",
+        "summary": "Use the same data-driven diffusion destination with Apple's Stable Diffusion 2.1 recipe.",
+        "workload": "imageGeneration",
+        "adapter": "appleDiffusion",
+        "modelIdentifier": "sd-2.1",
+        "systemImage": "wand.and.sparkles",
+        "capabilities": [
+          "textPrompt",
+          "negativePrompt",
+          "deterministicSeed",
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.sd-3.5-medium",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-sd35-generation",
+        "title": "Stable Diffusion 3.5 Medium",
+        "summary": "Run Apple's SD3 pipeline after accepting the gated upstream model terms.",
+        "workload": "imageGeneration",
+        "adapter": "appleDiffusion",
+        "modelIdentifier": "sd-3.5-medium",
+        "systemImage": "wand.and.sparkles",
+        "capabilities": [
+          "textPrompt",
+          "negativePrompt",
+          "deterministicSeed",
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "apple.coreai-models.flux2-klein-4b",
+      "recipeRevision": "e358c8435679c904687f8070eb95150e36e4b76d",
+      "experience": {
+        "id": "apple-flux2-generation",
+        "title": "FLUX.2 Klein 4B",
+        "summary": "Run Apple's FLUX.2 pipeline through the shared diffusion destination.",
+        "workload": "imageGeneration",
+        "adapter": "appleDiffusion",
+        "modelIdentifier": "flux2-klein-4b",
+        "systemImage": "wand.and.sparkles",
+        "capabilities": [
+          "textPrompt",
+          "deterministicSeed",
+          "cancellation",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    },
+    {
+      "recipeIdentifier": "coreai.generic-function",
+      "recipeRevision": "1",
+      "experience": {
+        "id": "generic-function-workbench",
+        "title": "Function Workbench",
+        "summary": "Inspect, specialize, and invoke a compatible Core AI function from its descriptors.",
+        "workload": "genericFunction",
+        "adapter": "genericFunctionWorkbench",
+        "modelIdentifier": "imported-coreai-asset",
+        "systemImage": "function",
+        "capabilities": [
+          "descriptorDrivenInputs",
+          "coldWarmTiming",
+          "persistentRunMetadata"
+        ],
+        "platforms": ["iOS", "macOS"]
+      }
+    }
+  ]
+}
