@@ -6,7 +6,7 @@ struct SpeakerDiarizationResultsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Stub Results")
+            Text("Diarization Results")
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
 
@@ -17,8 +17,53 @@ struct SpeakerDiarizationResultsView: View {
 
                     Divider()
 
-                    LabeledContent("Speakers", value: result.speakerNames.joined(separator: ", "))
+                    LabeledContent(
+                        "Speakers",
+                        value: result.speakerNames.isEmpty
+                            ? "None detected"
+                            : result.speakerNames.joined(separator: ", ")
+                    )
                         .padding(.vertical, 6)
+
+                    if let evidence = result.evidence {
+                        Divider()
+                        LabeledContent("Model", value: evidence.modelName)
+                            .padding(.vertical, 6)
+
+                        Divider()
+                        LabeledContent(
+                            "Speech / windows",
+                            value: "\(evidence.speechRegionCount) / \(evidence.analysisWindowCount)"
+                        )
+                        .padding(.vertical, 6)
+
+                        Divider()
+                        LabeledContent(
+                            "Audio decode",
+                            value: evidence.decodeSeconds.formatted(
+                                .number.precision(.fractionLength(3))
+                            ) + " s"
+                        )
+                        .padding(.vertical, 6)
+
+                        Divider()
+                        LabeledContent(
+                            "Core AI inference",
+                            value: evidence.inferenceSeconds.formatted(
+                                .number.precision(.fractionLength(3))
+                            ) + " s"
+                        )
+                        .padding(.vertical, 6)
+
+                        Divider()
+                        LabeledContent(
+                            "Total analysis",
+                            value: evidence.totalSeconds.formatted(
+                                .number.precision(.fractionLength(3))
+                            ) + " s"
+                        )
+                        .padding(.vertical, 6)
+                    }
 
                     ForEach(result.turns) { turn in
                         Divider()
@@ -33,7 +78,7 @@ struct SpeakerDiarizationResultsView: View {
                 ContentUnavailableView(
                     "No Speaker Turns Yet",
                     systemImage: "person.2.slash",
-                    description: Text("Run the stub engine after import to preview the diarization timeline.")
+                    description: Text("Import CAM++, choose media, then run the batch diarizer.")
                 )
                 .frame(maxWidth: .infinity, minHeight: 180)
             }

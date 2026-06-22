@@ -130,14 +130,21 @@ cosine parity stayed above 0.999994 on eight real AMI windows, and
 nearest-enrollment matching identified all four speakers. Cached warm inference
 measured about 6-8 ms on the tested Mac.
 
-This proves a speaker embedding stage, not full diarization. Context is a real
-quality boundary: the same smoke fixture matched only 2/4 queries at two
-seconds and 3/4 at four seconds. The independent Pyannote/WeSpeaker/VBx Core ML
-reference reached 10.42% DER and found 4/4 speakers on AMI `ES2004a`, but that
-is only a pipeline reference. The preferred Core AI stack uses MIT Pyannote
-segmentation 3.0, Apache-2.0 CAM++, and repository-owned clustering; it cannot
-inherit the reference DER until segmentation, clustering, and end-to-end RTTM
-scoring are reproduced.
+The Lab now uses that embedding in an experimental batch pipeline with
+repository-owned energy segmentation, a Kaldi-compatible Accelerate frontend,
+three-second timeline slices, and deterministic cosine clustering. A labeled
+AMI `A → B → A → B` fixture produced the correct anonymous `1 → 2 → 1 → 2`
+pattern in 1.872–2.884 seconds across two runs including decode for 27.06
+seconds of audio on the tested Mac. This is a functional smoke check, not an
+overlap-aware or production-quality score.
+
+Context remains a real quality boundary: the enrollment smoke fixture matched
+only 2/4 queries at two seconds and 3/4 at four seconds. The independent
+Pyannote/WeSpeaker/VBx Core ML reference reached 10.42% DER and found 4/4
+speakers on AMI `ES2004a`, but that is only a pipeline reference. The preferred
+Core AI stack replaces the fallback energy segmenter with MIT Pyannote
+segmentation 3.0; it cannot inherit the reference DER until overlap-aware
+segmentation and end-to-end RTTM scoring are reproduced.
 
 ## Recommended official-example sequence
 

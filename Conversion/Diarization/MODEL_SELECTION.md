@@ -26,6 +26,12 @@ The Pyannote files require the user to accept an upstream contact-sharing gate.
 The license is permissive, but the Lab will not accept those terms or obtain the
 checkpoint through a mirror on the user's behalf.
 
+While that gate remains unresolved, the Lab runs a deliberately weaker fallback:
+repository-owned energy segmentation plus CAM++ and deterministic cosine
+clustering. It adds no model weights or license obligations. It also has no
+overlap model, no neural speaker-change detector, and no production accuracy
+claim; it exists so the permissive CAM++ stage can be exercised end to end.
+
 For true low-latency streaming, LS-EEND is the preferred research branch. Its
 official code and published Apple-model exports are MIT, and the architecture
 is about 11.18 million parameters. It is a materially harder Core AI conversion

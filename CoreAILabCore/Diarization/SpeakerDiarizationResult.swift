@@ -4,6 +4,19 @@ struct SpeakerDiarizationResult: Equatable, Sendable {
     let engineName: String
     let turns: [SpeakerDiarizationTurn]
     let generatedAt: Date
+    let evidence: SpeakerDiarizationEvidence?
+
+    init(
+        engineName: String,
+        turns: [SpeakerDiarizationTurn],
+        generatedAt: Date,
+        evidence: SpeakerDiarizationEvidence? = nil
+    ) {
+        self.engineName = engineName
+        self.turns = turns
+        self.generatedAt = generatedAt
+        self.evidence = evidence
+    }
 
     var speakerNames: [String] {
         var names: [String] = []
@@ -17,7 +30,7 @@ struct SpeakerDiarizationResult: Equatable, Sendable {
         guard let lastTurn = turns.last else {
             return nil
         }
-        if time >= lastTurn.endTime {
+        if abs(time - lastTurn.endTime) < 0.000_001 {
             return lastTurn
         }
         return turns.first { turn in

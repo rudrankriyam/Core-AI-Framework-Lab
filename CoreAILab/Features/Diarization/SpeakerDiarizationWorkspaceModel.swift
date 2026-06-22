@@ -4,59 +4,105 @@ import Observation
 @MainActor
 @Observable
 final class SpeakerDiarizationWorkspaceModel {
-    var mediaURL: URL?
-    var mediaSummary: SpeakerDiarizationMediaSummary?
-    var waveform: SpeakerDiarizationWaveform?
-    var result: SpeakerDiarizationResult?
-    var isAnalyzingMedia = false
-    var isRunningStub = false
+    private(set) var mediaURL: URL?
+    private(set) var mediaSummary: SpeakerDiarizationMediaSummary?
+    private(set) var waveform: SpeakerDiarizationWaveform?
+    private(set) var modelInfo: SpeakerDiarizationModelInfo?
+    private(set) var result: SpeakerDiarizationResult?
+    private(set) var isAnalyzingMedia = false
+    private(set) var isLoadingModel = false
+    private(set) var isRunningDiarization = false
+    private(set) var errorMessage: String?
     var isShowingError = false
-    var errorMessage: String?
-    var statusMessage = "Choose audio or video to inspect speaker turns."
+    private(set) var statusMessage = "Import CAM++ and choose audio or video."
 
+    @ObservationIgnored
+    private let engine: any SpeakerDiarizationServicing
     @ObservationIgnored
     private var analysisTask: Task<Void, Never>?
     @ObservationIgnored
+    private var diarizationTask: Task<Void, Never>?
+    @ObservationIgnored
     private var analysisGeneration = 0
+
+    init(
+        engine: any SpeakerDiarizationServicing = SpeakerDiarizationEngine()
+    ) {
+        self.engine = engine
+    }
 
     var mediaName: String {
         mediaSummary?.fileName ?? "Not selected"
     }
 
-    var canRunStub: Bool {
-        waveform != nil && !isAnalyzingMedia && !isRunningStub
+    var modelName: String {
+        modelInfo?.assetName ?? "Not loaded"
+    }
+
+    var canRunDiarization: Bool {
+        modelInfo != nil && mediaURL != nil && waveform != nil && !isBusy
     }
 
     var isBusy: Bool {
-        isAnalyzingMedia || isRunningStub
+        isAnalyzingMedia || isLoadingModel || isRunningDiarization
+    }
+
+    func loadModel(from url: URL) async {
+        guard !isBusy else { return }
+        isLoadingModel = true
+        statusMessage = "Specializing \(url.lastPathComponent)…"
+        defer { isLoadingModel = false }
+
+        do {
+            let candidate = try await engine.loadModel(at: url)
+            try Task.checkCancellation()
+            modelInfo = candidate
+            result = nil
+            clearError()
+            statusMessage = "CAM++ is ready. Choose media or run diarization."
+        } catch is CancellationError {
+            statusMessage = "Model import cancelled."
+        } catch {
+            present(error)
+        }
     }
 
     func selectMedia(_ url: URL) {
         analysisTask?.cancel()
+        diarizationTask?.cancel()
+        diarizationTask = nil
         analysisGeneration += 1
         let generation = analysisGeneration
         mediaURL = nil
         mediaSummary = nil
         waveform = nil
         result = nil
+        isRunningDiarization = false
         isAnalyzingMedia = true
-        statusMessage = "Reading media and preparing waveform buckets..."
+        clearError()
+        statusMessage = "Reading media and preparing waveform buckets…"
         analysisTask = Task { [weak self] in
             await self?.analyzeMedia(at: url, generation: generation)
         }
     }
 
-    func runStubDiarization() {
-        guard let mediaSummary, canRunStub else {
+    func startDiarization() {
+        guard diarizationTask == nil, canRunDiarization, let mediaURL else {
             return
         }
+        let generation = analysisGeneration
+        result = nil
+        isRunningDiarization = true
+        clearError()
+        statusMessage = "Decoding, segmenting, embedding, and clustering locally…"
+        diarizationTask = Task { [weak self] in
+            await self?.performDiarization(mediaURL: mediaURL, generation: generation)
+        }
+    }
 
-        isRunningStub = true
-        result = SpeakerDiarizationStubEngine.makeResult(
-            durationSeconds: mediaSummary.durationSeconds
-        )
-        statusMessage = "Generated anonymous speaker turns with the stub engine."
-        isRunningStub = false
+    func cancelWork() {
+        analysisTask?.cancel()
+        diarizationTask?.cancel()
     }
 
     func presentImportError(_ error: any Error) {
@@ -64,6 +110,13 @@ final class SpeakerDiarizationWorkspaceModel {
     }
 
     private func analyzeMedia(at url: URL, generation: Int) async {
+        defer {
+            if generation == analysisGeneration {
+                analysisTask = nil
+                isAnalyzingMedia = false
+            }
+        }
+
         do {
             let analysis = try await SpeakerDiarizationMediaAnalyzer.analyze(url: url)
             guard !Task.isCancelled, generation == analysisGeneration else {
@@ -72,22 +125,56 @@ final class SpeakerDiarizationWorkspaceModel {
             mediaURL = url
             mediaSummary = analysis.summary
             waveform = analysis.waveform
-            statusMessage = "Ready to generate stub speaker turns."
+            clearError()
+            statusMessage = modelInfo == nil
+                ? "Media is ready. Import CAM++ to diarize it."
+                : "Media and CAM++ are ready for batch diarization."
         } catch is CancellationError {
         } catch {
             guard generation == analysisGeneration else {
                 return
             }
             present(error)
-            statusMessage = "Media import failed."
         }
-        if generation == analysisGeneration {
-            isAnalyzingMedia = false
+    }
+
+    private func performDiarization(mediaURL: URL, generation: Int) async {
+        defer {
+            if generation == analysisGeneration {
+                diarizationTask = nil
+                isRunningDiarization = false
+            }
+        }
+
+        do {
+            let candidate = try await engine.diarize(mediaAt: mediaURL)
+            guard !Task.isCancelled, generation == analysisGeneration else {
+                return
+            }
+            result = candidate
+            clearError()
+            if candidate.turns.isEmpty {
+                statusMessage = "Finished without detecting speech above the energy threshold."
+            } else {
+                statusMessage = "Finished \(candidate.turns.count.formatted()) anonymous speaker turns."
+            }
+        } catch is CancellationError {
+        } catch {
+            guard generation == analysisGeneration else {
+                return
+            }
+            present(error)
         }
     }
 
     private func present(_ error: any Error) {
         errorMessage = error.localizedDescription
+        statusMessage = error.localizedDescription
         isShowingError = true
+    }
+
+    private func clearError() {
+        errorMessage = nil
+        isShowingError = false
     }
 }

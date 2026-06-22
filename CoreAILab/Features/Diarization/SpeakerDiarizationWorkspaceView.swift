@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct SpeakerDiarizationWorkspaceView: View {
     @State private var workspace = SpeakerDiarizationWorkspaceModel()
     @State private var watcher = SpeakerDiarizationWatcherModel()
+    @State private var isImportingModel = false
     @State private var isImportingMedia = false
 
     var body: some View {
@@ -11,16 +12,18 @@ struct SpeakerDiarizationWorkspaceView: View {
             GeometryReader { geometry in
                 Form {
                     SpeakerDiarizationStatusSection(
+                        modelInfo: workspace.modelInfo,
                         summary: workspace.mediaSummary,
                         statusMessage: workspace.statusMessage,
                         isBusy: workspace.isBusy
                     )
 
                     SpeakerDiarizationImportSection(
-                        canRunStub: workspace.canRunStub,
-                        isRunningStub: workspace.isRunningStub,
-                        importAction: importMedia,
-                        runAction: workspace.runStubDiarization
+                        canRunDiarization: workspace.canRunDiarization,
+                        isBusy: workspace.isBusy,
+                        importModelAction: importModel,
+                        importMediaAction: importMedia,
+                        runAction: workspace.startDiarization
                     )
 
                     SpeakerDiarizationWatcherSection(
@@ -49,6 +52,13 @@ struct SpeakerDiarizationWorkspaceView: View {
             }
             .onDisappear {
                 watcher.reset()
+                workspace.cancelWork()
+            }
+            .fileImporter(
+                isPresented: $isImportingModel,
+                allowedContentTypes: [.coreAIModelAsset, .folder]
+            ) { result in
+                handleModelImport(result)
             }
             .fileImporter(
                 isPresented: $isImportingMedia,
@@ -63,6 +73,10 @@ struct SpeakerDiarizationWorkspaceView: View {
         }
     }
 
+    private func importModel() {
+        isImportingModel = true
+    }
+
     private func importMedia() {
         isImportingMedia = true
     }
@@ -71,6 +85,17 @@ struct SpeakerDiarizationWorkspaceView: View {
         switch result {
         case .success(let url):
             workspace.selectMedia(url)
+        case .failure(let error):
+            workspace.presentImportError(error)
+        }
+    }
+
+    private func handleModelImport(_ result: Result<URL, any Error>) {
+        switch result {
+        case .success(let url):
+            Task {
+                await workspace.loadModel(from: url)
+            }
         case .failure(let error):
             workspace.presentImportError(error)
         }

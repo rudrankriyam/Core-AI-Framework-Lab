@@ -9,7 +9,7 @@ struct SpeakerDiarizationTurnRow: View {
             VStack(alignment: .trailing) {
                 Text(timeRange)
                     .monospacedDigit()
-                Text(confidence)
+                Text(clusterEvidence)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -35,7 +35,10 @@ struct SpeakerDiarizationTurnRow: View {
         "\(SpeakerDiarizationTimeFormatter.format(turn.startTime)) - \(SpeakerDiarizationTimeFormatter.format(turn.endTime))"
     }
 
-    private var confidence: String {
-        "Stub confidence \(turn.confidence.formatted(.percent.precision(.fractionLength(0))))"
+    private var clusterEvidence: String {
+        guard let similarity = turn.clusterSimilarity else {
+            return "New cluster"
+        }
+        return "Cluster cosine \(similarity.formatted(.number.precision(.fractionLength(3))))"
     }
 }
