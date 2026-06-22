@@ -81,12 +81,21 @@ extension CoreAIProjectLibraryController {
     func updateRun(
         _ run: CoreAIRunRecord,
         status: CoreAIRunStatus,
-        summary: String = "",
+        summary: String? = nil,
         endedAt: Date? = nil,
         modelContext: ModelContext
     ) throws {
         guard let project = run.project else {
             throw CoreAIProjectLibraryError.projectUnavailable
+        }
+        guard let currentStatus = run.status else {
+            throw CoreAIProjectLibraryError.runStatusUnavailable
+        }
+        guard currentStatus.canTransition(to: status) else {
+            throw CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: currentStatus,
+                to: status
+            )
         }
         let resolvedEndedAt: Date? = switch status {
         case .cancelled, .failed, .succeeded:

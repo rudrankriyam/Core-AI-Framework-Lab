@@ -8,6 +8,8 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
     case inconsistentArtifactRecord
     case domainRecordProjectMismatch
     case terminalRunRequiresUpdate
+    case runStatusUnavailable
+    case invalidRunStatusTransition(from: CoreAIRunStatus, to: CoreAIRunStatus)
     case evidenceLabelRequired
 
     var errorDescription: String? {
@@ -26,6 +28,10 @@ enum CoreAIProjectLibraryError: LocalizedError, Equatable {
             "The recipe, target, run, and evidence records must belong to the same project."
         case .terminalRunRequiresUpdate:
             "Create a pending or running run, then record its terminal status through updateRun."
+        case .runStatusUnavailable:
+            "The run has an invalid persisted status."
+        case let .invalidRunStatusTransition(from, to):
+            "A run cannot transition from \(from.rawValue) to \(to.rawValue)."
         case .evidenceLabelRequired:
             "Enter an evidence label."
         }

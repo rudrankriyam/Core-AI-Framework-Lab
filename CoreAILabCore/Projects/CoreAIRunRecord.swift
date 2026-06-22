@@ -16,6 +16,32 @@ enum CoreAIRunStatus: String, Codable, CaseIterable, Sendable {
     case pending
     case running
     case succeeded
+
+    var isTerminal: Bool {
+        switch self {
+        case .cancelled, .failed, .succeeded:
+            true
+        case .pending, .running:
+            false
+        }
+    }
+
+    func canTransition(to nextStatus: CoreAIRunStatus) -> Bool {
+        switch (self, nextStatus) {
+        case (.pending, _):
+            true
+        case (.running, .running),
+             (.running, .cancelled),
+             (.running, .failed),
+             (.running, .succeeded):
+            true
+        case (.running, .pending),
+             (.cancelled, _),
+             (.failed, _),
+             (.succeeded, _):
+            false
+        }
+    }
 }
 
 @Model
@@ -72,11 +98,13 @@ final class CoreAIRunRecord {
     func update(
         authorization _: CoreAIProjectDomainWriteAuthorization,
         status: CoreAIRunStatus,
-        summary: String,
+        summary: String?,
         endedAt: Date?
     ) {
         statusRawValue = status.rawValue
-        self.summary = summary
+        if let summary {
+            self.summary = summary
+        }
         self.endedAt = endedAt
     }
 }

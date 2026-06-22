@@ -199,6 +199,92 @@ struct CoreAIProjectPersistenceTests {
     }
 
     @Test
+    func statusOnlyUpdatePreservesTheExistingSummary() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Run summary",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            in: project,
+            modelContext: context
+        )
+
+        try controller.updateRun(
+            run,
+            status: .running,
+            summary: "Model loaded",
+            modelContext: context
+        )
+        try controller.updateRun(
+            run,
+            status: .running,
+            modelContext: context
+        )
+
+        #expect(run.summary == "Model loaded")
+    }
+
+    @Test
+    func runLifecycleRejectsBackwardAndPostTerminalTransitions() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let controller = CoreAIProjectLibraryController()
+        let project = try controller.createProject(
+            named: "Immutable terminal run",
+            modelContext: context
+        )
+        let run = try controller.createRun(
+            kind: .inference,
+            status: .running,
+            in: project,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .running,
+                to: .pending
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .pending,
+                modelContext: context
+            )
+        }
+
+        let endedAt = Date(timeIntervalSince1970: 42)
+        try controller.updateRun(
+            run,
+            status: .succeeded,
+            summary: "Final result",
+            endedAt: endedAt,
+            modelContext: context
+        )
+
+        #expect(
+            throws: CoreAIProjectLibraryError.invalidRunStatusTransition(
+                from: .succeeded,
+                to: .running
+            )
+        ) {
+            try controller.updateRun(
+                run,
+                status: .running,
+                summary: "Mutated",
+                modelContext: context
+            )
+        }
+        #expect(run.status == .succeeded)
+        #expect(run.summary == "Final result")
+        #expect(run.endedAt == endedAt)
+    }
+
+    @Test
     func terminalRunsMustTransitionThroughUpdate() throws {
         let container = try makeContainer()
         let context = container.mainContext
