@@ -25,7 +25,7 @@ enum SpeakerDiarizationMediaAnalyzer {
             throw SpeakerDiarizationError.unreadableDuration
         }
 
-        let waveform = try makeWaveform(
+        let waveform = try await makeWaveform(
             asset: asset,
             audioTrack: audioTrack,
             durationSeconds: durationSeconds,
@@ -56,7 +56,7 @@ enum SpeakerDiarizationMediaAnalyzer {
         audioTrack: AVAssetTrack,
         durationSeconds: Double,
         bucketCount: Int
-    ) throws -> SpeakerDiarizationWaveform {
+    ) async throws -> SpeakerDiarizationWaveform {
         let reader = try AVAssetReader(asset: asset)
         let outputSettings: [String: Any] = [
             AVFormatIDKey: kAudioFormatLinearPCM,
@@ -69,12 +69,8 @@ enum SpeakerDiarizationMediaAnalyzer {
             track: audioTrack,
             outputSettings: outputSettings
         )
-        output.alwaysCopiesSampleData = false
-        guard reader.canAdd(output) else {
-            throw SpeakerDiarizationError.unsupportedSampleBuffer
-        }
-        reader.add(output)
-        reader.startReading()
+        let provider = reader.outputProvider(for: output)
+        try reader.start()
 
         let bucketCount = max(1, bucketCount)
         var peaks = Array(repeating: Double.zero, count: bucketCount)
@@ -82,52 +78,55 @@ enum SpeakerDiarizationMediaAnalyzer {
         var channelCount = 1
         var frameIndex = 0
 
-        while let sampleBuffer = output.copyNextSampleBuffer() {
+        while let readySampleBuffer = try await provider.next() {
             try Task.checkCancellation()
-            guard let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer),
-                  let streamDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription),
-                  let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else {
-                throw SpeakerDiarizationError.unsupportedSampleBuffer
-            }
-            let audioDescription = streamDescription.pointee
-            sampleRate = audioDescription.mSampleRate
-            channelCount = max(1, Int(audioDescription.mChannelsPerFrame))
-
-            var length = 0
-            var dataPointer: UnsafeMutablePointer<Int8>?
-            let status = CMBlockBufferGetDataPointer(
-                blockBuffer,
-                atOffset: 0,
-                lengthAtOffsetOut: nil,
-                totalLengthOut: &length,
-                dataPointerOut: &dataPointer
-            )
-            guard status == noErr, let dataPointer else {
-                throw SpeakerDiarizationError.unsupportedSampleBuffer
-            }
-
-            let sampleCount = length / MemoryLayout<Float>.stride
-            let samples = dataPointer.withMemoryRebound(
-                to: Float.self,
-                capacity: sampleCount
-            ) { pointer in
-                UnsafeBufferPointer(start: pointer, count: sampleCount)
-            }
-            let frameCount = sampleCount / channelCount
-            let estimatedTotalFrames = max(1, Int(durationSeconds * sampleRate))
-            for frame in 0..<frameCount {
-                var magnitude = Double.zero
-                for channel in 0..<channelCount {
-                    magnitude += Double(abs(samples[(frame * channelCount) + channel]))
+            try readySampleBuffer.withUnsafeSampleBuffer { sampleBuffer in
+                guard let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer),
+                      let streamDescription = CMAudioFormatDescriptionGetStreamBasicDescription(
+                          formatDescription
+                      ), let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else {
+                    throw SpeakerDiarizationError.unsupportedSampleBuffer
                 }
-                magnitude /= Double(channelCount)
-                let bucket = min(
-                    bucketCount - 1,
-                    (frameIndex + frame) * bucketCount / estimatedTotalFrames
+                let audioDescription = streamDescription.pointee
+                sampleRate = audioDescription.mSampleRate
+                channelCount = max(1, Int(audioDescription.mChannelsPerFrame))
+
+                var length = 0
+                var dataPointer: UnsafeMutablePointer<Int8>?
+                let status = CMBlockBufferGetDataPointer(
+                    blockBuffer,
+                    atOffset: 0,
+                    lengthAtOffsetOut: nil,
+                    totalLengthOut: &length,
+                    dataPointerOut: &dataPointer
                 )
-                peaks[bucket] = max(peaks[bucket], magnitude)
+                guard status == noErr, let dataPointer else {
+                    throw SpeakerDiarizationError.unsupportedSampleBuffer
+                }
+
+                let sampleCount = length / MemoryLayout<Float>.stride
+                let samples = dataPointer.withMemoryRebound(
+                    to: Float.self,
+                    capacity: sampleCount
+                ) { pointer in
+                    UnsafeBufferPointer(start: pointer, count: sampleCount)
+                }
+                let frameCount = sampleCount / channelCount
+                let estimatedTotalFrames = max(1, Int(durationSeconds * sampleRate))
+                for frame in 0..<frameCount {
+                    var magnitude = Double.zero
+                    for channel in 0..<channelCount {
+                        magnitude += Double(abs(samples[(frame * channelCount) + channel]))
+                    }
+                    magnitude /= Double(channelCount)
+                    let bucket = min(
+                        bucketCount - 1,
+                        (frameIndex + frame) * bucketCount / estimatedTotalFrames
+                    )
+                    peaks[bucket] = max(peaks[bucket], magnitude)
+                }
+                frameIndex += frameCount
             }
-            frameIndex += frameCount
         }
 
         guard reader.status == .completed else {
