@@ -100,7 +100,11 @@ def select_ami_windows(
                         >= MIN_SAME_SPEAKER_WINDOW_GAP_SECONDS
                     ):
                         speaker_windows.append((speaker, start, end))
-                        break
+                        if len(speaker_windows) == 2:
+                            break
+                        start = end + MIN_SAME_SPEAKER_WINDOW_GAP_SECONDS
+                        end = start + duration
+                        continue
                 start += 0.25
                 end = start + duration
             if len(speaker_windows) == 2:
