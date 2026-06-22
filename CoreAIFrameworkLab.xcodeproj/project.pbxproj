@@ -3889,16 +3889,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/huggingface/swift-transformers";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
+				branch = main;
+				kind = branch;
 			};
 		};
 		154AA7A88771349D667C7FB7 /* XCRemoteSwiftPackageReference "coreai-models" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/coreai-models";
 			requirement = {
-				kind = revision;
-				revision = e358c8435679c904687f8070eb95150e36e4b76d;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -142,9 +142,9 @@ does not build a shell command from selected paths.
 
 ## Model Workflows
 
-The Apple catalog contains 33 recipes pinned to revision
-`e358c8435679c904687f8070eb95150e36e4b76d`, matching the Xcode package pin.
-Refresh it from a checkout at that revision:
+Both package dependencies track their upstream `main` branches. The Apple
+catalog records the exact `coreai-models` revision used to generate its 33
+recipes; refresh it whenever that branch advances:
 
 ```bash
 python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
