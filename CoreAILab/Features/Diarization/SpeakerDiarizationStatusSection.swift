@@ -36,7 +36,7 @@ struct SpeakerDiarizationStatusSection: View {
         } header: {
             Label("Speaker Diarization Lab", systemImage: "person.wave.2")
         } footer: {
-            Text("This experimental batch engine assigns anonymous labels, not real identities. Energy segmentation does not detect overlapping speakers.")
+            Text("The bundled CAM++ asset is Apache-2.0. This experimental batch engine assigns anonymous labels, not real identities, and energy segmentation does not detect overlapping speakers.")
         }
     }
 }

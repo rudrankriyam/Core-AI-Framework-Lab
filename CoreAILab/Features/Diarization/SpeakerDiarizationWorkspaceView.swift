@@ -47,6 +47,9 @@ struct SpeakerDiarizationWorkspaceView: View {
                 .formStyle(.grouped)
             }
             .navigationTitle("Diarization")
+            .task {
+                await workspace.prepareBundledModel()
+            }
             .onChange(of: workspace.mediaSummary) { _, summary in
                 watcher.load(url: workspace.mediaURL, summary: summary)
             }

@@ -43,10 +43,12 @@ Evidence recorded on June 22, 2026 with Xcode 27 beta `27A5194q`, PyTorch
 | Cached warm Core AI inference | median 6.09-7.54 ms across two runs on the tested Mac |
 
 The real-audio check used two non-overlapping 6.015-second regions for each of
-the four labeled speakers in public AMI meeting `ES2004a`. No audio, checkpoint,
-or generated model is stored in this repository. AMI is distributed under
-CC BY 4.0; its audio remains a local, attributed evaluation fixture and is not
-part of the Apache-2.0 runtime stack.
+the four labeled speakers in public AMI meeting `ES2004a`. No AMI audio or raw
+checkpoint is stored in this repository. The audited converted asset is bundled
+with an Apache-2.0 license and checksum manifest under
+`CoreAILab/Resources/Diarization`. AMI is distributed under CC BY 4.0; its audio
+remains a local, attributed evaluation fixture and is not part of the
+Apache-2.0 runtime stack.
 
 Shorter context was materially worse on the same deterministic windows:
 
@@ -151,7 +153,6 @@ into a temporary `.xctestrun`; no local asset path is written to the project:
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 python3 ../../Scripts/run_diarization_integration.py \
-  --model exports/CAMPPlus192_float16_600f.aimodel \
   --media /tmp/core-ai-diarization-ami-labeled.wav \
   --minimum-speakers 2 \
   --expected-pattern 1,2,1,2

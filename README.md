@@ -72,10 +72,11 @@ Refresh the checked-in snapshot from a local Apple repository clone:
 python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
 ```
 
-Model weights are not bundled or redistributed by the app. When you start a
-conversion, the selected upstream recipe may fetch its original model weights;
-their licenses, authentication requirements, and source revisions remain
-independent of Apple's BSD-3-Clause recipe repository.
+Apple catalog model weights are not bundled or redistributed by the app. When
+you start a conversion, the selected upstream recipe may fetch its original
+model weights; their licenses, authentication requirements, and source
+revisions remain independent of Apple's BSD-3-Clause recipe repository. The
+separate Diarization workspace includes one audited Apache-2.0 CAM++ asset.
 
 ## Persistent Projects and Artifact Storage
 
@@ -281,13 +282,13 @@ separate runnable text-to-speech example.
 ## Speaker Diarization Research
 
 The **Diarization** workspace imports audio or video, builds a waveform, and
-synchronizes playback with a speaker-turn timeline. Import the converted CAM++
-`.aimodel`, choose media, and run the experimental batch engine. It decodes 16
-kHz mono audio, finds speech with a repository-owned energy segmenter, computes
-Kaldi-compatible log-Mel features with Accelerate, runs CAM++ through Core AI,
-and clusters normalized embeddings by cosine similarity. Three-second timeline
-slices use up to 6.015 seconds of speech-region context because shorter CAM++
-contexts were materially weaker.
+synchronizes playback with a speaker-turn timeline. Its audited CAM++
+`.aimodel` is bundled and specialized automatically, so choose media and run the
+experimental batch engine. It decodes 16 kHz mono audio, finds speech with a
+repository-owned energy segmenter, computes Kaldi-compatible log-Mel features
+with Accelerate, runs CAM++ through Core AI, and clusters normalized embeddings
+by cosine similarity. Three-second timeline slices use up to 6.015 seconds of
+speech-region context because shorter CAM++ contexts were materially weaker.
 
 `Conversion/Diarization` contains the first proven real-model stage: a pinned
 CAM++ speaker encoder converted with `coreai-torch`. Its checkpoint and matching
@@ -295,7 +296,9 @@ CAM++ speaker encoder converted with `coreai-torch`. Its checkpoint and matching
 parameters, occupies about 14.2 MB, and maps six seconds of 80-bin log-Mel
 features to a normalized 192-dimensional speaker embedding. A public AMI
 meeting smoke test matched 4/4 held-out speaker clips and preserved PyTorch/Core
-AI cosine parity above 0.999994.
+AI cosine parity above 0.999994. The bundled package carries Apache-2.0 metadata;
+`CoreAILab/Resources/Diarization/MODEL_PROVENANCE.json` pins its source,
+checkpoint checksum, conversion environment, and converted-file checksums.
 
 ```bash
 cd Conversion/Diarization

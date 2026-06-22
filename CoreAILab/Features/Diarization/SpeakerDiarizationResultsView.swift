@@ -78,7 +78,7 @@ struct SpeakerDiarizationResultsView: View {
                 ContentUnavailableView(
                     "No Speaker Turns Yet",
                     systemImage: "person.2.slash",
-                    description: Text("Import CAM++, choose media, then run the batch diarizer.")
+                    description: Text("Choose media, then run the bundled CAM++ diarizer.")
                 )
                 .frame(maxWidth: .infinity, minHeight: 180)
             }

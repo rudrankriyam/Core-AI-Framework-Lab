@@ -130,13 +130,13 @@ cosine parity stayed above 0.999994 on eight real AMI windows, and
 nearest-enrollment matching identified all four speakers. Cached warm inference
 measured about 6-8 ms on the tested Mac.
 
-The Lab now uses that embedding in an experimental batch pipeline with
-repository-owned energy segmentation, a Kaldi-compatible Accelerate frontend,
-three-second timeline slices, and deterministic cosine clustering. A labeled
-AMI `A → B → A → B` fixture produced the correct anonymous `1 → 2 → 1 → 2`
-pattern in 1.872–2.884 seconds across two runs including decode for 27.06
-seconds of audio on the tested Mac. This is a functional smoke check, not an
-overlap-aware or production-quality score.
+The Lab bundles that audited Apache-2.0 asset and specializes it automatically
+in an experimental batch pipeline with repository-owned energy segmentation, a
+Kaldi-compatible Accelerate frontend, three-second timeline slices, and
+deterministic cosine clustering. A labeled AMI `A → B → A → B` fixture produced
+the correct anonymous `1 → 2 → 1 → 2` pattern in 1.872–2.884 seconds across two
+runs including decode for 27.06 seconds of audio on the tested Mac. This is a
+functional smoke check, not an overlap-aware or production-quality score.
 
 Context remains a real quality boundary: the enrollment smoke fixture matched
 only 2/4 queries at two seconds and 3/4 at four seconds. The independent

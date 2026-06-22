@@ -35,7 +35,7 @@ actor SpeakerDiarizationCAMPPlusEmbeddingModel: SpeakerDiarizationEmbeddingProvi
             contentsOf: url,
             options: .default,
             cache: .default,
-            cachePolicy: .default
+            cachePolicy: .persistent
         )
         guard let function = try model.loadFunction(named: "main") else {
             throw SpeakerDiarizationError.missingFunction("main")

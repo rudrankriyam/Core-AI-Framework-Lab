@@ -14,7 +14,7 @@ final class SpeakerDiarizationWorkspaceModel {
     private(set) var isRunningDiarization = false
     private(set) var errorMessage: String?
     var isShowingError = false
-    private(set) var statusMessage = "Import CAM++ and choose audio or video."
+    private(set) var statusMessage = "Preparing the bundled CAM++ model…"
 
     @ObservationIgnored
     private let engine: any SpeakerDiarizationServicing
@@ -45,6 +45,16 @@ final class SpeakerDiarizationWorkspaceModel {
 
     var isBusy: Bool {
         isAnalyzingMedia || isLoadingModel || isRunningDiarization
+    }
+
+    func prepareBundledModel(in bundle: Bundle = .main) async {
+        guard modelInfo == nil, !isBusy else { return }
+        do {
+            let url = try SpeakerDiarizationBundledModel.url(in: bundle)
+            await loadModel(from: url)
+        } catch {
+            present(error)
+        }
     }
 
     func loadModel(from url: URL) async {
@@ -127,7 +137,7 @@ final class SpeakerDiarizationWorkspaceModel {
             waveform = analysis.waveform
             clearError()
             statusMessage = modelInfo == nil
-                ? "Media is ready. Import CAM++ to diarize it."
+                ? "Media is ready. Choose a compatible CAM++ model to diarize it."
                 : "Media and CAM++ are ready for batch diarization."
         } catch is CancellationError {
         } catch {

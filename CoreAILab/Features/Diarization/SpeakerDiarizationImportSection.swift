@@ -10,28 +10,26 @@ struct SpeakerDiarizationImportSection: View {
     var body: some View {
         Section("Inputs") {
             ViewThatFits(in: .horizontal) {
-                HStack {
-                    controls
-                }
-
-                VStack(alignment: .leading) {
-                    controls
-                }
+                SpeakerDiarizationImportControls(
+                    layout: HStackLayout(),
+                    canRunDiarization: canRunDiarization,
+                    isBusy: isBusy,
+                    importModelAction: importModelAction,
+                    importMediaAction: importMediaAction,
+                    runAction: runAction
+                )
+                SpeakerDiarizationImportControls(
+                    layout: VStackLayout(alignment: .leading),
+                    canRunDiarization: canRunDiarization,
+                    isBusy: isBusy,
+                    importModelAction: importModelAction,
+                    importMediaAction: importMediaAction,
+                    runAction: runAction
+                )
             }
 
-            Text("The batch path decodes 16 kHz mono audio, finds energy-based speech regions, runs CAM++ through Core AI with six-second context, then clusters embeddings by cosine similarity.")
+            Text("The bundled Apache-2.0 CAM++ model runs through Core AI after 16 kHz decode, energy segmentation, and six-second feature preparation; cosine clustering produces anonymous speaker turns.")
                 .foregroundStyle(.secondary)
         }
-    }
-
-    @ViewBuilder
-    private var controls: some View {
-        Button("Import CAM++", systemImage: "shippingbox", action: importModelAction)
-            .disabled(isBusy)
-        Button("Choose Audio or Video", systemImage: "waveform", action: importMediaAction)
-            .disabled(isBusy)
-        Button("Run Diarization", systemImage: "person.2.wave.2", action: runAction)
-            .buttonStyle(.borderedProminent)
-            .disabled(!canRunDiarization)
     }
 }

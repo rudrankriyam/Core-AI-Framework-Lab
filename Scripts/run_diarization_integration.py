@@ -19,7 +19,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build and run the opt-in CAM++ Core AI diarization integration test."
     )
-    parser.add_argument("--model", type=Path, required=True)
+    parser.add_argument(
+        "--model",
+        type=Path,
+        help="Optional CAM++ asset override; defaults to the model bundled by the app.",
+    )
     parser.add_argument("--media", type=Path, required=True)
     parser.add_argument("--minimum-speakers", type=int)
     parser.add_argument("--expected-pattern", help="Comma-separated anonymous IDs, such as 1,2,1,2")
@@ -30,7 +34,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    model = args.model.resolve(strict=True)
+    model = args.model.resolve(strict=True) if args.model is not None else None
     media = args.media.resolve(strict=True)
     derived_data = args.derived_data.resolve()
     destination = "platform=macOS,arch=arm64"
@@ -55,7 +59,8 @@ def main() -> None:
         configuration = plistlib.load(file)
     test_target = configuration["CoreAILabMacTests"]
     environment = test_target.setdefault("EnvironmentVariables", {})
-    environment["COREAI_CAMPPLUS_MODEL_PATH"] = str(model)
+    if model is not None:
+        environment["COREAI_CAMPPLUS_MODEL_PATH"] = str(model)
     environment["COREAI_DIARIZATION_MEDIA_PATH"] = str(media)
     if args.minimum_speakers is not None:
         environment["COREAI_DIARIZATION_MIN_SPEAKERS"] = str(args.minimum_speakers)

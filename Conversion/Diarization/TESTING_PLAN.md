@@ -175,8 +175,10 @@ for Core AI placement or performance.
   generated manifest. Code and weights are audited separately.
 - Preserve the Apache-2.0 3D-Speaker notice in adapted CAM++ source and include
   an Apache-2.0 license copy with any distributed source or converted asset.
-- Never commit downloaded checkpoints, AMI audio, generated `.aimodel` assets,
-  compiled assets, result bundles, or credentials.
+- Never commit downloaded checkpoints, AMI audio, ad hoc generated `.aimodel`
+  assets, compiled assets, result bundles, or credentials. The single audited
+  bundled CAM++ asset is an explicit exception: it must retain the pinned
+  checksum manifest and Apache-2.0 license in `CoreAILab/Resources/Diarization`.
 - MIT Pyannote segmentation 3.0 remains blocked until its Hugging Face
   contact-sharing terms are explicitly accepted. Do not use an unofficial
   mirror to bypass the gate. Community-1's CC-BY-4.0 pipeline is a benchmark,

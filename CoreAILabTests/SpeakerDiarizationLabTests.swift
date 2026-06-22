@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreAI
 import Foundation
 import Testing
 #if os(macOS)
@@ -7,6 +8,41 @@ import AVKit
 @testable import CoreAILab
 
 struct SpeakerDiarizationLabTests {
+    @Test
+    func bundledCAMPlusHasPinnedLicenseProvenanceAndContract() async throws {
+        let modelURL = try SpeakerDiarizationBundledModel.url()
+        let asset = try AIModelAsset(contentsOf: modelURL)
+        let provenanceURL = modelURL
+            .deletingLastPathComponent()
+            .appending(path: "MODEL_PROVENANCE.json")
+        let provenanceData = try Data(contentsOf: provenanceURL)
+        let provenance = try #require(String(data: provenanceData, encoding: .utf8))
+
+        #expect(asset.metadata.license == "Apache-2.0")
+        #expect(
+            asset.metadata.description.contains(
+                "e4b6ede7ce16997aff4ae69fbca1f0175e2afede"
+            )
+        )
+        #expect(
+            provenance.contains(
+                "3388cf5fd3493c9ac9c69851d8e7a8badcfb4f3dc631020c4961371646d5ada8"
+            )
+        )
+        #expect(
+            provenance.contains(
+                "dc27de457b9ed883592be59e25dd3d296d034ab92359eaf1a92840aa81f1c04b"
+            )
+        )
+
+        let engine = SpeakerDiarizationEngine()
+        let info = try await engine.loadModel(at: modelURL)
+        #expect(info.frameCount == 600)
+        #expect(info.featureBinCount == 80)
+        #expect(info.embeddingDimension == 192)
+        #expect(info.scalarTypeName == "float16")
+    }
+
     @Test
     func analysisLayoutUsesAContentDrivenBreakpoint() {
         let breakpoint = SpeakerDiarizationAnalysisLayout.minimumSideBySideWidth

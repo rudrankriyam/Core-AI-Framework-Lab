@@ -6,13 +6,18 @@ struct SpeakerDiarizationIntegrationTests {
     @Test
     func convertedCAMPlusDiarizesImportedMediaThroughCoreAI() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let modelPath = environment["COREAI_CAMPPLUS_MODEL_PATH"],
-              let mediaPath = environment["COREAI_DIARIZATION_MEDIA_PATH"] else {
+        guard let mediaPath = environment["COREAI_DIARIZATION_MEDIA_PATH"] else {
             return
         }
 
         let engine = SpeakerDiarizationEngine()
-        let modelInfo = try await engine.loadModel(at: URL(filePath: modelPath))
+        let modelURL: URL
+        if let modelPath = environment["COREAI_CAMPPLUS_MODEL_PATH"] {
+            modelURL = URL(filePath: modelPath)
+        } else {
+            modelURL = try SpeakerDiarizationBundledModel.url()
+        }
+        let modelInfo = try await engine.loadModel(at: modelURL)
         let result = try await engine.diarize(mediaAt: URL(filePath: mediaPath))
 
         #expect(modelInfo.embeddingDimension == 192)

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "asset": {
+    "name": "CAMPPlus192_float16_600f.aimodel",
+    "format": "Core AI",
+    "compatibilityVersion": "27.0",
+    "precision": "float16",
+    "input": "features: [1, 600, 80]",
+    "output": "embedding: [1, 192]",
+    "sourceParameterCount": 6848544,
+    "convertedParameterCount": 6848736
+  },
+  "weights": {
+    "repository": "https://huggingface.co/funasr/campplus",
+    "revision": "e4b6ede7ce16997aff4ae69fbca1f0175e2afede",
+    "checkpoint": "campplus_cn_common.bin",
+    "checkpointSHA256": "3388cf5fd3493c9ac9c69851d8e7a8badcfb4f3dc631020c4961371646d5ada8",
+    "license": "Apache-2.0",
+    "accessTerms": "Public, ungated"
+  },
+  "implementation": {
+    "repository": "https://github.com/modelscope/3D-Speaker",
+    "license": "Apache-2.0"
+  },
+  "conversion": {
+    "date": "2026-06-22",
+    "xcode": "27.0 (27A5194q)",
+    "pytorch": "2.9.1",
+    "coreaiTorch": "0.4.0"
+  },
+  "files": {
+    "CAMPPlus192_float16_600f.aimodel/main.hash": "8b6e97dbaefce54b4a16b34f349d6cb11ac8005e23f47e5e318e86d2d8fdc333",
+    "CAMPPlus192_float16_600f.aimodel/main.mlirb": "dc27de457b9ed883592be59e25dd3d296d034ab92359eaf1a92840aa81f1c04b",
+    "CAMPPlus192_float16_600f.aimodel/metadata.json": "3f611d36938bc5512348021608ddb6a2d17ed6c0b5ec7f08cd6e47225f95a213",
+    "Apache-2.0.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  }
+}

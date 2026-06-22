@@ -1,6 +1,8 @@
 import Foundation
 
 enum SpeakerDiarizationError: LocalizedError {
+    case bundledModelMissing
+    case invalidBundledModel
     case missingAudioTrack
     case readerFailed(String)
     case unsupportedSampleBuffer
@@ -17,6 +19,10 @@ enum SpeakerDiarizationError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .bundledModelMissing:
+            "The bundled CAM++ model is missing. Reinstall the app or choose another compatible model."
+        case .invalidBundledModel:
+            "The bundled CAM++ model is incomplete or invalid. Reinstall the app or choose another compatible model."
         case .missingAudioTrack:
             "The selected file does not contain a readable audio track."
         case .readerFailed(let reason):
