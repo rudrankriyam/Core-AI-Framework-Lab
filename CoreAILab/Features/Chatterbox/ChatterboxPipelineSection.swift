@@ -1,41 +1,55 @@
 import SwiftUI
 
 struct ChatterboxPipelineSection: View {
-    let inspection: ChatterboxModelInspection?
+    let state: ChatterboxModelState
+
+    private var inspection: ChatterboxModelInspection? {
+        guard case .ready(let inspection) = state else {
+            return nil
+        }
+        return inspection
+    }
 
     var body: some View {
         Section("Native Pipeline") {
-            ForEach(ChatterboxPipelineStage.allCases) { stage in
+            ForEach(inspection?.assets ?? []) { asset in
                 HStack(alignment: .firstTextBaseline) {
-                    Image(systemName: isReady(stage)
+                    Image(systemName: isReady(asset.stage)
                         ? "checkmark.circle.fill"
                         : "circle.dashed")
-                        .foregroundStyle(isReady(stage) ? .green : .secondary)
+                        .foregroundStyle(isReady(asset.stage) ? .green : .secondary)
                         .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(stage.title)
-                        Text(stage.detail)
+                        Text(asset.displayName)
+                        Text(asset.detail)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
-                    if let asset = inspection?.assets.first(
-                        where: { $0.stage == stage }
-                    ) {
-                        Text(asset.formattedSize)
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(asset.formattedSize)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
                 }
                 .accessibilityElement(children: .combine)
             }
 
-            Text(inspection?.contractValidation.isComplete == true
-                ? "Text tokenization, autoregressive T3 decoding, S3Gen, and waveform synthesis all run locally."
-                : "The app verifies every bundled asset and function before enabling generation.")
+            switch state {
+            case .preparing:
+                ProgressView("Loading the recipe contract")
+            case .failed:
+                Label("Pipeline details are unavailable", systemImage: "xmark.octagon")
+                    .foregroundStyle(.red)
+            case .notLoaded:
+                Label("Recipe contract has not loaded", systemImage: "shippingbox")
+                    .foregroundStyle(.secondary)
+            case .ready:
+                EmptyView()
+            }
+
+            Text(detail)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -43,5 +57,20 @@ struct ChatterboxPipelineSection: View {
 
     private func isReady(_ stage: ChatterboxPipelineStage) -> Bool {
         inspection?.contractValidation.presentStages.contains(stage) == true
+    }
+
+    private var detail: String {
+        switch state {
+        case .notLoaded:
+            "The app has not started validating the bundled recipe."
+        case .preparing:
+            "The app is verifying every bundled asset and function before enabling generation."
+        case .ready(let inspection):
+            inspection.contractValidation.isComplete
+                ? "Text tokenization, autoregressive T3 decoding, S3Gen, and waveform synthesis all run locally."
+                : "The recipe is incomplete; generation remains disabled."
+        case .failed:
+            "Model preparation failed, so the pipeline contract could not be verified."
+        }
     }
 }

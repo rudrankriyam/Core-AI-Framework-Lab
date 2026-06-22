@@ -6,13 +6,28 @@ struct AppleAudioWorkspaceView: View {
     @State private var isImportingModel = false
     @State private var isImportingAudio = false
     private let initialModelURL: URL?
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleAudioExample = .wav2Vec2,
-        initialModelURL: URL? = nil
+        initialModelURL: URL? = nil,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        _workspace = State(initialValue: AppleAudioWorkspaceModel(example: example))
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-wav2vec2-transcription",
+            title: example.title,
+            modelIdentifier: "wav2vec2-base"
+        )
+        _workspace = State(
+            initialValue: AppleAudioWorkspaceModel(
+                example: example,
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
         self.initialModelURL = initialModelURL
+        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -33,6 +48,11 @@ struct AppleAudioWorkspaceView: View {
                 Label(workspace.example.title, systemImage: "waveform.badge.mic")
             }
 
+            CoreAIRuntimeLifecycleView(
+                coordinator: workspace.runCoordinator,
+                context: runContext
+            )
+
             Section("Inputs") {
                 HStack {
                     Button("Import Wav2Vec2", systemImage: "shippingbox", action: importModel)
@@ -40,6 +60,14 @@ struct AppleAudioWorkspaceView: View {
                     Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
                         .buttonStyle(.borderedProminent)
                         .disabled(!workspace.canTranscribe)
+                    if workspace.isTranscribing {
+                        Button(
+                            "Cancel",
+                            systemImage: "stop.fill",
+                            role: .destructive,
+                            action: workspace.cancelTranscription
+                        )
+                    }
                 }
 
                 Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
@@ -77,6 +105,7 @@ struct AppleAudioWorkspaceView: View {
                 await workspace.loadModel(from: initialModelURL)
             }
         }
+        .onDisappear(perform: workspace.cancelTranscription)
     }
 
     private func importModel() {

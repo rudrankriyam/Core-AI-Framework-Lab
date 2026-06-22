@@ -1,6 +1,6 @@
 import Foundation
 
-struct CoreAIAssetFunctionSignature: Identifiable, Sendable, Equatable {
+struct CoreAIAssetFunctionSignature: Codable, Identifiable, Sendable, Equatable {
     let name: String
     let inputs: [CoreAIAssetValueSignature]
     let states: [CoreAIAssetValueSignature]

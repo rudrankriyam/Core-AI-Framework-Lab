@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class CoreAIFunctionWorkbenchWorkspaceModel {
     let assetWorkspace: CoreAIAssetWorkspaceModel
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     let deviceArchitectureName = CoreAIDiscoverySnapshot.current().deviceArchitectureName
     private(set) var contracts: [CoreAIFunctionContract] = []
     var selectedFunctionName: String? {
@@ -29,6 +30,10 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     @ObservationIgnored
     private let integrationExporter: CoreAIIntegrationExporter
     @ObservationIgnored
+    private let artifactDigester: any CoreAIArtifactDigesting
+    @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
+    @ObservationIgnored
     private var contractOperationID = UUID()
     @ObservationIgnored
     private var benchmarkTask: Task<Void, Never>?
@@ -39,10 +44,20 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
         runtimeService: any CoreAIFunctionRuntimeServicing = CoreAISpecializationService(),
-        integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter()
+        integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter(),
+        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
         self.runtimeService = runtimeService
         self.integrationExporter = integrationExporter
+        self.artifactDigester = artifactDigester
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "generic-function-workbench",
+            title: "Function Workbench",
+            modelIdentifier: "imported-coreai-asset"
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
         assetWorkspace = CoreAIAssetWorkspaceModel(
             inspectionService: inspectionService,
             specializationService: runtimeService
@@ -83,6 +98,11 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         let didReplaceAsset = await assetWorkspace.inspect(url: url)
         if didReplaceAsset {
             clearRuntimeState()
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: assetWorkspace.report?.url.lastPathComponent
+                    ?? url.lastPathComponent
+            )
         }
         phase = assetWorkspace.report == nil ? .idle : .ready
     }
@@ -125,17 +145,45 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     }
 
     func runSelectedFunction() async {
-        guard let selectedFunctionName, canRun else { return }
-        phase = .running
+        guard let selectedFunctionName,
+              let asset = assetWorkspace.report,
+              canRun else {
+            return
+        }
+        let plans: [CoreAIFunctionInputPlan]
         do {
-            let plans = try inputDrafts.map { try $0.plan() }
-            runResult = try await runtimeService.runFunction(
+            plans = try inputDrafts.map { try $0.plan() }
+        } catch {
+            assetWorkspace.presentImportError(error)
+            return
+        }
+
+        phase = .running
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: asset.url.lastPathComponent
+        )
+        do {
+            let result = try await runtimeService.runFunction(
                 named: selectedFunctionName,
                 inputs: plans
             )
+            try Task.checkCancellation()
+            runResult = result
             phase = .ready
+            runCoordinator.succeed(
+                runToken,
+                summary: "Ran \(selectedFunctionName) with \(result.outputs.count) inspected outputs."
+            )
+        } catch is CancellationError {
+            phase = .ready
+            runCoordinator.cancel(
+                runToken,
+                summary: "Function run canceled before completion."
+            )
         } catch {
             phase = .ready
+            runCoordinator.fail(runToken, error: error)
             assetWorkspace.presentImportError(error)
         }
     }
@@ -157,7 +205,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             return
         }
 
-        benchmarkStatusMessage = nil
+        benchmarkStatusMessage = "Hashing the model artifact before measurement…"
         phase = .benchmarking
         let configuration = benchmarkConfiguration
         benchmarkTask = Task { [weak self] in
@@ -165,6 +213,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             await self.performBenchmark(
                 functionName: selectedFunctionName,
                 assetName: asset.url.lastPathComponent,
+                assetURL: asset.url,
                 specialization: specialization,
                 plans: plans,
                 configuration: configuration
@@ -258,6 +307,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     private func performBenchmark(
         functionName: String,
         assetName: String,
+        assetURL: URL,
         specialization: CoreAISpecializationResult,
         plans: [CoreAIFunctionInputPlan],
         configuration: CoreAIFunctionBenchmarkConfiguration
@@ -270,6 +320,13 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         }
 
         do {
+            let artifactDigest = try await artifactDigester.digest(at: assetURL)
+            try Task.checkCancellation()
+            guard artifactDigest == specialization.artifactDigest else {
+                throw CoreAIFunctionBenchmarkError
+                    .artifactChangedSinceSpecialization
+            }
+            benchmarkStatusMessage = "Running the benchmark protocol…"
             let result = try await runtimeService.benchmarkFunction(
                 named: functionName,
                 inputs: plans,
@@ -279,9 +336,11 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             benchmarkHistory.insert(
                 CoreAIFunctionBenchmarkReport(
                     assetName: assetName,
+                    artifactDigest: specialization.artifactDigest,
                     specializationConfiguration: specialization.configuration,
                     specializationDuration: specialization.duration,
                     loadedFromCache: specialization.loadedFromCache,
+                    benchmarkConfiguration: configuration,
                     inputPlans: plans,
                     result: result
                 ),
@@ -293,6 +352,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         } catch is CancellationError {
             benchmarkStatusMessage = "Benchmark stopped before a measured trial completed."
         } catch {
+            benchmarkStatusMessage = nil
             assetWorkspace.presentImportError(error)
         }
     }

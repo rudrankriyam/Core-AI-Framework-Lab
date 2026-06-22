@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "resemble/chatterbox-turbo",
+  "revision": "chatterbox-tts-0.1.7",
+  "displayName": "Chatterbox Turbo",
+  "summary": "Expressive text-to-speech running locally through Apple Core AI.",
+  "systemImage": "waveform.circle.fill",
+  "source": {
+    "repository": "ResembleAI/chatterbox",
+    "revision": "chatterbox-tts-0.1.7",
+    "license": "MIT"
+  },
+  "defaultTargetID": "mac-gpu",
+  "targets": [
+    {
+      "schemaVersion": 1,
+      "id": "mac-gpu",
+      "displayName": "Mac GPU",
+      "platform": "macOS",
+      "minimumOSVersion": "27.0",
+      "preferredComputeUnit": "gpu",
+      "expectsFrequentReshapes": false
+    }
+  ],
+  "artifacts": [
+    {
+      "schemaVersion": 1,
+      "id": "tokenizer",
+      "displayName": "Hugging Face tokenizer",
+      "kind": "tokenizer",
+      "relativePath": "tokenizer",
+      "requiredEntrypoints": []
+    },
+    {
+      "schemaVersion": 1,
+      "id": "t3Embeddings",
+      "displayName": "T3 embeddings",
+      "kind": "modelAsset",
+      "relativePath": "ChatterboxTurboT3Embeddings.aimodel",
+      "precision": "FP16",
+      "requiredEntrypoints": ["prefill", "decode"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "t3Transformer",
+      "displayName": "T3 transformer",
+      "kind": "modelAsset",
+      "relativePath": "ChatterboxTurboT3TransformerInt4.aimodel",
+      "precision": "mixed INT4/INT8/FP16",
+      "requiredEntrypoints": ["prefill", "decode"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "s3gen",
+      "displayName": "S3Gen flow",
+      "kind": "modelAsset",
+      "relativePath": "ChatterboxTurboS3Gen.aimodel",
+      "precision": "FP16",
+      "requiredEntrypoints": ["main"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "vocoder",
+      "displayName": "HiFT vocoder",
+      "kind": "modelAsset",
+      "relativePath": "ChatterboxTurboVocoder.aimodel",
+      "precision": "FP16",
+      "requiredEntrypoints": ["vocoder"]
+    }
+  ],
+  "pipeline": {
+    "schemaVersion": 1,
+    "experience": "textToSpeech",
+    "tokenizerArtifactID": "tokenizer",
+    "stages": [
+      {
+        "schemaVersion": 1,
+        "id": "t3Embeddings",
+        "displayName": "T3 embeddings",
+        "detail": "Text and generated-speech embeddings with the built-in voice prompt.",
+        "artifactID": "t3Embeddings",
+        "entrypoints": {
+          "prefill": "prefill",
+          "decode": "decode"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "id": "t3Transformer",
+        "displayName": "T3 transformer",
+        "detail": "INT4 autoregressive speech-token model with persistent key/value caches.",
+        "artifactID": "t3Transformer",
+        "entrypoints": {
+          "prefill": "prefill",
+          "decode": "decode"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "id": "s3gen",
+        "displayName": "S3Gen flow",
+        "detail": "Speech tokens to a 512-frame mel spectrogram.",
+        "artifactID": "s3gen",
+        "entrypoints": {
+          "generateMel": "main"
+        }
+      },
+      {
+        "schemaVersion": 1,
+        "id": "vocoder",
+        "displayName": "HiFT vocoder",
+        "detail": "Mel spectrogram to 24 kHz waveform audio.",
+        "artifactID": "vocoder",
+        "entrypoints": {
+          "synthesizeWaveform": "vocoder"
+        }
+      }
+    ]
+  },
+  "capacity": {
+    "schemaVersion": 1,
+    "maximumInputTokens": 256,
+    "maximumGeneratedTokens": 253,
+    "maximumContextTokens": 768,
+    "requiresStopSignal": true,
+    "parameters": {
+      "t3LayerCount": 24,
+      "t3HeadCount": 16,
+      "t3HeadDimension": 64,
+      "t3StartSpeechToken": 6561,
+      "t3StopSpeechToken": 6562,
+      "speechTokenBufferCount": 256,
+      "endSilenceTokenCount": 3,
+      "silenceToken": 4299,
+      "melNoiseFrameCount": 1012,
+      "generatedMelFrameCount": 512,
+      "melFramesPerSpeechToken": 2,
+      "sourceChannelCount": 9,
+      "samplesPerMelFrame": 480,
+      "sampleRate": 24000
+    }
+  }
+}
