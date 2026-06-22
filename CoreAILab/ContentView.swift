@@ -58,6 +58,13 @@ struct ContentView: View {
                             systemImage: CoreAILabSection.runtime.systemImage
                         )
                     }
+
+                    NavigationLink(value: CoreAILabSection.deviceLab) {
+                        Label(
+                            CoreAILabSection.deviceLab.title,
+                            systemImage: CoreAILabSection.deviceLab.systemImage
+                        )
+                    }
                 }
             }
             .navigationTitle("Core AI Lab")
@@ -80,6 +87,10 @@ struct ContentView: View {
                 CoreAIAssetInspectorView()
             case .runtime:
                 CoreAIRuntimeView()
+            case .deviceLab:
+                NavigationStack {
+                    CoreAIDeviceLabView()
+                }
             }
         }
         .navigationSplitViewStyle(.prominentDetail)
