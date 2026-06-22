@@ -2,7 +2,14 @@ import CryptoKit
 import Darwin
 import Foundation
 
-struct CoreAIConversionCheckpointArtifactVerifier: Sendable {
+protocol CoreAIConversionCheckpointArtifactVerifying: Sendable {
+    func evidence(
+        for expected: CoreAIConversionCheckpointArtifact,
+        under rootURL: URL
+    ) throws -> CoreAIConversionCheckpointArtifact
+}
+
+struct CoreAIConversionCheckpointArtifactVerifier: CoreAIConversionCheckpointArtifactVerifying {
     func evidence(
         for expected: CoreAIConversionCheckpointArtifact,
         under rootURL: URL

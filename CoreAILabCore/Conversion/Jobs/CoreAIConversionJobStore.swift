@@ -21,10 +21,17 @@ actor CoreAIConversionJobStore {
     private let fileManager: FileManager
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
+    private let checkpointArtifactVerifier: any CoreAIConversionCheckpointArtifactVerifying
 
-    init(rootURL: URL, fileManager: FileManager = .default) {
+    init(
+        rootURL: URL,
+        fileManager: FileManager = .default,
+        checkpointArtifactVerifier: any CoreAIConversionCheckpointArtifactVerifying =
+            CoreAIConversionCheckpointArtifactVerifier()
+    ) {
         self.rootURL = rootURL.standardizedFileURL
         self.fileManager = fileManager
+        self.checkpointArtifactVerifier = checkpointArtifactVerifier
         encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         decoder = JSONDecoder()
@@ -186,26 +193,7 @@ actor CoreAIConversionJobStore {
 
     func checkpoint(jobID: UUID, gate: String) throws -> CoreAIConversionCheckpoint? {
         try withStoreLock {
-            let record = try readJobUnlocked(id: jobID)
-            try validateGate(gate)
-            let directory = try openCheckpointsDirectory(jobID: jobID)
-            defer { close(directory) }
-            let fileName = "\(gate).json"
-            guard faccessat(directory, fileName, F_OK, AT_SYMLINK_NOFOLLOW) == 0 else {
-                if errno == ENOENT { return nil }
-                throw POSIXError(.init(rawValue: errno) ?? .EIO)
-            }
-            let checkpoint = try decoder.decode(
-                CoreAIConversionCheckpoint.self,
-                from: readNoFollow(fileName: fileName, directoryDescriptor: directory)
-            )
-            guard checkpoint.gate == gate,
-                  checkpoint.fingerprint == record.fingerprint,
-                  checkpoint.jobID == record.id,
-                  checkpoint.artifactRootPath == record.identity.request.outputDirectoryPath else {
-                throw CoreAIConversionJobStoreError.checkpointFingerprintMismatch
-            }
-            return checkpoint
+            try checkpointUnlocked(jobID: jobID, gate: gate)
         }
     }
 
@@ -214,27 +202,56 @@ actor CoreAIConversionJobStore {
         gate: String,
         currentIdentity: CoreAIConversionJobIdentity
     ) throws -> CoreAIConversionCheckpointReuseDecision? {
-        guard let checkpoint = try checkpoint(jobID: jobID, gate: gate) else { return nil }
-        let fingerprint = currentIdentity.fingerprint
-        guard checkpoint.fingerprint.requestSHA256 == fingerprint.requestSHA256 else {
-            return .requestChanged
-        }
-        guard checkpoint.fingerprint.environmentSHA256 == fingerprint.environmentSHA256 else {
-            return .environmentChanged
-        }
-        let verifier = CoreAIConversionCheckpointArtifactVerifier()
-        let verified = try checkpoint.artifacts.map { artifact in
-            try verifier.evidence(
-                for: artifact,
-                under: URL(filePath: checkpoint.artifactRootPath)
+        try withStoreLock {
+            guard let checkpoint = try checkpointUnlocked(jobID: jobID, gate: gate) else {
+                return nil
+            }
+            let fingerprint = currentIdentity.fingerprint
+            guard checkpoint.fingerprint.requestSHA256 == fingerprint.requestSHA256 else {
+                return .requestChanged
+            }
+            guard checkpoint.fingerprint.environmentSHA256 == fingerprint.environmentSHA256 else {
+                return .environmentChanged
+            }
+            let verified = try checkpoint.artifacts.map { artifact in
+                try checkpointArtifactVerifier.evidence(
+                    for: artifact,
+                    under: URL(filePath: checkpoint.artifactRootPath)
+                )
+            }
+            return CoreAIConversionCheckpointReuseEvaluator.evaluate(
+                checkpoint,
+                expectedGate: gate,
+                currentFingerprint: fingerprint,
+                verifiedArtifacts: verified
             )
         }
-        return CoreAIConversionCheckpointReuseEvaluator.evaluate(
-            checkpoint,
-            expectedGate: gate,
-            currentFingerprint: fingerprint,
-            verifiedArtifacts: verified
+    }
+
+    private func checkpointUnlocked(
+        jobID: UUID,
+        gate: String
+    ) throws -> CoreAIConversionCheckpoint? {
+        let record = try readJobUnlocked(id: jobID)
+        try validateGate(gate)
+        let directory = try openCheckpointsDirectory(jobID: jobID)
+        defer { close(directory) }
+        let fileName = "\(gate).json"
+        guard faccessat(directory, fileName, F_OK, AT_SYMLINK_NOFOLLOW) == 0 else {
+            if errno == ENOENT { return nil }
+            throw POSIXError(.init(rawValue: errno) ?? .EIO)
+        }
+        let checkpoint = try decoder.decode(
+            CoreAIConversionCheckpoint.self,
+            from: readNoFollow(fileName: fileName, directoryDescriptor: directory)
         )
+        guard checkpoint.gate == gate,
+              checkpoint.fingerprint == record.fingerprint,
+              checkpoint.jobID == record.id,
+              checkpoint.artifactRootPath == record.identity.request.outputDirectoryPath else {
+            throw CoreAIConversionJobStoreError.checkpointFingerprintMismatch
+        }
+        return checkpoint
     }
 
     private func withStoreLock<T>(_ operation: () throws -> T) throws -> T {

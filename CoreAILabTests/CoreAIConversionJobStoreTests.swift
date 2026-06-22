@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -570,6 +571,64 @@ struct CoreAIConversionJobStoreTests {
         }
     }
 
+    @Test
+    func checkpointReuseHoldsTheStoreLockThroughArtifactVerification() async throws {
+        let root = temporaryDirectory()
+        let artifacts = temporaryDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: root)
+            try? FileManager.default.removeItem(at: artifacts)
+        }
+        try FileManager.default.createDirectory(
+            at: artifacts,
+            withIntermediateDirectories: true
+        )
+        let artifact = try CoreAIConversionCheckpointArtifact(
+            relativePath: "model.aimodel",
+            sha256: String(repeating: "a", count: 64),
+            byteCount: 8
+        )
+        let verifier = BlockingCheckpointArtifactVerifier(evidence: artifact)
+        let store = CoreAIConversionJobStore(
+            rootURL: root,
+            checkpointArtifactVerifier: verifier
+        )
+        let jobIdentity = try identity(outputDirectoryURL: artifacts)
+        let record = try await store.createJob(identity: jobIdentity)
+        let checkpoint = try CoreAIConversionCheckpoint(
+            jobID: record.id,
+            gate: "asset-saved",
+            artifactRootPath: artifacts.standardizedFileURL.path,
+            fingerprint: record.fingerprint,
+            artifacts: [artifact]
+        )
+        try await store.saveCheckpoint(jobID: record.id, checkpoint: checkpoint)
+
+        let decision = Task {
+            try await store.checkpointReuseDecision(
+                jobID: record.id,
+                gate: "asset-saved",
+                currentIdentity: jobIdentity
+            )
+        }
+        verifier.waitUntilVerificationBegins()
+
+        let lockDescriptor = open(
+            root.appending(path: ".store.lock").path,
+            O_RDWR | O_CLOEXEC | O_NOFOLLOW
+        )
+        #expect(lockDescriptor >= 0)
+        if lockDescriptor >= 0 {
+            defer { close(lockDescriptor) }
+            errno = 0
+            #expect(flock(lockDescriptor, LOCK_EX | LOCK_NB) == -1)
+            #expect(errno == EWOULDBLOCK || errno == EAGAIN)
+        }
+
+        verifier.allowVerificationToFinish()
+        #expect(try await decision.value == .reusable)
+    }
+
     private func identity(
         modelName: String = "qwen",
         arguments: [String] = ["export", "qwen"],
@@ -615,5 +674,35 @@ struct CoreAIConversionJobStoreTests {
 
     private func temporaryDirectory() -> URL {
         URL.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    }
+}
+
+private final class BlockingCheckpointArtifactVerifier:
+    CoreAIConversionCheckpointArtifactVerifying,
+    @unchecked Sendable
+{
+    private let didBegin = DispatchSemaphore(value: 0)
+    private let mayFinish = DispatchSemaphore(value: 0)
+    private let verifiedEvidence: CoreAIConversionCheckpointArtifact
+
+    init(evidence: CoreAIConversionCheckpointArtifact) {
+        verifiedEvidence = evidence
+    }
+
+    func evidence(
+        for _: CoreAIConversionCheckpointArtifact,
+        under _: URL
+    ) throws -> CoreAIConversionCheckpointArtifact {
+        didBegin.signal()
+        mayFinish.wait()
+        return verifiedEvidence
+    }
+
+    func waitUntilVerificationBegins() {
+        didBegin.wait()
+    }
+
+    func allowVerificationToFinish() {
+        mayFinish.signal()
     }
 }
