@@ -109,6 +109,59 @@ struct CoreAIDeviceLabTests {
         #expect(workspace.importedEvidence?.id == "second")
     }
 
+    @MainActor
+    @Test
+    func evidenceImportScopesAccessSynchronouslyAndPreservesPriorEvidenceOnFailure() async {
+        let first = trial(
+            id: "first",
+            mode: .physical,
+            specializationStatus: .succeeded,
+            inferenceStatus: .succeeded,
+            checks: checks(result: .notEvaluated),
+            placement: .unavailable
+        )
+        let recorder = DeviceLabEvidenceImportRecorder()
+        let workspace = CoreAIDeviceLabWorkspaceModel(
+            evidenceLoader: { _ in
+                let attempt = recorder.nextAttempt()
+                recorder.record("load-\(attempt)")
+                guard attempt == 1 else {
+                    throw DeviceLabEvidenceImportFixtureError.failed
+                }
+                return first
+            },
+            startSecurityScopedAccess: { _ in
+                recorder.record("start")
+                return true
+            },
+            stopSecurityScopedAccess: { _ in
+                recorder.record("stop")
+            }
+        )
+
+        workspace.importEvidence(from: URL(filePath: "/tmp/first.json"))
+        #expect(recorder.events == ["start"])
+        while workspace.isImportingEvidence {
+            await Task.yield()
+        }
+        #expect(workspace.importedEvidence?.id == "first")
+        #expect(recorder.events == ["start", "load-1", "stop"])
+
+        workspace.importEvidence(from: URL(filePath: "/tmp/invalid.json"))
+        #expect(recorder.events.last == "start")
+        while workspace.isImportingEvidence {
+            await Task.yield()
+        }
+        #expect(workspace.importedEvidence?.id == "first")
+        #expect(workspace.importErrorMessage == "Fixture import failed.")
+        #expect(
+            recorder.events == [
+                "start", "load-1", "stop",
+                "start", "load-2", "stop",
+            ]
+        )
+    }
+
     @Test
     func connectedTargetProfileIsVersionedAndRoundTrips() throws {
         let profile = CoreAIConnectedDeviceTargetProfile(
@@ -601,5 +654,36 @@ struct CoreAIDeviceLabTests {
             placement: placement,
             neuralEngineCompatibilityChecks: checks
         )
+    }
+}
+
+private enum DeviceLabEvidenceImportFixtureError: LocalizedError {
+    case failed
+
+    var errorDescription: String? {
+        "Fixture import failed."
+    }
+}
+
+private final class DeviceLabEvidenceImportRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var attempt = 0
+    private var recordedEvents: [String] = []
+
+    var events: [String] {
+        lock.withLock { recordedEvents }
+    }
+
+    func nextAttempt() -> Int {
+        lock.withLock {
+            attempt += 1
+            return attempt
+        }
+    }
+
+    func record(_ event: String) {
+        lock.withLock {
+            recordedEvents.append(event)
+        }
     }
 }

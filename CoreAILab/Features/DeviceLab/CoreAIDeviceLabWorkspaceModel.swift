@@ -7,6 +7,8 @@ final class CoreAIDeviceLabWorkspaceModel {
     typealias EvidenceLoader = @Sendable (
         URL
     ) async throws -> CoreAIDeviceTrialEvidence
+    typealias SecurityScopedAccessStarter = @MainActor @Sendable (URL) -> Bool
+    typealias SecurityScopedAccessStopper = @MainActor @Sendable (URL) -> Void
 
     var preferredComputeUnit = CoreAIComputeUnitPreference.automatic
     var expectsFrequentReshapes = false
@@ -28,6 +30,8 @@ final class CoreAIDeviceLabWorkspaceModel {
     private(set) var isImportingEvidence = false
     let evidenceExpectation: CoreAIDeviceEvidenceExpectation
     @ObservationIgnored private let evidenceLoader: EvidenceLoader
+    @ObservationIgnored private let startSecurityScopedAccess: SecurityScopedAccessStarter
+    @ObservationIgnored private let stopSecurityScopedAccess: SecurityScopedAccessStopper
     @ObservationIgnored private var importTask: Task<Void, Never>?
     @ObservationIgnored private var importGeneration = UUID()
 
@@ -36,10 +40,18 @@ final class CoreAIDeviceLabWorkspaceModel {
             CoreAIDeviceHarnessFixtureContract.expectation,
         evidenceLoader: @escaping EvidenceLoader = { url in
             try await CoreAIDeviceEvidenceImporter.load(from: url)
+        },
+        startSecurityScopedAccess: @escaping SecurityScopedAccessStarter = { url in
+            url.startAccessingSecurityScopedResource()
+        },
+        stopSecurityScopedAccess: @escaping SecurityScopedAccessStopper = { url in
+            url.stopAccessingSecurityScopedResource()
         }
     ) {
         self.evidenceExpectation = evidenceExpectation
         self.evidenceLoader = evidenceLoader
+        self.startSecurityScopedAccess = startSecurityScopedAccess
+        self.stopSecurityScopedAccess = stopSecurityScopedAccess
     }
 
     var shapeRequest: CoreAIDeviceShapeAuthoringRequest {
@@ -127,43 +139,63 @@ final class CoreAIDeviceLabWorkspaceModel {
 
     func importEvidence(from url: URL) {
         importTask?.cancel()
+        let hasScopedAccess = startSecurityScopedAccess(url)
         let generation = UUID()
         importGeneration = generation
         isImportingEvidence = true
         importErrorMessage = nil
-        importedEvidence = nil
-        let loader = evidenceLoader
-        importTask = Task { [weak self] in
-            do {
-                let evidence = try await loader(url)
-                try evidence.validate()
-                guard let self, self.importGeneration == generation else {
-                    return
+        let stopSecurityScopedAccess = stopSecurityScopedAccess
+        importTask = Task { @MainActor [weak self] in
+            guard let self else {
+                if hasScopedAccess {
+                    stopSecurityScopedAccess(url)
                 }
-                self.importedEvidence = evidence
-                self.importErrorMessage = nil
-                self.isImportingEvidence = false
-            } catch is CancellationError {
-                guard let self, self.importGeneration == generation else {
-                    return
-                }
-                self.isImportingEvidence = false
-            } catch {
-                guard let self, self.importGeneration == generation else {
-                    return
-                }
-                self.importedEvidence = nil
-                self.importErrorMessage = error.localizedDescription
-                self.isImportingEvidence = false
+                return
             }
+            await self.performEvidenceImport(
+                from: url,
+                generation: generation,
+                hasScopedAccess: hasScopedAccess
+            )
         }
     }
 
     func reportImportFailure(_ error: Error) {
         importTask?.cancel()
         importGeneration = UUID()
-        importedEvidence = nil
         importErrorMessage = error.localizedDescription
+        isImportingEvidence = false
+    }
+
+    private func performEvidenceImport(
+        from url: URL,
+        generation: UUID,
+        hasScopedAccess: Bool
+    ) async {
+        let result: Result<CoreAIDeviceTrialEvidence, Error>
+        do {
+            let evidence = try await evidenceLoader(url)
+            try evidence.validate()
+            try Task.checkCancellation()
+            result = .success(evidence)
+        } catch {
+            result = .failure(error)
+        }
+
+        if hasScopedAccess {
+            stopSecurityScopedAccess(url)
+        }
+        guard importGeneration == generation else { return }
+
+        switch result {
+        case .success(let evidence):
+            importedEvidence = evidence
+            importErrorMessage = nil
+        case .failure(is CancellationError):
+            break
+        case .failure(let error):
+            importErrorMessage = error.localizedDescription
+        }
         isImportingEvidence = false
     }
 
