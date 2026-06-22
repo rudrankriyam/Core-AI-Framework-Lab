@@ -194,6 +194,19 @@ compilation with the selected GPU or Neural Engine preference and reshape hint.
 CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
 `coreai-build compile` does not expose a CPU-only flag.
 
+### Typed Pipeline Contract
+
+`CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
+future Recipe Studio, Pipeline Studio, and generated runtimes share. A pipeline
+is an asset-level directed graph with typed ports, explicit state ownership,
+seeded randomness, bounded loops, and a versioned host-operator registry.
+
+Validation rejects missing endpoints, incompatible value contracts, duplicate
+input wiring, cycles, ambiguous state ownership, randomness without exactly one
+seed source, and loops without both a finite iteration bound and stop input.
+This first slice is intentionally schema and validation only: it does not claim
+that the visual editor or generic pipeline executor has shipped yet.
+
 ## Run Apple's YOLOS Tiny Example
 
 From a clone of Apple's repository at the pinned revision:

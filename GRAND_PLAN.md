@@ -534,6 +534,12 @@ Done bar:
 
 ### Milestone 4 — Custom Recipe Studio (5–7 weeks)
 
+Initial slice: the repository now has a versioned typed pipeline manifest,
+deterministic JSON codec, and structural validator for asset functions, host
+operators, explicit state, seeded randomness, and bounded loops. The visual
+editors, diagnostic worker, runtime executor, and Chatterbox migration remain
+part of this milestone.
+
 Deliverables:
 
 - PyTorch source/module and example-input configuration.
