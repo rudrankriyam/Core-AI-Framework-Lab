@@ -79,10 +79,11 @@ Refresh the checked-in snapshot from a local Apple repository clone:
 python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
 ```
 
-Model weights are not bundled or redistributed by the app. When you start a
-conversion, the selected upstream recipe may fetch its original model weights;
-their licenses, authentication requirements, and source revisions remain
-independent of Apple's BSD-3-Clause recipe repository.
+Apple catalog model weights are not bundled or redistributed by the app. When
+you start a conversion, the selected upstream recipe may fetch its original
+model weights; their licenses, authentication requirements, and source
+revisions remain independent of Apple's BSD-3-Clause recipe repository. The
+separate Diarization workspace includes one audited Apache-2.0 CAM++ asset.
 
 ## Persistent Projects and Artifact Storage
 
@@ -438,9 +439,13 @@ separate runnable text-to-speech example.
 ## Speaker Diarization Research
 
 The **Diarization** workspace imports audio or video, builds a waveform, and
-synchronizes playback with a speaker-turn timeline. Its in-app turns remain a
-deterministic stub until a complete segmentation, embedding, and clustering
-runtime is integrated.
+synchronizes playback with a speaker-turn timeline. Its audited CAM++
+`.aimodel` is bundled and specialized automatically, so choose media and run the
+experimental batch engine. It decodes 16 kHz mono audio, finds speech with a
+repository-owned energy segmenter, computes Kaldi-compatible log-Mel features
+with Accelerate, runs CAM++ through Core AI, and clusters normalized embeddings
+by cosine similarity. Three-second timeline slices use up to 6.015 seconds of
+speech-region context because shorter CAM++ contexts were materially weaker.
 
 `Conversion/Diarization` contains the first proven real-model stage: a pinned
 CAM++ speaker encoder converted with `coreai-torch`. Its checkpoint and matching
@@ -448,7 +453,9 @@ CAM++ speaker encoder converted with `coreai-torch`. Its checkpoint and matching
 parameters, occupies about 14.2 MB, and maps six seconds of 80-bin log-Mel
 features to a normalized 192-dimensional speaker embedding. A public AMI
 meeting smoke test matched 4/4 held-out speaker clips and preserved PyTorch/Core
-AI cosine parity above 0.999994.
+AI cosine parity above 0.999994. The bundled package carries Apache-2.0 metadata;
+`CoreAILab/Resources/Diarization/MODEL_PROVENANCE.json` pins its source,
+checkpoint checksum, conversion environment, and converted-file checksums.
 
 ```bash
 cd Conversion/Diarization
@@ -457,16 +464,22 @@ uv run pytest -q
 uv run python export.py --dtype float16 --frames 600 --overwrite
 ```
 
-This model recognizes whether prepared speech regions belong to the same
-speaker; it does not create turn boundaries alone. Two- and four-second CAM++
-contracts only matched 2/4 and 3/4 queries respectively, so early live identity
-must remain provisional. The preferred license-first batch pipeline adds MIT
-Pyannote segmentation 3.0 and repository-owned clustering; the segmentation
-checkpoint is gated, so conversion remains blocked until its upstream Hugging
-Face contact-sharing terms are explicitly accepted. MIT LS-EEND is the preferred
+On a deterministic public AMI fixture containing labeled speakers
+`A → B → A → B`, the complete Swift engine returned four turns with the
+anonymous pattern `Speaker 1 → Speaker 2 → Speaker 1 → Speaker 2`. Its measured
+total analysis time, including decode, was 1.872–2.884 seconds across two runs
+for 27.06 seconds of audio on the tested Mac. This is a smoke result from one
+meeting, not DER/JER or a production accuracy claim.
+
+The current fallback is intentionally modest: it is batch-only, keeps decoded
+audio in memory, has coarse boundaries, cannot represent overlap, and assigns
+anonymous labels rather than real identities. The preferred higher-quality
+batch pipeline still replaces energy segmentation with MIT Pyannote
+segmentation 3.0; that checkpoint remains blocked until its upstream Hugging
+Face contact-sharing terms are explicitly accepted. MIT LS-EEND remains the
 true-streaming research path. See `Conversion/Diarization/MODEL_SELECTION.md`
-and `Conversion/Diarization/TESTING_PLAN.md` for the license matrix, DER/JER,
-long-duration, and physical-device promotion gates.
+and `Conversion/Diarization/TESTING_PLAN.md` for the license matrix, reproducible
+AMI check, DER/JER, long-duration, and physical-device promotion gates.
 
 ## Asset Inspector
 
@@ -668,9 +681,10 @@ per-shape elements, and total elements before device planning.
   presets have dedicated Apple-runtime playgrounds. Wav2Vec2 adds Apple's
   speech-to-text recipe alongside the existing Chatterbox Turbo text-to-speech
   workspace.
-- The diarization workspace still uses stub turns. Its CAM++ Core AI recipe
-  proves speaker embeddings and enrollment-style matching, not speech boundary
-  detection or a complete production diarization pipeline.
+- The diarization workspace has an experimental real batch path, but its
+  energy-only segmentation cannot detect overlap or reliably locate every
+  speaker change. It decodes the full file into memory, so long-duration and
+  intended 10-hour-session support remain unimplemented and unclaimed.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.

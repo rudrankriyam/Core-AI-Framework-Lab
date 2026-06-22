@@ -5,7 +5,7 @@ struct SpeakerDiarizationTurn: Equatable, Identifiable, Sendable {
     let speakerName: String
     let startTime: Double
     let endTime: Double
-    let confidence: Double
+    let clusterSimilarity: Double?
 
     var duration: Double {
         max(0, endTime - startTime)

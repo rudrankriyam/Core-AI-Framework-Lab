@@ -12,9 +12,11 @@ into a new 192-value bias, so the equivalent exported graph contains 6,848,736
 stored parameters.
 
 The model answers whether prepared speech regions sound like the same speaker.
-It does **not** find speech boundaries or create a complete diarization timeline
-by itself. See [MODEL_SELECTION.md](MODEL_SELECTION.md) for the license-first
-stack decision and [TESTING_PLAN.md](TESTING_PLAN.md) for promotion gates.
+The app combines it with repository-owned energy segmentation and cosine
+clustering to create an experimental batch timeline; CAM++ still does not find
+boundaries by itself. See [MODEL_SELECTION.md](MODEL_SELECTION.md) for the
+license-first stack decision and [TESTING_PLAN.md](TESTING_PLAN.md) for
+promotion gates.
 
 ## Verified conversion
 
@@ -41,8 +43,12 @@ Evidence recorded on June 22, 2026 with Xcode 27 beta `27A5194q`, PyTorch
 | Cached warm Core AI inference | median 6.09-7.54 ms across two runs on the tested Mac |
 
 The real-audio check used two non-overlapping 6.015-second regions for each of
-the four labeled speakers in public AMI meeting `ES2004a`. No audio, checkpoint,
-or generated model is stored in this repository.
+the four labeled speakers in public AMI meeting `ES2004a`. No AMI audio or raw
+checkpoint is stored in this repository. The audited converted asset is bundled
+with an Apache-2.0 license and checksum manifest under
+`CoreAILab/Resources/Diarization`. AMI is distributed under CC BY 4.0; its audio
+remains a local, attributed evaluation fixture and is not part of the
+Apache-2.0 runtime stack.
 
 Shorter context was materially worse on the same deterministic windows:
 
@@ -115,13 +121,45 @@ thresholds.
 
 ## Full diarization path
 
-The preferred license-first batch stack is MIT Pyannote segmentation 3.0,
-Apache-2.0 CAM++, and repository-owned clustering/timeline code. The Pyannote
-checkpoint is gated on Hugging Face; the current account has not accepted its
-contact-sharing terms, so this repository does not download, mirror, or convert
-it.
+The runnable fallback is repository-owned energy segmentation, Apache-2.0
+CAM++, and repository-owned cosine clustering/timeline code. It uses
+three-second timeline slices with up to 6.015 seconds of context inside each
+speech region and a provisional cosine threshold of 0.65. It is batch-only,
+does not detect overlap, and keeps decoded audio in memory.
+
+The preferred higher-quality batch stack replaces energy segmentation with MIT
+Pyannote segmentation 3.0. The Pyannote checkpoint is gated on Hugging Face;
+the current account has not accepted its contact-sharing terms, so this
+repository does not download, mirror, or convert it.
 
 MIT LS-EEND is the preferred true-streaming research path. It offers fast turn
 activity updates but requires a stateful six-cache Core AI contract, exact
 frontend parity, final-tail flushing, and long-session drift tests before it can
-replace deterministic stub turns in the app.
+replace the batch engine.
+
+## Reproduce the Swift end-to-end smoke check
+
+Stage public `ES2004a.Mix-Headset.wav`, then create the deterministic labeled
+`A → B → A → B` fixture without committing AMI audio:
+
+```bash
+uv run python make_ami_diarization_fixture.py \
+  --audio /path/to/ES2004a.Mix-Headset.wav
+```
+
+Run the opt-in Core AI test. The helper builds for testing and injects paths
+into a temporary `.xctestrun`; no local asset path is written to the project:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+python3 ../../Scripts/run_diarization_integration.py \
+  --media /tmp/core-ai-diarization-ami-labeled.wav \
+  --minimum-speakers 2 \
+  --expected-pattern 1,2,1,2
+```
+
+The June 22, 2026 run returned four turns and two anonymous speakers in the
+expected order. Accelerate reduced the deterministic Swift filterbank test from
+about 2.35 seconds to 0.12 seconds. Total analysis, including decode, took
+1.872–2.884 seconds across two runs for the 27.06 second fixture. These are
+one-machine smoke measurements, not a cross-device benchmark or DER/JER result.

@@ -49,6 +49,8 @@ Run after every converter, PyTorch, Core AI wheel, or Xcode seed change:
 
 The small, reproducible smoke fixture uses public AMI `ES2004a` audio:
 
+- AMI is CC BY 4.0 evaluation data, retained locally and never redistributed
+  with the app, converted asset, or repository.
 - Four speakers, two non-overlapping 6.015-second regions per speaker.
 - First region enrolls the anonymous speaker; second region is the query.
 - Core AI must classify 4/4 queries by nearest cosine similarity.
@@ -71,8 +73,21 @@ Expand the semantic suite before shipping identification:
 
 ## 4. Full diarization quality gates
 
-Once a segmentation/VAD stage is converted, evaluate with standard RTTM
-scoring and speaker-label permutation matching:
+The current energy-segmentation fallback has a smaller functional smoke gate:
+
+- Generate the public AMI `A → B → A → B` fixture with
+  `make_ami_diarization_fixture.py`.
+- The Swift engine must return exactly four ordered turns, exactly two anonymous
+  speakers, and the permutation-stable pattern `1 → 2 → 1 → 2`.
+- The pinned Swift Kaldi frontend must match all 48,000 Torchaudio fixture
+  values with maximum absolute error below `1e-3` and mean error below `5e-5`.
+- Silence-only input must produce no turns, and cancelled or replaced media must
+  not publish stale results.
+
+The June 22, 2026 run passed the labeled fixture with repeat-speaker cosines of
+0.806 and 0.754. That justifies a Lab example, not production promotion. Before
+promotion, evaluate with standard RTTM scoring and speaker-label permutation
+matching:
 
 - Diarization Error Rate (DER), split into missed speech, false alarm, and
   speaker confusion.
@@ -102,7 +117,9 @@ example; it cannot silently graduate into a production-quality claim.
 
 ## 5. Progressive and streaming behavior
 
-For the first rolling-window engine:
+The current engine is batch-only. It uses three-second timeline slices with up
+to 6.015 seconds of context inside each energy speech region, but publishes only
+after the complete file finishes. For a future progressive engine:
 
 - Use a 6-second CAM++ context window with a separately measured hop interval;
   the two- and four-second contracts failed the current identity smoke gate.
@@ -115,6 +132,10 @@ For the first rolling-window engine:
 - Cancelled/replaced media must not publish stale turns.
 - Long files must stream from disk and keep memory bounded; test 10 minutes,
   1 hour, and the product's intended 10-hour lab session.
+
+The current decoder retains all 16 kHz Float32 samples, so it explicitly fails
+the bounded-memory/10-hour promotion gate even though the 27.06-second AMI smoke
+fixture processed faster than real time.
 
 For the preferred MIT stateful streaming candidate, LS-EEND, add state-reset,
 checkpoint/resume, frontend parity, all six cache-tensor contracts,
@@ -154,8 +175,10 @@ for Core AI placement or performance.
   generated manifest. Code and weights are audited separately.
 - Preserve the Apache-2.0 3D-Speaker notice in adapted CAM++ source and include
   an Apache-2.0 license copy with any distributed source or converted asset.
-- Never commit downloaded checkpoints, AMI audio, generated `.aimodel` assets,
-  compiled assets, result bundles, or credentials.
+- Never commit downloaded checkpoints, AMI audio, ad hoc generated `.aimodel`
+  assets, compiled assets, result bundles, or credentials. The single audited
+  bundled CAM++ asset is an explicit exception: it must retain the pinned
+  checksum manifest and Apache-2.0 license in `CoreAILab/Resources/Diarization`.
 - MIT Pyannote segmentation 3.0 remains blocked until its Hugging Face
   contact-sharing terms are explicitly accepted. Do not use an unofficial
   mirror to bypass the gate. Community-1's CC-BY-4.0 pipeline is a benchmark,

@@ -40,7 +40,7 @@ struct SpeakerDiarizationWatcherSection: View {
                     Button("Restart", systemImage: "backward.end.fill", action: restart)
                 }
 
-                Text("The watcher synchronizes playback with the timeline. It is not streaming real diarization inference yet.")
+                Text("The watcher synchronizes playback with the completed batch timeline. It does not claim streaming inference.")
                     .foregroundStyle(.secondary)
             } else {
                 ContentUnavailableView(

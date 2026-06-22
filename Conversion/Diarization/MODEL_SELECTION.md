@@ -26,6 +26,12 @@ The Pyannote files require the user to accept an upstream contact-sharing gate.
 The license is permissive, but the Lab will not accept those terms or obtain the
 checkpoint through a mirror on the user's behalf.
 
+While that gate remains unresolved, the Lab runs a deliberately weaker fallback:
+repository-owned energy segmentation plus CAM++ and deterministic cosine
+clustering. It adds no model weights or license obligations. It also has no
+overlap model, no neural speaker-change detector, and no production accuracy
+claim; it exists so the permissive CAM++ stage can be exercised end to end.
+
 For true low-latency streaming, LS-EEND is the preferred research branch. Its
 official code and published Apple-model exports are MIT, and the architecture
 is about 11.18 million parameters. It is a materially harder Core AI conversion
@@ -36,7 +42,7 @@ frontend and flush behavior.
 
 | Candidate | Role | Weight terms | Code terms | Decision |
 | --- | --- | --- | --- | --- |
-| CAM++ | Speaker embedding | Apache-2.0 | Apache-2.0 | Selected and converted |
+| CAM++ | Speaker embedding | Apache-2.0 | Apache-2.0 | Selected, converted, and bundled |
 | Pyannote segmentation 3.0 | Overlap-aware segmentation | MIT, gated access | MIT | Selected next stage; access blocked |
 | LS-EEND | End-to-end streaming diarization | MIT | MIT | Selected streaming research path |
 | WeSpeaker ResNet34-LM | Speaker embedding | CC-BY-4.0 | Apache-2.0 | Comparator only; not the default |
@@ -81,4 +87,6 @@ license, required attribution, and access terms. A model is blocked when any
 field is unknown. Generated Core AI metadata must carry the weight license, and
 distributed source adaptations must retain their upstream notices and license
 copy. The current exporter enforces the pinned CAM++ checkpoint SHA-256 before
-it writes Apache-2.0 metadata.
+it writes Apache-2.0 metadata. The bundled asset also carries
+`CoreAILab/Resources/Diarization/MODEL_PROVENANCE.json`, which pins the source,
+conversion environment, and converted-file checksums.

@@ -49,5 +49,7 @@ license is provided at
 
 The conversion recipe downloads `funasr/campplus` at immutable revision
 `e4b6ede7ce16997aff4ae69fbca1f0175e2afede`. Its official model card identifies
-the checkpoint as Apache-2.0. The checkpoint and generated Core AI assets are
-not redistributed by this repository.
+the checkpoint as Apache-2.0. The raw checkpoint is not redistributed. The
+converted FP16 Core AI asset is bundled under `CoreAILab/Resources/Diarization`
+with its Apache-2.0 license and `MODEL_PROVENANCE.json`, including source and
+converted-file checksums.

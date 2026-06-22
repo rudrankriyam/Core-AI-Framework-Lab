@@ -3,6 +3,7 @@ import Foundation
 enum CoreAITestFixtureError: LocalizedError {
     case missingTensorModel
     case incompleteTensorModel([String])
+    case missingDiarizationFeatures
     case missingDeviceLabEvidence
 
     var errorDescription: String? {
@@ -11,6 +12,8 @@ enum CoreAITestFixtureError: LocalizedError {
             "CoreAILabTensorFixture.aimodel is missing from the test bundle."
         case .incompleteTensorModel(let files):
             "CoreAILabTensorFixture.aimodel is missing: \(files.joined(separator: ", "))."
+        case .missingDiarizationFeatures:
+            "CAMPPlusKaldiFeatures.float32 is missing from the test bundle."
         case .missingDeviceLabEvidence:
             "DeviceLabDryRunEvidence.json is missing from the test bundle."
         }
@@ -50,6 +53,18 @@ enum CoreAITestFixtures {
             throw CoreAITestFixtureError.incompleteTensorModel(missingFiles)
         }
         return modelURL
+    }
+
+    static func diarizationFeatureURL() throws -> URL {
+        let bundle = Bundle(for: CoreAITestBundleToken.self)
+        guard let url = bundle.url(
+            forResource: "CAMPPlusKaldiFeatures",
+            withExtension: "float32",
+            subdirectory: "Fixtures/Diarization"
+        ) else {
+            throw CoreAITestFixtureError.missingDiarizationFeatures
+        }
+        return url
     }
 }
 

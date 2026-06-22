@@ -1,12 +1,21 @@
 import SwiftUI
 
 struct SpeakerDiarizationStatusSection: View {
+    let modelInfo: SpeakerDiarizationModelInfo?
     let summary: SpeakerDiarizationMediaSummary?
     let statusMessage: String
     let isBusy: Bool
 
     var body: some View {
         Section {
+            LabeledContent("CAM++ model", value: modelInfo?.assetName ?? "Not loaded")
+            if let modelInfo {
+                LabeledContent(
+                    "Contract",
+                    value: "1 × \(modelInfo.frameCount) × \(modelInfo.featureBinCount) → \(modelInfo.embeddingDimension)"
+                )
+                LabeledContent("Precision", value: modelInfo.scalarTypeName)
+            }
             LabeledContent("Media", value: summary?.fileName ?? "Not selected")
             if let summary {
                 LabeledContent("Type", value: summary.kind.rawValue.capitalized)
@@ -27,7 +36,7 @@ struct SpeakerDiarizationStatusSection: View {
         } header: {
             Label("Speaker Diarization Lab", systemImage: "person.wave.2")
         } footer: {
-            Text("This slice uses a deterministic stub engine for UI iteration. It identifies anonymous speaker turns, not real identities.")
+            Text("The bundled CAM++ asset is Apache-2.0. This experimental batch engine assigns anonymous labels, not real identities, and energy segmentation does not detect overlapping speakers.")
         }
     }
 }

@@ -37,36 +37,37 @@ struct SpeakerDiarizationAnalysisSection: View {
             Group {
                 if layout == .sideBySide {
                     HStack(alignment: .top, spacing: 20) {
-                        timeline
+                        SpeakerDiarizationTimelineView(
+                            waveform: waveform,
+                            result: result,
+                            playheadTime: playheadTime
+                        )
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                         Divider()
-                        results
+                        SpeakerDiarizationResultsView(
+                            result: result,
+                            activeTurnID: activeTurnID
+                        )
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 20) {
-                        timeline
+                        SpeakerDiarizationTimelineView(
+                            waveform: waveform,
+                            result: result,
+                            playheadTime: playheadTime
+                        )
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                         Divider()
-                        results
+                        SpeakerDiarizationResultsView(
+                            result: result,
+                            activeTurnID: activeTurnID
+                        )
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                     }
                 }
             }
             .frame(width: contentWidth, alignment: .topLeading)
         }
-    }
-
-    private var timeline: some View {
-        SpeakerDiarizationTimelineView(
-            waveform: waveform,
-            result: result,
-            playheadTime: playheadTime
-        )
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-    }
-
-    private var results: some View {
-        SpeakerDiarizationResultsView(
-            result: result,
-            activeTurnID: activeTurnID
-        )
-        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
