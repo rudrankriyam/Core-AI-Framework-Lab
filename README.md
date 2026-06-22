@@ -263,17 +263,25 @@ Lab Project persistence.
 ### Integration Export
 
 After specialization, **Export Integration** packages the inspected standalone
-asset with a schema-versioned contract manifest, deterministic SHA-256 tree
-digest, README, and generated Swift runtime. Generated methods cover every
-stateless NDArray-input function and preserve exact Core AI function names.
-Stateful, image-input, and unknown contracts remain in the manifest with an
-explicit reason instead of receiving unsafe placeholder code. Large assets are
-streamed into a same-folder temporary package that appears atomically only
-after the complete export succeeds. Each package also includes a deterministic,
-non-executed `compile-model.sh` for optional iOS and macOS 27 ahead-of-time
-compilation with the selected GPU or Neural Engine preference and reshape hint.
-CPU-only remains a runtime `SpecializationOptions.cpuOnly` choice because
-`coreai-build compile` does not expose a CPU-only flag.
+asset as a dependency-free Swift package with a schema-versioned contract
+manifest, deterministic SHA-256 tree digest, a whole-package checksum
+inventory, reported license notices, README, bundled-resource loader, and
+generated Swift runtime. Run the package's `python3 verify-export.py` command
+to verify its safe inventory, reject undeclared files or package dependencies,
+and build the generated source in a clean temporary directory using only the
+installed SDK. The verifier has no network dependencies and never runs
+`coreai-build`.
+
+Generated methods cover every stateless NDArray-input function and preserve
+exact Core AI function names. Stateful, image-input, and unknown contracts
+remain in the manifest with an explicit reason instead of receiving unsafe
+placeholder code. Large assets are streamed into a same-folder temporary
+package that appears atomically only after the complete export succeeds. Each
+package also includes a deterministic, non-executed `compile-model.sh` for
+optional iOS and macOS 27 ahead-of-time compilation with the selected GPU or
+Neural Engine preference and reshape hint. CPU-only remains a runtime
+`SpecializationOptions.cpuOnly` choice because `coreai-build compile` does not
+expose a CPU-only flag.
 
 ### Typed Pipeline Contract
 
