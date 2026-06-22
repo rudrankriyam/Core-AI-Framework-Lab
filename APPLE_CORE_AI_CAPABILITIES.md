@@ -114,6 +114,31 @@ The output correctly identified both cats and multiple remotes in the test
 image. The emitted 512x512 signature is why the Lab must inspect actual assets
 instead of assuming dimensions from prose examples.
 
+## Verified community audio embedding: CAM++
+
+The license-first diarization probe pins the public Apache-2.0
+`funasr/campplus` checkpoint at revision
+`e4b6ede7ce16997aff4ae69fbca1f0175e2afede`. The matching 3D-Speaker
+implementation is also Apache-2.0. Static segment pooling, explicit unbiased
+variance, and final inference BatchNorm folding make the 6,848,544-parameter
+source architecture convertible through `torch.export` and `coreai-torch`
+0.4.0 without a custom lowering.
+
+The verified FP16 asset is about 14.2 MB with input `[1, 600, 80]` log-Mel
+frames and output `[1, 192]` normalized speaker embeddings. Core AI/PyTorch
+cosine parity stayed above 0.999994 on eight real AMI windows, and
+nearest-enrollment matching identified all four speakers. Cached warm inference
+measured about 6-8 ms on the tested Mac.
+
+This proves a speaker embedding stage, not full diarization. Context is a real
+quality boundary: the same smoke fixture matched only 2/4 queries at two
+seconds and 3/4 at four seconds. The independent Pyannote/WeSpeaker/VBx Core ML
+reference reached 10.42% DER and found 4/4 speakers on AMI `ES2004a`, but that
+is only a pipeline reference. The preferred Core AI stack uses MIT Pyannote
+segmentation 3.0, Apache-2.0 CAM++, and repository-owned clustering; it cannot
+inherit the reference DER until segmentation, clustering, and end-to-end RTTM
+scoring are reproduced.
+
 ## Recommended official-example sequence
 
 1. **YOLOS Tiny** — proves a standalone asset and Apple’s object-detection runtime.

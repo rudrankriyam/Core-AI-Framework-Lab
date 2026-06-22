@@ -35,6 +35,13 @@ struct ContentView: View {
                             systemImage: CoreAILabSection.chatterbox.systemImage
                         )
                     }
+
+                    NavigationLink(value: CoreAILabSection.diarization) {
+                        Label(
+                            CoreAILabSection.diarization.title,
+                            systemImage: CoreAILabSection.diarization.systemImage
+                        )
+                    }
                 }
 
                 Section("Tools") {
@@ -67,6 +74,8 @@ struct ContentView: View {
                 }
             case .chatterbox:
                 ChatterboxWorkspaceView()
+            case .diarization:
+                SpeakerDiarizationWorkspaceView()
             case .assetInspector:
                 CoreAIAssetInspectorView()
             case .runtime:

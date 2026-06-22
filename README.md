@@ -52,6 +52,7 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
+- `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
 - `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
 - `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
@@ -278,6 +279,39 @@ Set both `COREAI_WAV2VEC2_MODEL_PATH` and `COREAI_WAV2VEC2_AUDIO_PATH` to opt
 into the real-model transcription test. Chatterbox Turbo remains the Lab's
 separate runnable text-to-speech example.
 
+## Speaker Diarization Research
+
+The **Diarization** workspace imports audio or video, builds a waveform, and
+synchronizes playback with a speaker-turn timeline. Its in-app turns remain a
+deterministic stub until a complete segmentation, embedding, and clustering
+runtime is integrated.
+
+`Conversion/Diarization` contains the first proven real-model stage: a pinned
+CAM++ speaker encoder converted with `coreai-torch`. Its checkpoint and matching
+3D-Speaker source are Apache-2.0. The FP16 asset has 6.85 million source
+parameters, occupies about 14.2 MB, and maps six seconds of 80-bin log-Mel
+features to a normalized 192-dimensional speaker embedding. A public AMI
+meeting smoke test matched 4/4 held-out speaker clips and preserved PyTorch/Core
+AI cosine parity above 0.999994.
+
+```bash
+cd Conversion/Diarization
+uv sync
+uv run pytest -q
+uv run python export.py --dtype float16 --frames 600 --overwrite
+```
+
+This model recognizes whether prepared speech regions belong to the same
+speaker; it does not create turn boundaries alone. Two- and four-second CAM++
+contracts only matched 2/4 and 3/4 queries respectively, so early live identity
+must remain provisional. The preferred license-first batch pipeline adds MIT
+Pyannote segmentation 3.0 and repository-owned clustering; the segmentation
+checkpoint is gated, so conversion remains blocked until its upstream Hugging
+Face contact-sharing terms are explicitly accepted. MIT LS-EEND is the preferred
+true-streaming research path. See `Conversion/Diarization/MODEL_SELECTION.md`
+and `Conversion/Diarization/TESTING_PLAN.md` for the license matrix, DER/JER,
+long-duration, and physical-device promotion gates.
+
 ## Asset Inspector
 
 Open any `.aimodel` package to inspect validity, author, license, description,
@@ -444,6 +478,9 @@ device; an empty or misrouted filtered run fails the harness.
   presets have dedicated Apple-runtime playgrounds. Wav2Vec2 adds Apple's
   speech-to-text recipe alongside the existing Chatterbox Turbo text-to-speech
   workspace.
+- The diarization workspace still uses stub turns. Its CAM++ Core AI recipe
+  proves speaker embeddings and enrollment-style matching, not speech boundary
+  detection or a complete production diarization pipeline.
 - SAM 3 weights are gated by Meta on Hugging Face. Accept the upstream license
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
