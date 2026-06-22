@@ -273,7 +273,7 @@ public struct CoreAIRecipeCatalogIndex: Codable, Equatable, Sendable {
                 value: reference
             )
         }
-        let actualDigest = hexadecimal(
+        let actualDigest = CoreAIHexadecimal.lowercase(
             SHA256.hash(data: try Data(contentsOf: resolvedReferenceURL))
         )
         guard actualDigest == expectedDigest else {
@@ -285,14 +285,6 @@ public struct CoreAIRecipeCatalogIndex: Codable, Equatable, Sendable {
         }
     }
 
-    private static func hexadecimal<D: Sequence>(_ digest: D) -> String
-    where D.Element == UInt8 {
-        let digits = Array("0123456789abcdef".utf8)
-        let bytes = digest.flatMap { byte in
-            [digits[Int(byte >> 4)], digits[Int(byte & 0x0f)]]
-        }
-        return String(decoding: bytes, as: UTF8.self)
-    }
 }
 
 public enum CoreAIRecipeCatalog {

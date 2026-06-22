@@ -4,13 +4,17 @@ import Testing
 @testable import CoreAILab
 
 struct AppleSegmentationIntegrationTests {
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_EFFICIENT_SAM_BUNDLE_PATH"] != nil
+                && ProcessInfo.processInfo.environment["COREAI_SEGMENTATION_IMAGE_PATH"] != nil,
+            "Requires COREAI_EFFICIENT_SAM_BUNDLE_PATH and COREAI_SEGMENTATION_IMAGE_PATH."
+        )
+    )
     func exportedEfficientSAMRunsThroughAppleRuntime() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let modelPath = environment["COREAI_EFFICIENT_SAM_BUNDLE_PATH"],
-              let imagePath = environment["COREAI_SEGMENTATION_IMAGE_PATH"] else {
-            return
-        }
+        let modelPath = try #require(environment["COREAI_EFFICIENT_SAM_BUNDLE_PATH"])
+        let imagePath = try #require(environment["COREAI_SEGMENTATION_IMAGE_PATH"])
 
         let image = try loadImage(at: imagePath)
         let engine = AppleImageSegmenterEngine()
@@ -26,13 +30,17 @@ struct AppleSegmentationIntegrationTests {
         #expect(!result.scores.isEmpty)
     }
 
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_SAM3_BUNDLE_PATH"] != nil
+                && ProcessInfo.processInfo.environment["COREAI_SEGMENTATION_IMAGE_PATH"] != nil,
+            "Requires COREAI_SAM3_BUNDLE_PATH and COREAI_SEGMENTATION_IMAGE_PATH."
+        )
+    )
     func exportedSAM3RunsThroughAppleRuntime() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let modelPath = environment["COREAI_SAM3_BUNDLE_PATH"],
-              let imagePath = environment["COREAI_SEGMENTATION_IMAGE_PATH"] else {
-            return
-        }
+        let modelPath = try #require(environment["COREAI_SAM3_BUNDLE_PATH"])
+        let imagePath = try #require(environment["COREAI_SEGMENTATION_IMAGE_PATH"])
 
         let image = try loadImage(at: imagePath)
         let engine = AppleImageSegmenterEngine()

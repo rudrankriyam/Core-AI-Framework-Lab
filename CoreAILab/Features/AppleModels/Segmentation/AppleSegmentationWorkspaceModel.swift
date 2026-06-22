@@ -25,7 +25,7 @@ final class AppleSegmentationWorkspaceModel {
     @ObservationIgnored
     private let engine: any AppleImageSegmenting
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
     @ObservationIgnored
     private var activeRunID: UUID?
 

@@ -239,7 +239,7 @@ actor CoreAIIntegrationExporter {
             files.append(
                 CoreAIExportChecksumManifest.File(
                     relativePath: relativePath,
-                    sha256: digest.digestData.hexString,
+                    sha256: CoreAIHexadecimal.lowercase(digest.digestData),
                     byteCount: digest.byteCount
                 )
             )
@@ -334,7 +334,7 @@ actor CoreAIIntegrationExporter {
             throw CoreAIIntegrationExportError.sourceChanged(sourceURL.lastPathComponent)
         }
         return TreeDigest(
-            sha256: Data(treeHasher.finalize()).hexString,
+            sha256: CoreAIHexadecimal.lowercase(treeHasher.finalize()),
             byteCount: totalByteCount
         )
     }
@@ -764,18 +764,5 @@ actor CoreAIIntegrationExporter {
     private struct FileDigest {
         let digestData: Data
         let byteCount: Int64
-    }
-}
-
-private extension Data {
-    var hexString: String {
-        let digits = Array("0123456789abcdef".utf8)
-        var bytes: [UInt8] = []
-        bytes.reserveCapacity(count * 2)
-        for byte in self {
-            bytes.append(digits[Int(byte >> 4)])
-            bytes.append(digits[Int(byte & 0x0f)])
-        }
-        return String(decoding: bytes, as: UTF8.self)
     }
 }

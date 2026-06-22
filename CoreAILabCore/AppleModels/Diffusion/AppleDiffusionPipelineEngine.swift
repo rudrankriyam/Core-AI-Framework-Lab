@@ -142,47 +142,43 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
             lease.matches(url) ? lease : nil
         } ?? ScopedResourceLease(url: url)
 
-        do {
-            let descriptor = try PipelineDescriptor.resolve(at: url, config: .auto)
-            let loadedPipeline: LoadedPipeline
-            switch descriptor.type {
-            case .stableDiffusion3:
-                loadedPipeline = .stableDiffusion3(
-                    try await SD3Pipeline(from: url, config: .explicit(descriptor))
-                )
-            case .flux2:
-                loadedPipeline = .flux2(
-                    try await Flux2Pipeline(
-                        from: url,
-                        config: .explicit(descriptor),
-                        mode: .auto
-                    )
-                )
-            case .stableDiffusion, .stableDiffusionXL, nil:
-                loadedPipeline = .stable(
-                    try await StableDiffusionPipeline.load(
-                        from: url,
-                        config: .explicit(descriptor)
-                    )
-                )
-            }
-
-            pipeline = loadedPipeline
-            scopedResourceLease = candidateLease
-
-            let size = loadedPipeline.defaultImageSize
-            return AppleDiffusionModelInfo(
-                pipelineName: loadedPipeline.displayName,
-                width: size.width,
-                height: size.height,
-                supportsImageToImage: loadedPipeline.supportsImageToImage,
-                defaultStepCount: loadedPipeline.defaultStepCount,
-                defaultGuidanceScale: loadedPipeline.defaultGuidanceScale,
-                supportsNegativePrompt: loadedPipeline.supportsNegativePrompt
+        let descriptor = try PipelineDescriptor.resolve(at: url, config: .auto)
+        let loadedPipeline: LoadedPipeline
+        switch descriptor.type {
+        case .stableDiffusion3:
+            loadedPipeline = .stableDiffusion3(
+                try await SD3Pipeline(from: url, config: .explicit(descriptor))
             )
-        } catch {
-            throw error
+        case .flux2:
+            loadedPipeline = .flux2(
+                try await Flux2Pipeline(
+                    from: url,
+                    config: .explicit(descriptor),
+                    mode: .auto
+                )
+            )
+        case .stableDiffusion, .stableDiffusionXL, nil:
+            loadedPipeline = .stable(
+                try await StableDiffusionPipeline.load(
+                    from: url,
+                    config: .explicit(descriptor)
+                )
+            )
         }
+
+        pipeline = loadedPipeline
+        scopedResourceLease = candidateLease
+
+        let size = loadedPipeline.defaultImageSize
+        return AppleDiffusionModelInfo(
+            pipelineName: loadedPipeline.displayName,
+            width: size.width,
+            height: size.height,
+            supportsImageToImage: loadedPipeline.supportsImageToImage,
+            defaultStepCount: loadedPipeline.defaultStepCount,
+            defaultGuidanceScale: loadedPipeline.defaultGuidanceScale,
+            supportsNegativePrompt: loadedPipeline.supportsNegativePrompt
+        )
     }
 
     func generate(_ request: AppleDiffusionRequest) async throws -> AppleDiffusionResult {
@@ -220,13 +216,7 @@ actor AppleDiffusionPipelineEngine: AppleDiffusionGenerating {
 
         return AppleDiffusionResult(
             image: image,
-            durationSeconds: Self.seconds(from: clock.now - start)
+            durationSeconds: (clock.now - start).coreAISeconds
         )
-    }
-
-    private static func seconds(from duration: Duration) -> Double {
-        let components = duration.components
-        return Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
     }
 }

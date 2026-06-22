@@ -25,7 +25,7 @@ final class AppleDiffusionWorkspaceModel {
     @ObservationIgnored
     private var generationTask: Task<Void, Never>?
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleDiffusionExample,

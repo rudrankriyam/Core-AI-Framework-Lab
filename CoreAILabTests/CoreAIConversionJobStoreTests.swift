@@ -5,6 +5,13 @@ import Testing
 
 struct CoreAIConversionJobStoreTests {
     @Test
+    func lowercaseHexadecimalUsesTwoDigitsPerByte() {
+        let bytes: [UInt8] = [0x00, 0x0f, 0x10, 0xff]
+
+        #expect(CoreAIHexadecimal.lowercase(bytes) == "000f10ff")
+    }
+
+    @Test
     func fingerprintsBindVersionedMachineIdentityWithoutVolatileDiagnostics() throws {
         let original = try identity(
             environment: ["NO_COLOR": "1", "PYTHONUNBUFFERED": "1"]

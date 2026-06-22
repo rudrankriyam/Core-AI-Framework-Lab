@@ -6,7 +6,6 @@ struct AppleSegmentationWorkspaceView: View {
     @State private var isImportingModel = false
     @State private var isImportingImage = false
     private let initialModelURL: URL?
-    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleSegmentationExample,
@@ -14,20 +13,14 @@ struct AppleSegmentationWorkspaceView: View {
         runContext: CoreAIRuntimeRunContext? = nil,
         runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        let resolvedContext = runContext ?? .workspaceDefault(
-            experienceID: "apple-segmentation-\(example.rawValue)",
-            title: example.title,
-            modelIdentifier: example.rawValue
-        )
         _workspace = State(
             initialValue: AppleSegmentationWorkspaceModel(
                 example: example,
-                runContext: resolvedContext,
+                runContext: runContext,
                 runCoordinator: runCoordinator
             )
         )
         self.initialModelURL = initialModelURL
-        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -46,7 +39,7 @@ struct AppleSegmentationWorkspaceView: View {
 
             CoreAIRuntimeLifecycleView(
                 coordinator: workspace.runCoordinator,
-                context: runContext
+                context: workspace.runContext
             )
 
             Section("Run Apple's Export") {

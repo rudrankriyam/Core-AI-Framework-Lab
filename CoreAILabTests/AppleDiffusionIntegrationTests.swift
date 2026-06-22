@@ -3,11 +3,16 @@ import Testing
 @testable import CoreAILab
 
 struct AppleDiffusionIntegrationTests {
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_DIFFUSION_BUNDLE_PATH"] != nil,
+            "Requires COREAI_DIFFUSION_BUNDLE_PATH."
+        )
+    )
     func exportedPipelineGeneratesThroughAppleRuntime() async throws {
-        guard let bundlePath = ProcessInfo.processInfo.environment["COREAI_DIFFUSION_BUNDLE_PATH"] else {
-            return
-        }
+        let bundlePath = try #require(
+            ProcessInfo.processInfo.environment["COREAI_DIFFUSION_BUNDLE_PATH"]
+        )
 
         let engine = AppleDiffusionPipelineEngine()
         let info = try await engine.loadPipeline(at: URL(filePath: bundlePath))

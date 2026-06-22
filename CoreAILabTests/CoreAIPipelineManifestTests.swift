@@ -4,6 +4,14 @@ import Testing
 
 struct CoreAIPipelineManifestTests {
     @Test
+    func authoringDefaultIsASingleFloat32Value() {
+        #expect(
+            CoreAIPipelineValueContract.authoringDefault
+                == tensorContract(shape: [.fixed(1)])
+        )
+    }
+
+    @Test
     func validManifestRoundTripsDeterministically() throws {
         let manifest = validManifest()
 

@@ -116,7 +116,7 @@ actor AppleWav2Vec2Engine: AppleAudioTranscribing {
         return AppleAudioTranscriptionResult(
             transcript: transcript,
             audioDurationSeconds: audio.durationSeconds,
-            inferenceDurationSeconds: Self.seconds(from: duration)
+            inferenceDurationSeconds: duration.coreAISeconds
         )
     }
 
@@ -157,9 +157,4 @@ actor AppleWav2Vec2Engine: AppleAudioTranscribing {
         }
     }
 
-    private static func seconds(from duration: Duration) -> Double {
-        let components = duration.components
-        return Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
-    }
 }

@@ -601,9 +601,9 @@ actor CoreAISpecializationCacheIdentityStore {
             configuration.profile.rawValue,
             String(configuration.expectFrequentReshapes),
         ].joined(separator: "\u{0}")
-        let digest = SHA256.hash(data: Data(key.utf8))
-            .map { String(format: "%02x", $0) }
-            .joined()
+        let digest = CoreAIHexadecimal.lowercase(
+            SHA256.hash(data: Data(key.utf8))
+        )
         return rootURL.appending(
             path: "\(digest).json",
             directoryHint: .notDirectory

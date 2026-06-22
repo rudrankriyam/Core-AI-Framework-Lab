@@ -22,7 +22,7 @@ final class AppleLanguageWorkspaceModel {
     @ObservationIgnored
     private var generationTask: Task<Void, Never>?
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleLanguageExample,

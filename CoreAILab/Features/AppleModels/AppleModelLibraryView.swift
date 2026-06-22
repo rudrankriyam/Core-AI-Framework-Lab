@@ -5,6 +5,7 @@ struct AppleModelLibraryView: View {
 
     var body: some View {
         @Bindable var model = model
+        let groups = model.groups
 
         NavigationStack {
             Group {
@@ -14,7 +15,7 @@ struct AppleModelLibraryView: View {
                         systemImage: "exclamationmark.triangle",
                         description: Text(loadError)
                     )
-                } else if model.groups.isEmpty {
+                } else if groups.isEmpty {
                     ContentUnavailableView.search
                 } else {
                     List {
@@ -26,7 +27,7 @@ struct AppleModelLibraryView: View {
                             )
                         }
 
-                        ForEach(model.groups) { group in
+                        ForEach(groups) { group in
                             Section(group.category.rawValue) {
                                 ForEach(group.models) { entry in
                                     NavigationLink(value: entry) {

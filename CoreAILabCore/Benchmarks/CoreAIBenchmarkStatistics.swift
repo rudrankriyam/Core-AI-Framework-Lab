@@ -14,7 +14,7 @@ struct CoreAIBenchmarkStatistics: Sendable, Equatable {
             throw CoreAIFunctionBenchmarkError.missingTrials
         }
 
-        let seconds = trials.map { Self.seconds(from: $0.duration) }
+        let seconds = trials.map { $0.duration.coreAISeconds }
         let sorted = seconds.sorted()
         let count = Double(sorted.count)
         let meanSeconds = sorted.reduce(0, +) / count
@@ -44,18 +44,4 @@ struct CoreAIBenchmarkStatistics: Sendable, Equatable {
         }
     }
 
-    private static func seconds(from duration: Duration) -> Double {
-        let components = duration.components
-        return Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
-    }
-}
-
-extension Duration {
-    var coreAIMilliseconds: Double {
-        let components = components
-        let seconds = Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
-        return seconds * 1_000
-    }
 }

@@ -507,7 +507,9 @@ private enum CoreAIRecipeBundleFileSystem {
         let canonicalData = try canonicalManifestData(manifest)
         return CoreAIRecipeBundleInspection(
             manifest: manifest,
-            manifestSHA256: hexadecimal(SHA256.hash(data: canonicalData)),
+            manifestSHA256: CoreAIHexadecimal.lowercase(
+                SHA256.hash(data: canonicalData)
+            ),
             canonicalManifestData: canonicalData
         )
     }
@@ -710,7 +712,7 @@ private enum CoreAIRecipeBundleFileSystem {
             throw CoreAIRecipeBundleError.sourceChangedDuringExport(relativePath)
         }
         return CoreAIRecipeBundleFingerprint(
-            sha256: hexadecimal(hasher.finalize()),
+            sha256: CoreAIHexadecimal.lowercase(hasher.finalize()),
             byteCount: byteCount
         )
     }
@@ -747,7 +749,7 @@ private enum CoreAIRecipeBundleFileSystem {
             )
         }
         return CoreAIRecipeBundleFingerprint(
-            sha256: hexadecimal(hasher.finalize()),
+            sha256: CoreAIHexadecimal.lowercase(hasher.finalize()),
             byteCount: byteCount
         )
     }
@@ -793,15 +795,4 @@ private enum CoreAIRecipeBundleFileSystem {
         return paths
     }
 
-    private static func hexadecimal<D: Sequence>(_ digest: D) -> String
-    where D.Element == UInt8 {
-        let digits = Array("0123456789abcdef".utf8)
-        var output: [UInt8] = []
-        output.reserveCapacity(SHA256.byteCount * 2)
-        for byte in digest {
-            output.append(digits[Int(byte >> 4)])
-            output.append(digits[Int(byte & 0x0f)])
-        }
-        return String(decoding: output, as: UTF8.self)
-    }
 }

@@ -283,7 +283,7 @@ actor CoreAIArtifactStore: CoreAIArtifactDigesting {
         try resourceSnapshot?.validate()
 
         return Fingerprint(
-            sha256Digest: hexadecimal(hasher.finalize()),
+            sha256Digest: CoreAIHexadecimal.lowercase(hasher.finalize()),
             kind: kind,
             pathExtension: pathExtension,
             byteCount: byteCount,
@@ -384,7 +384,7 @@ actor CoreAIArtifactStore: CoreAIArtifactDigesting {
         }
         return FileFingerprint(
             byteCount: byteCount,
-            sha256Digest: hexadecimal(fileHasher.finalize())
+            sha256Digest: CoreAIHexadecimal.lowercase(fileHasher.finalize())
         )
     }
 
@@ -400,17 +400,6 @@ actor CoreAIArtifactStore: CoreAIArtifactDigesting {
         withUnsafeBytes(of: &bigEndianValue) {
             hasher.update(bufferPointer: $0)
         }
-    }
-
-    private func hexadecimal(_ digest: SHA256.Digest) -> String {
-        let digits = Array("0123456789abcdef".utf8)
-        var output: [UInt8] = []
-        output.reserveCapacity(SHA256.byteCount * 2)
-        for byte in digest {
-            output.append(digits[Int(byte >> 4)])
-            output.append(digits[Int(byte & 0x0f)])
-        }
-        return String(decoding: output, as: UTF8.self)
     }
 
     private func storageRelativePath(for fingerprint: Fingerprint) -> String {

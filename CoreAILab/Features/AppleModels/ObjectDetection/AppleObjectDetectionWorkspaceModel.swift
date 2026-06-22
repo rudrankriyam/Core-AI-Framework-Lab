@@ -20,7 +20,7 @@ final class AppleObjectDetectionWorkspaceModel {
     @ObservationIgnored
     private let engine: any AppleObjectDetecting
     @ObservationIgnored
-    private let runContext: CoreAIRuntimeRunContext
+    let runContext: CoreAIRuntimeRunContext
     @ObservationIgnored
     private var activeRunID: UUID?
 

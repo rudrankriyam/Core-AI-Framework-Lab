@@ -1,20 +1,14 @@
 struct CoreAIPipelineValueContract: Codable, Hashable, Sendable {
+    static let authoringDefault = Self(
+        kind: .tensor,
+        scalarType: "float32",
+        shape: [.fixed(1)]
+    )
+
     var kind: CoreAIPipelineValueKind
     var scalarType: String?
     var shape: [CoreAIPipelineDimension]?
     var semantic: String?
-
-    init(
-        kind: CoreAIPipelineValueKind,
-        scalarType: String? = nil,
-        shape: [CoreAIPipelineDimension]? = nil,
-        semantic: String? = nil
-    ) {
-        self.kind = kind
-        self.scalarType = scalarType
-        self.shape = shape
-        self.semantic = semantic
-    }
 
     func isCompatible(with destination: Self) -> Bool {
         guard kind == destination.kind else { return false }

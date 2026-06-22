@@ -242,7 +242,7 @@ struct CoreAIConversionJobIdentity: Codable, Equatable, Sendable {
             hasher.update(data: Data("\(data.count):".utf8))
             hasher.update(data: data)
         }
-        return Data(hasher.finalize()).hexadecimalString
+        return CoreAIHexadecimal.lowercase(hasher.finalize())
     }
 
     private static func utf8Precedes(_ first: String, _ second: String) -> Bool {
@@ -257,18 +257,5 @@ struct CoreAIConversionJobFingerprint: Codable, Equatable, Sendable {
     init(requestSHA256: String, environmentSHA256: String) {
         self.requestSHA256 = requestSHA256
         self.environmentSHA256 = environmentSHA256
-    }
-}
-
-private extension Data {
-    var hexadecimalString: String {
-        let digits = Array("0123456789abcdef".utf8)
-        var output: [UInt8] = []
-        output.reserveCapacity(count * 2)
-        for byte in self {
-            output.append(digits[Int(byte >> 4)])
-            output.append(digits[Int(byte & 0x0F)])
-        }
-        return String(decoding: output, as: UTF8.self)
     }
 }

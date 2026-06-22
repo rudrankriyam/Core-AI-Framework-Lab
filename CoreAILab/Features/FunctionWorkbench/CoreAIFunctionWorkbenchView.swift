@@ -11,7 +11,6 @@ struct CoreAIFunctionWorkbenchView: View {
     @State private var benchmarkEvidenceFilename = "coreai-benchmark-evidence"
     @State private var isExportingBenchmarkEvidence = false
     private let initialURL: URL?
-    private let runContext: CoreAIRuntimeRunContext
     private let projectArtifactLink: ProjectArtifactLink?
     private let projectController: CoreAIProjectLibraryController?
 
@@ -22,24 +21,20 @@ struct CoreAIFunctionWorkbenchView: View {
         runContext: CoreAIRuntimeRunContext? = nil,
         runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        let resolvedContext = runContext ?? .workspaceDefault(
-            experienceID: "generic-function-workbench",
-            title: "Function Workbench",
-            modelIdentifier: "imported-coreai-asset"
-        )
         _workspace = State(
             initialValue: CoreAIFunctionWorkbenchWorkspaceModel(
-                runContext: resolvedContext,
+                runContext: runContext,
                 runCoordinator: runCoordinator
             )
         )
         self.initialURL = initialURL
-        self.runContext = resolvedContext
         self.projectArtifactLink = projectArtifactLink
         self.projectController = projectController
     }
 
     var body: some View {
+        @Bindable var assetWorkspace = workspace.assetWorkspace
+
         Group {
             if let report = workspace.assetWorkspace.report {
                 List {
@@ -57,7 +52,7 @@ struct CoreAIFunctionWorkbenchView: View {
 
                     CoreAIRuntimeLifecycleView(
                         coordinator: workspace.runCoordinator,
-                        context: runContext
+                        context: workspace.runContext
                     )
 
                     CoreAISpecializationControlsView(
@@ -113,7 +108,7 @@ struct CoreAIFunctionWorkbenchView: View {
                                 }
                             }
                         }
-                    } else if !workspace.contracts.isEmpty {
+                    } else {
                         CoreAIFunctionContractView(workspace: workspace)
                         CoreAIFunctionInputsView(
                             drafts: workspace.inputDrafts,
@@ -211,10 +206,12 @@ struct CoreAIFunctionWorkbenchView: View {
         ) { result in
             handleBenchmarkEvidenceExport(result)
         }
-        .background {
-            CoreAIFunctionWorkbenchErrorPresenter(
-                assetWorkspace: workspace.assetWorkspace
-            )
+        .alert(
+            "Function Workbench Error",
+            isPresented: $assetWorkspace.isShowingError
+        ) {
+        } message: {
+            Text(assetWorkspace.errorMessage ?? "The Core AI operation failed.")
         }
         .task(id: initialURL) {
             do {

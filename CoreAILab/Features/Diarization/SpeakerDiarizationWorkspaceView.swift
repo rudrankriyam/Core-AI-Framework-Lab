@@ -8,6 +8,8 @@ struct SpeakerDiarizationWorkspaceView: View {
     @State private var isImportingMedia = false
 
     var body: some View {
+        let activeTurn = workspace.result?.turn(at: watcher.currentTime)
+
         NavigationStack {
             GeometryReader { geometry in
                 Form {
@@ -30,7 +32,7 @@ struct SpeakerDiarizationWorkspaceView: View {
                         summary: workspace.mediaSummary,
                         player: watcher.player,
                         currentTime: watcher.currentTime,
-                        activeTurn: workspace.result?.turn(at: watcher.currentTime),
+                        activeTurn: activeTurn,
                         isPlaying: watcher.isPlaying,
                         togglePlayback: watcher.togglePlayback,
                         restart: watcher.restart
@@ -41,7 +43,7 @@ struct SpeakerDiarizationWorkspaceView: View {
                         waveform: workspace.waveform,
                         result: workspace.result,
                         playheadTime: watcher.currentTime,
-                        activeTurnID: workspace.result?.turn(at: watcher.currentTime)?.id
+                        activeTurnID: activeTurn?.id
                     )
                 }
                 .formStyle(.grouped)

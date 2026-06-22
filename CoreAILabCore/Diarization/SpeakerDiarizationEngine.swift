@@ -39,7 +39,7 @@ actor SpeakerDiarizationEngine: SpeakerDiarizationServicing {
         let audio = try await SpeakerDiarizationAudioDecoder.decode(url: url)
         return try await diarize(
             audio: audio,
-            decodeSeconds: Self.seconds(from: clock.now - decodeStart)
+            decodeSeconds: (clock.now - decodeStart).coreAISeconds
         )
     }
 
@@ -65,7 +65,7 @@ actor SpeakerDiarizationEngine: SpeakerDiarizationServicing {
         let totalStart = clock.now
         let segmentationStart = clock.now
         let regions = segmenter.regions(in: audio)
-        let segmentationSeconds = Self.seconds(from: clock.now - segmentationStart)
+        let segmentationSeconds = (clock.now - segmentationStart).coreAISeconds
         let windows = windowBuilder.windows(
             for: regions,
             sampleRate: audio.sampleRate
@@ -89,11 +89,11 @@ actor SpeakerDiarizationEngine: SpeakerDiarizationServicing {
             let features = try SpeakerDiarizationCAMPPlusFeatureExtractor.extract(
                 samples: modelSamples
             )
-            featureExtractionSeconds += Self.seconds(from: clock.now - featureStart)
+            featureExtractionSeconds += (clock.now - featureStart).coreAISeconds
 
             let inferenceStart = clock.now
             let embedding = try await embeddingProvider.embedding(for: features)
-            inferenceSeconds += Self.seconds(from: clock.now - inferenceStart)
+            inferenceSeconds += (clock.now - inferenceStart).coreAISeconds
             try Task.checkCancellation()
             let assignment = try clusterer.assign(embedding: embedding)
             candidates.append(
@@ -118,7 +118,7 @@ actor SpeakerDiarizationEngine: SpeakerDiarizationServicing {
                 segmentationSeconds: segmentationSeconds,
                 featureExtractionSeconds: featureExtractionSeconds,
                 inferenceSeconds: inferenceSeconds,
-                totalSeconds: decodeSeconds + Self.seconds(from: clock.now - totalStart),
+                totalSeconds: decodeSeconds + (clock.now - totalStart).coreAISeconds,
                 clusteringThreshold: Self.clusteringThreshold
             )
         )
@@ -165,9 +165,4 @@ actor SpeakerDiarizationEngine: SpeakerDiarizationServicing {
         }
     }
 
-    private static func seconds(from duration: Duration) -> Double {
-        let components = duration.components
-        return Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
-    }
 }

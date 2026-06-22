@@ -18,6 +18,8 @@ struct CoreAIRecipeReferenceListEditorView: View {
     }
 
     var body: some View {
+        let availableChoices = self.availableChoices
+
         GroupBox(title) {
             VStack(alignment: .leading) {
                 if valueIDs.isEmpty {

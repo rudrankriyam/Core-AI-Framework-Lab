@@ -12,6 +12,9 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case runtime
     case deviceLab
 
+    static let tools: [Self] = [.assetInspector, .runtime, .deviceLab]
+    static let workspaces = allCases.filter { !tools.contains($0) }
+
     var id: Self { self }
 
     var title: String {
