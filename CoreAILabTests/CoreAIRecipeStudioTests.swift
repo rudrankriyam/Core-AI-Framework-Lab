@@ -321,6 +321,7 @@ struct CoreAIRecipeStudioTests {
         #expect(renamedLoop.stopConditionInputPort == "should_stop")
         #expect(renamedLoop.inputs.contains { $0.name == "should_stop" })
         #expect(!renamedLoop.inputs.contains { $0.name == "stop" })
+        #expect(renamedLoop.inputs.filter { $0.name != "should_stop" }.map(\.name) == ["features"])
 
         let renamedStopIndex = try #require(renamedLoop.inputs.firstIndex {
             $0.name == renamedLoop.stopConditionInputPort

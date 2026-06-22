@@ -108,10 +108,10 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
                 outputs = [CoreAIPipelinePort(name: "output", value: defaultValue)]
             }
         case .boundedLoop:
-            if !inputs.contains(where: { $0.name == "input" }) {
+            let stopPortName = stopConditionInputPort ?? "stop"
+            if !inputs.contains(where: { $0.name != stopPortName }) {
                 inputs.append(CoreAIPipelinePort(name: "input", value: defaultValue))
             }
-            let stopPortName = stopConditionInputPort ?? "stop"
             if !inputs.contains(where: { $0.name == stopPortName }) {
                 inputs.append(CoreAIPipelinePort(
                     name: stopPortName,
