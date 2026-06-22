@@ -5,73 +5,128 @@
 [![Platforms](https://img.shields.io/badge/platforms-iOS%2027%20%7C%20macOS%2027-lightgrey)](https://developer.apple.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A native workbench for Apple's `CoreAI.framework` in Xcode 27 beta.
+Core AI Lab is a native SwiftUI workbench for Apple's `CoreAI.framework`. It
+covers the local deployment loop from recipe discovery and conversion through
+asset inspection, specialization, inference, evidence capture, and integration
+export.
 
-Core AI Lab connects persistent projects, content-addressed model storage, a
-searchable snapshot of Apple's open-source model recipes, visual conversion,
-generic `.aimodel` inspection, a descriptor-driven function workbench, and
-task-specific model playgrounds. Chatterbox Turbo remains the custom end-to-end
-stress test. YOLOS Tiny is the first official Apple-repository example,
-exported locally and run through Apple's own `CoreAIObjectDetection` Swift
-package.
-
-CoreAI currently looks like a lower-level model runtime and asset framework:
+The app combines persistent projects, content-addressed artifact storage,
+trusted recipe bundles, visual conversion and recipe authoring, generic and
+task-specific runtimes, repeatable benchmarks, and physical-device evidence.
+Chatterbox Turbo and CAM++ speaker diarization provide bundled end-to-end model
+workflows; Apple's open-source recipes supply the broader language, vision,
+audio, and diffusion catalog.
 
 ```text
-model asset URL
--> AIModelAsset metadata and summary
--> AIModel specialization
--> AIModelCache compiled artifact lookup
--> InferenceFunction descriptor inspection
--> NDArray or image inputs
--> async inference outputs
+model recipe or .aimodel
+-> inspect metadata and function contracts
+-> specialize and cache for a target profile
+-> run a generic or task-specific experience
+-> capture provenance and measured evidence
+-> export a verified Swift integration package
 ```
 
-It is not a replacement for `FoundationModels`. Foundation Models is still the high-level language model API. CoreAI is closer to the model asset/runtime/specialization layer.
+> [!NOTE]
+> Core AI is the asset, specialization, and runtime layer explored here.
+> `FoundationModels` remains Apple's high-level language-model API; one Qwen
+> adapter bridges through it, but the frameworks are not interchangeable.
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Workspaces](#workspaces)
+- [Repository Map](#repository-map)
+- [Core Workflows](#core-workflows)
+  - [Apple Model Library](#apple-model-library)
+  - [Projects and Artifact Storage](#persistent-projects-and-artifact-storage)
+  - [Recipe Bundles and Trust](#recipe-bundles-and-trust)
+  - [Conversion Workbench](#visual-conversion-workbench)
+  - [Asset Inspector](#asset-inspector)
+  - [Specialization and Cache Controls](#specialization-and-cache-controls)
+  - [Runtime Studio](#runtime-studio)
+  - [Function Workbench](#generic-function-workbench)
+  - [Recipe and Pipeline Authoring](#recipe-and-pipeline-authoring)
+- [Model Playgrounds](#model-playgrounds)
+- [Core AI API Reference](#core-ai-api-reference)
+- [Build and Validation](#build-and-validation)
+- [Current Limitations](#current-limitations)
+- [Current SDK Shape](#current-sdk-shape)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Requirements
 
-- Xcode 27 beta
+- Xcode 27 beta with the Swift 6.4 toolchain
 - iOS 27.0+ or macOS 27.0+
-- Swift 6.4 toolchain from Xcode 27 beta
+- An Apple silicon Mac for Core AI conversion workflows
+- Python 3.12 and [`uv`](https://docs.astral.sh/uv/) for the optional Chatterbox
+  and diarization conversion pipelines
 
-## What's Inside
+## Quick Start
 
-- `CoreAILab/` - SwiftUI app with the Chatterbox synthesis workspace
-- `CoreAILabCore/` - small reusable helpers for Core AI API discovery
-- `CoreAILabCore/Chatterbox/` - Core AI model storage, specialization, and function-contract code
-- `CoreAILabCore/Examples/` - focused examples for cache policy, function descriptors, inference scaffolding, tensors, and images
-- `CoreAILabCore/AppleModels/` - pinned Apple registry models plus language, vision, and segmentation runtime adapters
-- `CoreAILab/Features/AppleModels/` - searchable model library and task-specific playgrounds
-- `CoreAILab/Features/Conversion/` - visual recipe configuration, environment checks, live logs, cancellation, and artifact handoff
-- `CoreAILabCore/Conversion/` - typed command planning and macOS subprocess execution without a shell
-- `CoreAILab/Features/Projects/` - persistent project library, artifact inventory, and Inspector/Workbench handoff
-- `CoreAILabCore/Projects/` - SwiftData project schema and atomic SHA-256 artifact storage
-- `CoreAILabCore/Manifests/` - versioned, Codable recipe, target, artifact, pipeline, and capacity contracts with reference and path validation
-- `CoreAILabCore/Recipes/` - public recipe-bundle schema, deterministic hash-verified import/export, curated trust metadata, and approval-gated code references
-- `CoreAILab/Features/Recipes/` - curated catalog and imported-bundle trust review surface
-- `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
-- `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
-- `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
-- `CoreAILab/Features/DeviceLab/` - iPhone target authoring, storage slicing, compatibility diagnostics, and physical-evidence import
-- `CoreAILabCore/DeviceLab/` - versioned connected-target and device-trial contracts with bounded sizing and truthfulness validation
-- `CoreAILab/Features/RuntimeStudio/` - searchable recipe-backed experience routing, run status, and comparison selection
-- `CoreAILabCore/RuntimeStudio/` - versioned experience registry, shared lifecycle coordinator, and optional project timing evidence
-- `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
-- `CoreAILab/Resources/RuntimeStudio/` - validated recipe-to-experience mappings for the built-in adapters
-- `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
-- `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
-- `Documentation/RECIPE_BUNDLES.md` - public recipe-bundle authoring and trust-boundary guide
-- `coreai.md` - notes from the local Xcode 27 SDK interfaces
-- `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
+The Xcode project and both shared schemes are checked in; no project generator
+is required.
 
-## Apple Model Library
+```bash
+open CoreAIFrameworkLab.xcodeproj
 
-The app includes all 33 presets from Apple [`coreai-models`](https://github.com/apple/coreai-models)
-revision `e358c8435679c904687f8070eb95150e36e4b76d`. These are conversion recipes,
-not downloadable `.aimodel` binaries. Each entry shows its source model,
-platform, compression/context defaults, exact export command, pinned recipe,
-and the matching Apple Swift runtime when one exists.
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+xcodebuild -project CoreAIFrameworkLab.xcodeproj \
+  -scheme CoreAILabMac \
+  -destination 'platform=macOS,arch=arm64' \
+  -derivedDataPath ./build/Xcode27 \
+  build
+
+open build/Xcode27/Build/Products/Debug/CoreAILab.app
+```
+
+Use the `CoreAILabMac` scheme for macOS and `CoreAILab` for a physical iPhone
+or iPad. The iOS path requires existing local signing assets; the repository
+does not enable provisioning updates automatically.
+
+## Workspaces
+
+| Surface | Shipped workflow |
+| --- | --- |
+| **Projects** | Persist artifacts, source provenance, descriptor snapshots, recipe revisions, target profiles, run records, and evidence. |
+| **Apple Models** | Browse 33 pinned Apple recipes and open the matching language, vision, audio, or diffusion runtime when available. |
+| **Recipes** | Inspect curated trust metadata or import and approve a hash-verified recipe bundle. |
+| **Convert** | Validate a local `coreai-models` checkout, run its original exporter, stream logs, cancel safely, and inspect outputs. |
+| **Recipe Studio** | Author and validate recipe manifests, dynamic dimensions, state, entrypoints, rewrites, and typed pipelines. |
+| **Chatterbox** | Run the bundled multi-model text-to-speech pipeline and export 24 kHz WAV audio. |
+| **Diarization** | Analyze local audio or video with the bundled CAM++ speaker encoder and inspect an anonymous speaker timeline. |
+| **Asset Inspector** | Read `.aimodel` metadata, function signatures, compute types, and specialization controls. |
+| **Runtime Studio** | Launch registry-backed experiences, track lifecycle state, compare identities, and optionally record runs into a project. |
+| **Device Lab** | Author bounded iPhone deployment profiles and import identity-matched physical test evidence. |
+
+## Repository Map
+
+| Path | Purpose |
+| --- | --- |
+| [`CoreAILab/`](CoreAILab/) | SwiftUI app, navigation, workspace models, feature views, and bundled resources. |
+| [`CoreAILabCore/`](CoreAILabCore/) | Reusable runtime, conversion, persistence, manifests, pipelines, evidence, export, and model-specific logic. |
+| [`CoreAILabTests/`](CoreAILabTests/) | Swift Testing contract suites and opt-in real-model integration tests. |
+| [`Conversion/Chatterbox/`](Conversion/Chatterbox/) | Reproducible Chatterbox exporters, parity tests, and runtime validation. |
+| [`Conversion/Diarization/`](Conversion/Diarization/) | CAM++ conversion, provenance, semantic validation, and diarization research plans. |
+| [`Documentation/`](Documentation/) | Public recipe-bundle guide and JSON schema. |
+| [`.github/ci/`](.github/ci/) | Hosted, Xcode 27, and physical-device verification boundaries. |
+| [`Scripts/`](Scripts/) | Catalog generation, deterministic fixtures, CI checks, and the physical-device harness. |
+| [`CoreAIFrameworkLab.xcodeproj`](CoreAIFrameworkLab.xcodeproj/) | Checked-in targets, package pins, build settings, and shared schemes. |
+| [`PRODUCT.md`](PRODUCT.md) | Product purpose, audience, principles, and accessibility direction. |
+| [`coreai.md`](coreai.md) | Notes verified against the local Xcode 27 SDK interfaces. |
+| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | Licenses and provenance for bundled third-party assets. |
+
+## Core Workflows
+
+### Apple Model Library
+
+The app includes all 33 presets from Apple's
+[`coreai-models`](https://github.com/apple/coreai-models) revision
+`e358c8435679c904687f8070eb95150e36e4b76d`. These are conversion recipes, not
+downloadable `.aimodel` binaries. Each entry shows its source model, platform,
+compression and context defaults, exact export command, pinned recipe, and the
+matching Apple Swift runtime when one exists.
 
 Refresh the checked-in snapshot from a local Apple repository clone:
 
@@ -85,7 +140,7 @@ model weights; their licenses, authentication requirements, and source
 revisions remain independent of Apple's BSD-3-Clause recipe repository. The
 separate Diarization workspace includes one audited Apache-2.0 CAM++ asset.
 
-## Persistent Projects and Artifact Storage
+### Persistent Projects and Artifact Storage
 
 Open **Projects** to create a durable Lab Project, then import a `.aimodel`, an
 Apple resource folder, or a supporting file. Project metadata is persisted with
@@ -105,9 +160,9 @@ Directory imports also retain a versioned manifest of safe relative paths,
 streamed per-file SHA-256 digests, and byte counts. Model inspection snapshots
 function descriptors, storage and compute types, and operation distribution into
 the project library. Source provenance remains editable per project artifact,
-while successful
-specializations register project-owned cache configurations that can be browsed
-and removed without deleting cache entries still referenced by another project.
+while successful specializations register project-owned cache configurations
+that can be browsed and removed without deleting cache entries still referenced
+by another project.
 
 The project schema also stores immutable recipe-manifest revisions, target
 profiles, typed run status, and evidence metadata. These records retain the exact
@@ -120,7 +175,7 @@ contract. Selecting a project for recording reconciles runs interrupted by a
 previous app session as failed. Conversion jobs and generic benchmarks are not
 yet connected to this coordinator.
 
-## Recipe Bundles and Trust
+### Recipe Bundles and Trust
 
 Open **Recipes** to inspect the versioned curated index or import a recipe-bundle
 directory. Catalog entries report trust and verification separately, with notes
@@ -144,13 +199,14 @@ explicit approval. Approval does not run the code, and the importer never starts
 a process or loads a package. Executing imported authoring code in an isolated
 worker and publishing hardware/SDK CI evidence remain separate work.
 
-## Visual Conversion Workbench
+### Visual Conversion Workbench
 
 On macOS, open **Convert** or choose **Convert This Recipe** from any Apple
 model detail. The workbench lets you:
 
 - choose a pinned Apple recipe, local `apple/coreai-models` clone, output folder, and `uv` executable;
-- verify Apple silicon, the selected Core AI Xcode toolchain, pinned revision, clean recipe worktree, write access, and available storage;
+- verify Apple silicon, the selected Core AI Xcode toolchain, pinned revision,
+  clean recipe worktree, write access, and available storage;
 - review the exact export arguments and utility-model precision before starting;
 - stream the original Python/PyTorch output, cancel the child process, and preserve a timestamped evidence log;
 - inspect generated `.aimodel` and `.aimodelc` packages directly in Core AI Lab.
@@ -174,7 +230,14 @@ adopted that store yet: after an app restart it still launches a fresh converter
 process rather than claiming that a killed process resumed. Completed output
 artifacts can be copied into persistent projects.
 
-## Specialization and Cache Controls
+### Asset Inspector
+
+Open any `.aimodel` package to inspect validity, author, license, description,
+function names, and compute types without adding the asset to the app bundle.
+This works with standalone Apple recipe outputs and individual assets inside
+language, diffusion, or segmentation resource folders.
+
+### Specialization and Cache Controls
 
 Open any `.aimodel` in **Asset Inspector** to choose automatic, CPU-only, GPU-
 preferred, or Neural-Engine-preferred specialization. Core AI Lab checks the
@@ -197,7 +260,7 @@ its opaque model bookmark to load or remove such an entry after the source
 disappears. Projects now keep the source artifact stable, but the bookmark still
 needs to become versioned project metadata before that policy can be honest.
 
-## Runtime Studio
+### Runtime Studio
 
 Open **Runtime Studio** for the registry-backed language, vision, audio,
 diffusion, and generic-function experiences. The bundled schema-versioned JSON
@@ -227,12 +290,13 @@ Recording**, and retries do not duplicate the metric. Evidence also records the
 experience, actual model identity, cold/warm class, duration, and optional
 comparison identity. Selecting a project also marks any running records left by
 an interrupted previous app session as failed.
+
 Imported model bookmarks, produced output files, cross-launch warm-state
 recovery, embeddings, and output-quality comparison remain follow-up work.
 No experience downloads model weights; each adapter still requires a locally
 exported bundle under its upstream license.
 
-## Generic Function Workbench
+### Generic Function Workbench
 
 Open **Runtime Studio -> Function Workbench**, choose any `.aimodel`, and
 specialize it with one of the same cache and compute profiles. The Lab then
@@ -255,7 +319,7 @@ they still belong in task adapters such as Apple's YOLOS runtime. A fresh Core
 AI function instance is loaded for every run while the specialized model stays
 cached.
 
-### Repeatable Benchmarks
+#### Repeatable Benchmarks
 
 The Workbench can run a bounded benchmark using the same generated input plans.
 The default protocol performs one excluded warmup followed by five sequential
@@ -287,7 +351,7 @@ timestamp and thermal metadata for that earlier phase. The exported file is
 durable, but benchmark history is still in-memory until evidence records join
 Lab Project persistence.
 
-### Integration Export
+#### Integration Export
 
 After specialization, **Export Integration** packages the inspected standalone
 asset as a dependency-free Swift package with a schema-versioned contract
@@ -310,7 +374,9 @@ Neural Engine preference and reshape hint. CPU-only remains a runtime
 `SpecializationOptions.cpuOnly` choice because `coreai-build compile` does not
 expose a CPU-only flag.
 
-### Typed Pipeline Contract
+### Recipe and Pipeline Authoring
+
+#### Typed Pipeline Contract
 
 `CoreAILabCore/Pipelines` defines the versioned, deterministic contract that
 Recipe Studio, Pipeline Studio, and future generated runtimes share. A pipeline
@@ -325,7 +391,7 @@ ports, and compatible single-source edges remain under the same validator used
 by the deterministic JSON codec. This editor does not execute the graph; the
 generic pipeline runtime remains a separate milestone.
 
-### Custom Recipe Studio Foundation
+#### Custom Recipe Studio
 
 Recipe Studio provides a versioned, deterministic authoring manifest and native
 editors for a PyTorch source and module, concrete example inputs, bounded dynamic
@@ -344,7 +410,9 @@ This checkpoint is an in-memory authoring foundation. It does not yet run the
 diagnostic worker, persist recipe workspaces into Lab Projects, execute pipelines,
 or migrate Chatterbox conversion and runtime orchestration into the recipe system.
 
-## Run Apple's YOLOS Tiny Example
+## Model Playgrounds
+
+### Apple's YOLOS Tiny
 
 From a clone of Apple's repository at the pinned revision:
 
@@ -364,7 +432,7 @@ The verified export is a 63.4 MB FP16 asset with a static Float16
 `pred_boxes [1, 100, 4]`. On the tested Mac, warm inference took 23.7-49 ms.
 The generated asset reports the upstream YOLOS Apache-2.0 license.
 
-## Run Apple's Qwen3 0.6B Example
+### Apple's Qwen3 0.6B
 
 Export Qwen from the root of the pinned Apple repository clone. The macOS
 preset uses a 4-bit model and an 8,192-token context:
@@ -387,7 +455,7 @@ Converted weights and tokenizer resources remain local and subject to Qwen's
 upstream license. Set `COREAI_QWEN_BUNDLE_PATH` to an exported resource folder
 to opt into the real-model integration test.
 
-## Run Apple's Diffusion Examples
+### Apple's Diffusion Models
 
 Apple's registry includes Stable Diffusion 1.5, Stable Diffusion 2.1, Stable
 Diffusion 3.5 Medium, and FLUX.2 Klein 4B presets. Export any of them from the
@@ -416,7 +484,7 @@ upstream terms and authenticate with `hf auth login` before export; Core AI Lab
 never reads or stores those credentials. FLUX.2 does not consume a negative
 prompt, so the playground hides that control after loading a FLUX.2 bundle.
 
-## Run Apple's Wav2Vec2 Audio Example
+### Apple's Wav2Vec2 Audio Model
 
 Export Apple's static five-second Wav2Vec2 recipe from the pinned repository:
 
@@ -436,7 +504,7 @@ Set both `COREAI_WAV2VEC2_MODEL_PATH` and `COREAI_WAV2VEC2_AUDIO_PATH` to opt
 into the real-model transcription test. Chatterbox Turbo remains the Lab's
 separate runnable text-to-speech example.
 
-## Speaker Diarization Research
+### Speaker Diarization Research
 
 The **Diarization** workspace imports audio or video, builds a waveform, and
 synchronizes playback with a speaker-turn timeline. Its audited CAM++
@@ -481,14 +549,7 @@ true-streaming research path. See `Conversion/Diarization/MODEL_SELECTION.md`
 and `Conversion/Diarization/TESTING_PLAN.md` for the license matrix, reproducible
 AMI check, DER/JER, long-duration, and physical-device promotion gates.
 
-## Asset Inspector
-
-Open any `.aimodel` package to inspect validity, author, license, description,
-function names, and compute types without adding the asset to the app bundle.
-This works with standalone Apple recipe outputs and individual assets inside
-language, diffusion, or segmentation resource folders.
-
-## Chatterbox Workspace
+### Chatterbox Workspace
 
 The macOS target embeds a versioned `recipe.json`, four `.aimodel` assets, and a
 Hugging Face tokenizer. The recipe is the source of truth for display metadata,
@@ -525,21 +586,24 @@ Verified on an M5 Mac (`h17g`) with Xcode 27 beta:
 See `Conversion/Chatterbox/README.md` for reproducible conversion, parity, and
 runtime-validation commands.
 
-## Example Coverage
+## Core AI API Reference
 
-| Area | File | What it shows |
+### Source Examples
+
+| Area | Source | What it shows |
 | --- | --- | --- |
-| Runtime discovery | `CoreAIDiscoverySnapshot.swift` | Architecture name, available compute units, default specialization options. |
-| Model assets | `CoreAIModelAssetInspector.swift` | `AIModelAsset.isValid`, metadata, function names, compute types. |
-| Model loading | `CoreAIModelLoader.swift` | `AIModel.specialize`, preferred compute unit options, function loading. |
-| Cache policy | `Examples/CoreAIModelCacheExamples.swift` | Default/app-group caches, persistent policy, purge conditions, cache cleanup. |
-| Function descriptors | `Examples/CoreAIFunctionDescriptorExamples.swift` | Input/state/output names and descriptor summaries. |
-| Inference | `Examples/CoreAIInferenceExamples.swift` | The model/function/input flow for `function.run(inputs:)`. |
-| Values | `Examples/CoreAIValueDescriptorExamples.swift` | Public descriptor inspection for tensors and images. |
+| Runtime discovery | [`CoreAIDiscoverySnapshot.swift`](CoreAILabCore/CoreAIDiscoverySnapshot.swift) | Architecture name, available compute units, and default specialization options. |
+| Model assets | [`CoreAIModelAssetInspector.swift`](CoreAILabCore/CoreAIModelAssetInspector.swift) | `AIModelAsset.isValid`, metadata, function names, and compute types. |
+| Model loading | [`CoreAIModelLoader.swift`](CoreAILabCore/CoreAIModelLoader.swift) | `AIModel.specialize`, preferred compute units, and function loading. |
+| Cache policy | [`CoreAIModelCacheExamples.swift`](CoreAILabCore/Examples/CoreAIModelCacheExamples.swift) | Default and app-group caches, persistent policy, purge conditions, and cleanup. |
+| Function descriptors | [`CoreAIFunctionDescriptorExamples.swift`](CoreAILabCore/Examples/CoreAIFunctionDescriptorExamples.swift) | Input, state, output names, and descriptor summaries. |
+| Inference | [`CoreAIInferenceExamples.swift`](CoreAILabCore/Examples/CoreAIInferenceExamples.swift) | The model, function, input, and `function.run(inputs:)` flow. |
+| Values | [`CoreAIValueDescriptorExamples.swift`](CoreAILabCore/Examples/CoreAIValueDescriptorExamples.swift) | Public descriptor inspection for tensors and images. |
 
-The app lists these examples on launch so the repo is easy to navigate from Xcode.
+These focused files compile into both app targets and serve as source-level API
+references beside the complete runtime implementations.
 
-## How To Use CoreAI
+### Minimal Runtime Flow
 
 The current public flow is:
 
@@ -572,23 +636,29 @@ print(descriptor.inputNames)
 print(descriptor.outputNames)
 ```
 
-The complete native runtime is implemented in
-`CoreAILabCore/Chatterbox/ChatterboxCoreAIEngine.swift`.
+For complete implementations, start with
+[`CoreAISpecializationService.swift`](CoreAILabCore/Specialization/CoreAISpecializationService.swift)
+for generic specialization and inference, or
+[`ChatterboxCoreAIEngine.swift`](CoreAILabCore/Chatterbox/ChatterboxCoreAIEngine.swift)
+for a stateful multi-model pipeline.
 
-## Open the Xcode Project
+## Build and Validation
+
+### Open the Xcode Project
 
 ```bash
 cd Core-AI-Framework-Lab
 open CoreAIFrameworkLab.xcodeproj
 ```
 
-## Build and Run on macOS
+### Build and Test on macOS
 
 Use Xcode 27 beta directly. A machine-wide `xcode-select` pointing at an older
-Xcode will not expose the `CoreAI` module.
+Xcode will not expose the `CoreAI` module. If the beta is installed elsewhere,
+replace the `DEVELOPER_DIR` value below.
 
 ```bash
-DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project CoreAIFrameworkLab.xcodeproj \
   -scheme CoreAILabMac \
   -destination 'platform=macOS,arch=arm64' \
@@ -601,7 +671,7 @@ open build/Xcode27/Build/Products/Debug/CoreAILab.app
 Run the macOS contract tests with the same scheme:
 
 ```bash
-DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project CoreAIFrameworkLab.xcodeproj \
   -scheme CoreAILabMac \
   -destination 'platform=macOS,arch=arm64' \
@@ -609,9 +679,35 @@ xcodebuild -project CoreAIFrameworkLab.xcodeproj \
   test
 ```
 
-The app and tests compile successfully against `MacOSX27.0.sdk`. The iOS app remains available through the `CoreAILab` scheme for device builds.
+The macOS app and Swift contract tests use the `CoreAILabMac` scheme. The iOS
+app and its physical-device tests use `CoreAILab`.
 
-## Run the Real Fixture Test on an iPhone
+### Python and Conversion Tests
+
+Run the standalone harness tests after changing `Scripts/run_device_tests.py`
+or its supporting CI utilities:
+
+```bash
+python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
+```
+
+The conversion environments are independent Python 3.12 projects:
+
+```bash
+cd Conversion/Chatterbox
+uv sync
+uv run pytest -q
+
+cd ../Diarization
+uv sync
+uv run pytest -q
+```
+
+The default suites do not download checkpoints. Real-model and device tests
+remain opt-in through their documented `COREAI_*` environment variables and
+the physical-device harness.
+
+### Run the Real Fixture Test on an iPhone
 
 `Scripts/run_device_tests.py` runs only the bundled, deterministic Core AI
 function-workbench fixture. It accepts one connected, unlocked physical iPhone
@@ -628,7 +724,7 @@ include the selected device and cover both `com.rudrank.CoreAILab` and
 `com.rudrank.CoreAILabTests`. A wildcard development profile is sufficient.
 
 ```bash
-DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 python3 Scripts/run_device_tests.py \
   --team YOUR_TEAM_ID \
   --device YOUR_PHYSICAL_DEVICE_UDID \
@@ -644,7 +740,7 @@ the JSON test summary produced by `xcresulttool`. Success requires that summary
 to attribute exactly one passed, unskipped test to the selected physical iOS
 device; an empty or misrouted filtered run fails the harness.
 
-## CI Verification Boundaries
+### CI Verification Boundaries
 
 The checked-in CI matrix keeps software-only pull-request checks separate from
 Xcode 27 and physical-device evidence. Hosted Linux verifies the versioned
@@ -669,10 +765,10 @@ path-and-content digest of the exact fixture asset, the specialization
 configuration digest, and the specialization/inference result. A failed
 physical XCTest records both stages as not proven rather than guessing which
 stage ran. The current XCTest does not isolate inference latency, peak memory,
-thermal state, energy,
-Neural Engine compatibility dimensions, or execution placement, so those fields
-are explicitly `unavailable` or `notEvaluated`; the runner never derives them
-from a compute preference. Existing evidence files are never overwritten.
+thermal state, energy, Neural Engine compatibility dimensions, or execution
+placement, so those fields are explicitly `unavailable` or `notEvaluated`; the
+runner never derives them from a compute preference. Existing evidence files
+are never overwritten.
 The runner rejects symlinked asset roots and nested links, captures the source
 identity before execution, and re-hashes the fixture inside the built physical
 XCTest bundle before writing successful evidence. A changed or uncertain tree
@@ -681,20 +777,20 @@ does not produce a success record.
 Open **Device Lab** to author a static iPhone context/shape profile, separate
 app-download and on-demand model slices, compare download and installed byte
 counts, check bounded storage requirements, and import a runner evidence JSON
-file. Precision, layout, projection, and
-unsupported-operation diagnostics are driven only by imported evidence and
-apply only when artifact SHA-256 and byte count, configuration identifier and
-SHA-256, compute preference, reshape policy, context, and static shapes exactly
-match the selected trial contract. The default `tokens` and `values` profile
-matches the generated fixture evidence. Evidence imports are limited to 1 MiB,
-read and decoded away from the main actor, and protected against stale import
-completion. Authoring validation bounds context, shape count, rank, dimensions,
-per-shape elements, and total elements before device planning.
+file. Precision, layout, projection, and unsupported-operation diagnostics are
+driven only by imported evidence and apply only when artifact SHA-256 and byte
+count, configuration identifier and SHA-256, compute preference, reshape
+policy, context, and static shapes exactly match the selected trial contract.
+The default `tokens` and `values` profile matches the generated fixture
+evidence. Evidence imports are limited to 1 MiB, read and decoded away from the
+main actor, and protected against stale import completion. Authoring validation
+bounds context, shape count, rank, dimensions, per-shape elements, and total
+elements before device planning.
 
 ## Current Limitations
 
 - Apple's repository ships export code and runtime utilities, not converted
-  model weights. Export remains a local `uv` workflow in this first slice.
+  model weights. Apple catalog exports remain local `uv` workflows.
 - YOLOS object detection, EfficientSAM point segmentation, SAM 3 text
   segmentation, Qwen3 0.6B language generation, and Apple's four diffusion
   presets have dedicated Apple-runtime playgrounds. Wav2Vec2 adds Apple's
@@ -731,18 +827,20 @@ per-shape elements, and total elements before device planning.
   audio.
 - The 600 MiB model bundle is included only in the macOS target.
 - Simulator and device support may differ during the Xcode 27 beta cycle.
-- Device Lab is a contract and authoring foundation, not a completed Milestone 7
-  deployment claim. A passing physical fixture XCTest can prove its own
+- Device Lab is a contract and authoring foundation, not a completed production
+  deployment system. A passing physical fixture XCTest can prove its own
   specialization and inference assertions, but no physical evidence is checked
-  in and the harness does not yet provide separately authored language/vision and audio variants,
-  per-inference latency distributions, memory/thermal/energy trials, or measured
-  Neural Engine placement. Those require unlocked physical hardware plus
-  benchmark and Instruments evidence.
+  in. The harness does not yet provide separately authored language, vision,
+  and audio variants; per-inference latency distributions; memory, thermal, or
+  energy trials; or measured Neural Engine placement. Those require unlocked
+  physical hardware plus benchmark and Instruments evidence.
 - Core AI and its converter packages are beta APIs and may move between seeds.
 
 ## Current SDK Shape
 
-`CoreAI.framework` is a public framework in Xcode 27 beta, but the top-level Swift module mostly re-exports `CoreAIDelegates`. The usable public API fans out into subframeworks:
+`CoreAI.framework` is a public framework in Xcode 27 beta, but the top-level
+Swift module mostly re-exports `CoreAIDelegates`. The usable public API fans out
+into subframeworks:
 
 - `CoreAIAsset`
 - `CoreAIDelegates`
@@ -751,7 +849,7 @@ per-shape elements, and total elements before device planning.
 - `CoreAICommon`
 - `CoreAICache`
 
-See `coreai.md` for the current symbol notes.
+See [`coreai.md`](coreai.md) for the current symbol notes.
 
 ## Contributing
 
