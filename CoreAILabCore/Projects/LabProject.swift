@@ -12,7 +12,22 @@ final class LabProject {
     var lastOpenedAt: Date
 
     @Relationship(deleteRule: .cascade, inverse: \ProjectArtifactLink.project)
-    var artifactLinks: [ProjectArtifactLink]
+    private(set) var artifactLinks: [ProjectArtifactLink]
+
+    @Relationship(deleteRule: .cascade, inverse: \CoreAIRecipeRevisionRecord.project)
+    private(set) var recipeRevisions: [CoreAIRecipeRevisionRecord] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \CoreAITargetProfileRecord.project)
+    private(set) var targetProfiles: [CoreAITargetProfileRecord] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \CoreAIRunRecord.project)
+    private(set) var runs: [CoreAIRunRecord] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \CoreAIEvidenceRecord.project)
+    private(set) var evidence: [CoreAIEvidenceRecord] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \CoreAISpecializationCacheRecord.project)
+    private(set) var specializationCaches: [CoreAISpecializationCacheRecord] = []
 
     init(
         id: UUID = UUID(),
@@ -21,8 +36,7 @@ final class LabProject {
         projectDescription: String = "",
         createdAt: Date = .now,
         updatedAt: Date = .now,
-        lastOpenedAt: Date = .now,
-        artifactLinks: [ProjectArtifactLink] = []
+        lastOpenedAt: Date = .now
     ) {
         self.id = id
         self.schemaVersion = schemaVersion
@@ -31,7 +45,12 @@ final class LabProject {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.lastOpenedAt = lastOpenedAt
-        self.artifactLinks = artifactLinks
+        artifactLinks = []
+        recipeRevisions = []
+        targetProfiles = []
+        runs = []
+        evidence = []
+        specializationCaches = []
     }
 
     var sortedArtifactLinks: [ProjectArtifactLink] {

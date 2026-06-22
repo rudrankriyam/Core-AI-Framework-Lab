@@ -15,7 +15,13 @@ enum CoreAIProjectModelContainer {
         let schema = Schema([
             LabProject.self,
             ModelArtifactRecord.self,
-            ProjectArtifactLink.self
+            ProjectArtifactLink.self,
+            CoreAISourceProvenanceRecord.self,
+            CoreAISpecializationCacheRecord.self,
+            CoreAIRecipeRevisionRecord.self,
+            CoreAITargetProfileRecord.self,
+            CoreAIRunRecord.self,
+            CoreAIEvidenceRecord.self
         ])
         let configuration = ModelConfiguration(
             "CoreAIProjects",
