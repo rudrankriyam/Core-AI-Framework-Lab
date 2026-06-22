@@ -157,12 +157,12 @@ entries that do not declare support for the current OS. EfficientSAM and SAM 3,
 as well as all four diffusion presets, prove that a second model can reuse an
 existing destination without adding navigation SwiftUI.
 
-Qwen, YOLOS, both segmentation adapters, Wav2Vec2, and diffusion runs report one
-shared lifecycle: running, succeeded, failed, or canceled. Attempts remain cold
-until one run succeeds for the same experience and imported model identity in a
-Runtime Studio session; later attempts are warm. A selected comparison identity
-is captured with each run, but this slice does not claim numerical or semantic
-A/B comparison of outputs.
+Qwen, YOLOS, both segmentation adapters, Wav2Vec2, diffusion runs, and direct
+Function Workbench invocations report one shared lifecycle: running, succeeded,
+failed, or canceled. Attempts remain cold until one run succeeds for the same
+experience and imported model identity in a Runtime Studio session; later
+attempts are warm. A selected comparison identity is captured with each run,
+but this slice does not claim numerical or semantic A/B comparison of outputs.
 
 Choose a Lab Project under **Run Recording** to persist future runtime status.
 The importer checks that an artifact's identifiable model family matches the
@@ -187,7 +187,9 @@ exported bundle under its upstream license.
 Open **Runtime Studio -> Function Workbench**, choose any `.aimodel`, and
 specialize it with one of the same cache and compute profiles. The Lab then
 lists every function contract and can run supported stateless functions without
-a model-specific SwiftUI screen.
+a model-specific SwiftUI screen. Direct invocations use Runtime Studio's shared
+lifecycle and optional project recording; the separate multi-trial benchmark
+reports remain session-only evidence.
 
 The first generic runtime slice supports fixed or dynamic NDArray inputs using
 zeros or repeatable seeded random values across Bool, signed and unsigned

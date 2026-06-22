@@ -27,6 +27,11 @@ struct CoreAIExperienceRegistryTests {
                 .runContext.recipeProvenance == .unverifiedIntent
         )
         #expect(registry.mapping(id: "apple-wav2vec2-transcription")?.experience.workload == .audioTranscription)
+        let generic = try #require(
+            registry.mapping(id: "generic-function-workbench")
+        )
+        #expect(generic.experience.capabilities.contains(.coldWarmTiming))
+        #expect(generic.experience.capabilities.contains(.persistentRunMetadata))
     }
 
     @Test

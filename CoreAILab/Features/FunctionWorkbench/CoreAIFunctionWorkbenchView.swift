@@ -1,13 +1,30 @@
 import SwiftUI
 
 struct CoreAIFunctionWorkbenchView: View {
-    @State private var workspace = CoreAIFunctionWorkbenchWorkspaceModel()
+    @State private var workspace: CoreAIFunctionWorkbenchWorkspaceModel
     @State private var isImportingModel = false
     @State private var isChoosingExportDestination = false
-    let initialURL: URL?
+    private let initialURL: URL?
+    private let runContext: CoreAIRuntimeRunContext
 
-    init(initialURL: URL? = nil) {
+    init(
+        initialURL: URL? = nil,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
+    ) {
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "generic-function-workbench",
+            title: "Function Workbench",
+            modelIdentifier: "imported-coreai-asset"
+        )
+        _workspace = State(
+            initialValue: CoreAIFunctionWorkbenchWorkspaceModel(
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
         self.initialURL = initialURL
+        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -25,6 +42,11 @@ struct CoreAIFunctionWorkbenchView: View {
                             .foregroundStyle(.secondary)
                             .textSelection(.enabled)
                     }
+
+                    CoreAIRuntimeLifecycleView(
+                        coordinator: workspace.runCoordinator,
+                        context: runContext
+                    )
 
                     CoreAISpecializationControlsView(
                         workspace: workspace.assetWorkspace,

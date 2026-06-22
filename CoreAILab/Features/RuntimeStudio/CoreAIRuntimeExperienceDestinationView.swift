@@ -68,7 +68,10 @@ struct CoreAIRuntimeExperienceDestinationView: View {
                     CoreAIRuntimeUnsupportedExperienceView(mapping: mapping)
                 }
             case .genericFunctionWorkbench:
-                CoreAIFunctionWorkbenchView()
+                CoreAIFunctionWorkbenchView(
+                    runContext: mapping.runContext,
+                    runCoordinator: coordinator
+                )
             }
         }
     }
