@@ -616,7 +616,8 @@ Current foundation:
 
 - The public version 1 JSON and Swift bundle schemas, authoring guide,
   deterministic exporter, managed importer, curated index, and trust review UI
-  are implemented.
+  are implemented. Curated trust and verification claims are bound to exact
+  recipe-manifest and evidence digests that repository tests revalidate.
 - Import rejects unsupported versions or families, traversal, symbolic links,
   undeclared content, and hash or size mismatches. Executable references remain
   locked behind per-session approval, and approval itself does not execute code.

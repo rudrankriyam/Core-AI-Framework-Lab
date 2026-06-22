@@ -165,7 +165,10 @@ public actor CoreAIRecipeBundleExporter {
     ) throws -> CoreAIRecipeBundleExportResult {
         try Task.checkCancellation()
         try CoreAIRecipeBundleFileSystem.validateRootDirectory(draft.sourceRootURL)
-        let sourcePath = draft.sourceRootURL.standardizedFileURL.path
+        let sourcePath = draft.sourceRootURL
+            .resolvingSymlinksInPath()
+            .standardizedFileURL
+            .path
         let destinationPath = destinationURL.standardizedFileURL.path
         guard destinationPath != sourcePath,
               !destinationPath.hasPrefix(sourcePath + "/") else {
@@ -183,6 +186,15 @@ public actor CoreAIRecipeBundleExporter {
         try CoreAIRecipeBundleFileSystem.validateRootDirectory(
             destinationParentURL
         )
+        let resolvedDestinationPath = destinationParentURL
+            .resolvingSymlinksInPath()
+            .standardizedFileURL
+            .appending(path: destinationURL.lastPathComponent)
+            .path
+        guard resolvedDestinationPath != sourcePath,
+              !resolvedDestinationPath.hasPrefix(sourcePath + "/") else {
+            throw CoreAIRecipeBundleError.destinationInsideSource
+        }
         let stagingURL = destinationParentURL.appending(
             path: ".recipe-export-\(UUID().uuidString)",
             directoryHint: .isDirectory
@@ -203,6 +215,11 @@ public actor CoreAIRecipeBundleExporter {
             )
             let sourceURL = try CoreAIRecipeBundleFileSystem.validatedPayloadURL(
                 rootURL: draft.sourceRootURL,
+                relativePath: draftFile.relativePath
+            )
+            try CoreAIRecipeBundleFileSystem.validateDeclaredRole(
+                draftFile.role,
+                payloadURL: sourceURL,
                 relativePath: draftFile.relativePath
             )
             let destinationPayloadURL = CoreAIRecipeBundleFileSystem.url(
@@ -465,6 +482,11 @@ private enum CoreAIRecipeBundleFileSystem {
                 rootURL: rootURL,
                 relativePath: file.relativePath
             )
+            try validateDeclaredRole(
+                file.role,
+                payloadURL: payloadURL,
+                relativePath: file.relativePath
+            )
             let fingerprint = try fingerprint(at: payloadURL)
             guard fingerprint.sha256 == file.sha256 else {
                 throw CoreAIRecipeBundleError.hashMismatch(
@@ -591,11 +613,54 @@ private enum CoreAIRecipeBundleFileSystem {
     static func canonicalManifestData(
         _ manifest: CoreAIRecipeBundleManifest
     ) throws -> Data {
+        let canonicalManifest = CoreAIRecipeBundleManifest(
+            schemaVersion: manifest.schemaVersion,
+            id: manifest.id,
+            familyID: manifest.familyID,
+            revision: manifest.revision,
+            displayName: manifest.displayName,
+            summary: manifest.summary,
+            recipeManifestPath: manifest.recipeManifestPath,
+            provenance: manifest.provenance,
+            files: manifest.files.sorted { $0.relativePath < $1.relativePath },
+            codeReferences: manifest.codeReferences.sorted { $0.id < $1.id }
+        )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-        var data = try encoder.encode(manifest)
+        var data = try encoder.encode(canonicalManifest)
         data.append(0x0A)
         return data
+    }
+
+    static func validateDeclaredRole(
+        _ role: CoreAIRecipeBundleFileRole,
+        payloadURL: URL,
+        relativePath: String
+    ) throws {
+        guard !role.requiresExecutionApproval else { return }
+        if FileManager.default.isExecutableFile(atPath: payloadURL.path) {
+            throw CoreAIRecipeBundleError.hiddenCodeReference(path: relativePath)
+        }
+
+        let handle = try FileHandle(forReadingFrom: payloadURL)
+        defer { try? handle.close() }
+        let prefix = try handle.read(upToCount: 8) ?? Data()
+        let executableMagic: [[UInt8]] = [
+            [0x23, 0x21],
+            [0x7f, 0x45, 0x4c, 0x46],
+            [0x00, 0x61, 0x73, 0x6d],
+            [0xfe, 0xed, 0xfa, 0xce],
+            [0xce, 0xfa, 0xed, 0xfe],
+            [0xfe, 0xed, 0xfa, 0xcf],
+            [0xcf, 0xfa, 0xed, 0xfe],
+            [0xca, 0xfe, 0xba, 0xbe],
+            [0xbe, 0xba, 0xfe, 0xca],
+            [0xca, 0xfe, 0xba, 0xbf],
+            [0xbf, 0xba, 0xfe, 0xca]
+        ]
+        if executableMagic.contains(where: { prefix.starts(with: $0) }) {
+            throw CoreAIRecipeBundleError.hiddenCodeReference(path: relativePath)
+        }
     }
 
     static func copyAndFingerprint(

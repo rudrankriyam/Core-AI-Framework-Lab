@@ -28,6 +28,11 @@ empty components, `.` and `..`, backslashes, tildes, and symbolic links are
 rejected. Undeclared files are also rejected, so executable content cannot hide
 beside the reviewed inventory.
 
+The JSON Schema rejects unknown fields and the Swift decoder applies the same
+closed-field policy. Cross-field rules, Unicode NFC normalization, executable
+content checks, and inventory uniqueness are semantic validation steps described
+by the schema's `x-coreai-semanticValidation` annotation and enforced by the app.
+
 Use these roles:
 
 - `recipeManifest`, `validationFixture`, `documentation`, and `data` are data.
@@ -74,6 +79,13 @@ untrusted conversion work before a distributed build runs imported code.
 
 `CoreAILab/Resources/Recipes/curated-recipes.json` is a versioned catalog. Every
 entry has independent trust and verification states plus plain-language notes.
+Each entry binds its trust claim to the exact SHA-256 digest of a checked-in
+recipe manifest. Every positive verification state also names and hashes its
+evidence source, so edits invalidate the catalog assertion until it is reviewed
+and refreshed. The catalog UI shows both full digests. Repository tests invoke
+`validateReferencedDigests(at:)` against the checkout root, rehashing the exact
+recipe and evidence references; those source paths are intentionally not assumed
+to exist in every platform's installed app bundle.
 `fixturesValidated` means local deterministic fixtures passed; it does not imply
 physical-device, Neural Engine, performance, or external CI verification.
 Hardware claims require a durable evidence reference. The draft hardware matrix

@@ -108,8 +108,10 @@ records automatically, so restart-safe execution remains later work.
 
 Open **Recipes** to inspect the versioned curated index or import a recipe-bundle
 directory. Catalog entries report trust and verification separately, with notes
-that state exactly which evidence exists. Fixture validation does not imply a
-physical-device, performance, or Neural Engine result.
+that state exactly which evidence exists. Trust is bound to a recipe-manifest
+digest, and positive verification states are bound to a hashed evidence source.
+Fixture validation does not imply a physical-device, performance, or Neural
+Engine result.
 
 The public version 1 bundle contract is documented in
 [`Documentation/RECIPE_BUNDLES.md`](Documentation/RECIPE_BUNDLES.md) and

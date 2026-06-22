@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Testing
 @testable import CoreAILab
@@ -28,6 +29,102 @@ struct CoreAIRecipeBundleTests {
                 path: CoreAIRecipeBundleManifest.fileName
             ))
         )
+    }
+
+    @Test
+    func canonicalManifestHashIgnoresInventoryOrdering() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let exported = try await CoreAIRecipeBundleExporter().export(
+            fixture.draft,
+            to: fixture.rootURL.appending(path: "Ordered.recipebundle")
+        )
+        let reorderedManifest = CoreAIRecipeBundleManifest(
+            schemaVersion: exported.manifest.schemaVersion,
+            id: exported.manifest.id,
+            familyID: exported.manifest.familyID,
+            revision: exported.manifest.revision,
+            displayName: exported.manifest.displayName,
+            summary: exported.manifest.summary,
+            recipeManifestPath: exported.manifest.recipeManifestPath,
+            provenance: exported.manifest.provenance,
+            files: Array(exported.manifest.files.reversed()),
+            codeReferences: Array(exported.manifest.codeReferences.reversed())
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        var reorderedData = try encoder.encode(reorderedManifest)
+        reorderedData.append(0x0A)
+        try reorderedData.write(
+            to: exported.bundleURL.appending(path: CoreAIRecipeBundleManifest.fileName),
+            options: .atomic
+        )
+
+        let session = try await fixture.importer.importBundle(at: exported.bundleURL)
+
+        #expect(session.summary.manifestSHA256 == exported.manifestSHA256)
+    }
+
+    @Test
+    func manifestDecoderRejectsUnknownFields() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let encoder = JSONEncoder()
+        var topLevel = try #require(
+            JSONSerialization.jsonObject(with: encoder.encode(fixture.draftManifest))
+                as? [String: Any]
+        )
+        topLevel["futurePolicy"] = true
+        let topLevelData = try JSONSerialization.data(withJSONObject: topLevel)
+
+        #expect(throws: CoreAIRecipeBundleError.self) {
+            _ = try JSONDecoder().decode(
+                CoreAIRecipeBundleManifest.self,
+                from: topLevelData
+            )
+        }
+
+        var nested = try #require(
+            JSONSerialization.jsonObject(with: encoder.encode(fixture.draftManifest))
+                as? [String: Any]
+        )
+        var files = try #require(nested["files"] as? [[String: Any]])
+        files[0]["futurePolicy"] = true
+        nested["files"] = files
+        let nestedData = try JSONSerialization.data(withJSONObject: nested)
+
+        #expect(throws: CoreAIRecipeBundleError.self) {
+            _ = try JSONDecoder().decode(
+                CoreAIRecipeBundleManifest.self,
+                from: nestedData
+            )
+        }
+    }
+
+    @Test
+    func publishedSchemaRejectsTrailingPathComponents() throws {
+        let repositoryRootURL = URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let schemaData = try Data(contentsOf: repositoryRootURL.appending(
+            path: "Documentation/recipe-bundle.schema.json"
+        ))
+        let schema = try #require(
+            JSONSerialization.jsonObject(with: schemaData) as? [String: Any]
+        )
+        let definitions = try #require(schema["$defs"] as? [String: Any])
+        let safePath = try #require(definitions["safeRelativePath"] as? [String: Any])
+        let pattern = try #require(safePath["pattern"] as? String)
+        let expression = try NSRegularExpression(pattern: pattern)
+        func matches(_ value: String) -> Bool {
+            expression.firstMatch(
+                in: value,
+                range: NSRange(value.startIndex..., in: value)
+            ) != nil
+        }
+
+        #expect(matches("Recipe/recipe.json"))
+        #expect(!matches("Recipe/"))
     }
 
     @Test
@@ -154,6 +251,35 @@ struct CoreAIRecipeBundleTests {
             #expect(error == .symbolicLink("."))
         }
     }
+
+    @Test
+    func exportRejectsDestinationInsideSourceThroughSymlinkAlias() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let exportDirectory = fixture.sourceRootURL.appending(
+            path: "Exports",
+            directoryHint: .isDirectory
+        )
+        try FileManager.default.createDirectory(
+            at: exportDirectory,
+            withIntermediateDirectories: true
+        )
+        let sourceAliasURL = fixture.rootURL.appending(path: "SourceAlias")
+        try FileManager.default.createSymbolicLink(
+            at: sourceAliasURL,
+            withDestinationURL: fixture.sourceRootURL
+        )
+
+        do {
+            _ = try await CoreAIRecipeBundleExporter().export(
+                fixture.draft,
+                to: sourceAliasURL.appending(path: "Exports/Alias.recipebundle")
+            )
+            Issue.record("Expected a symlink alias into the source to be rejected.")
+        } catch let error as CoreAIRecipeBundleError {
+            #expect(error == .destinationInsideSource)
+        }
+    }
 #endif
 
     @Test
@@ -245,32 +371,78 @@ struct CoreAIRecipeBundleTests {
             license: "MIT",
             author: "Example Authors"
         )
-        let manifest = CoreAIRecipeBundleManifest(
-            id: "example/audio/demo",
-            familyID: "example/audio",
-            revision: "0123456789abcdef",
-            displayName: "Example Audio",
-            summary: "Misclassified executable fixture",
-            recipeManifestPath: "Recipe/recipe.json",
-            provenance: fixtureProvenance,
+        for executablePath in ["Authoring/export.py", "Authoring/export.bash"] {
+            let manifest = CoreAIRecipeBundleManifest(
+                id: "example/audio/demo",
+                familyID: "example/audio",
+                revision: "0123456789abcdef",
+                displayName: "Example Audio",
+                summary: "Misclassified executable fixture",
+                recipeManifestPath: "Recipe/recipe.json",
+                provenance: fixtureProvenance,
+                files: [
+                    CoreAIRecipeBundleFile(
+                        relativePath: "Recipe/recipe.json",
+                        sha256: String(repeating: "0", count: 64),
+                        byteCount: 0,
+                        role: .recipeManifest
+                    ),
+                    CoreAIRecipeBundleFile(
+                        relativePath: executablePath,
+                        sha256: String(repeating: "1", count: 64),
+                        byteCount: 0,
+                        role: .data
+                    )
+                ]
+            )
+
+            #expect(throws: CoreAIRecipeBundleError.self) {
+                try manifest.validate()
+            }
+        }
+    }
+
+    @Test
+    func importRejectsExtensionlessExecutableDisguisedAsData() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let bundleURL = fixture.rootURL.appending(path: "HiddenCode.recipebundle")
+        let recipeData = Data("{\"schemaVersion\":1}\n".utf8)
+        let workerData = Data("#!/bin/sh\necho hidden\n".utf8)
+        try FileManager.default.createDirectory(
+            at: bundleURL.appending(path: "Recipe"),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: bundleURL.appending(path: "Authoring"),
+            withIntermediateDirectories: true
+        )
+        try recipeData.write(to: bundleURL.appending(path: "Recipe/recipe.json"))
+        try workerData.write(to: bundleURL.appending(path: "Authoring/worker"))
+        let manifest = fixture.manifest(
             files: [
                 CoreAIRecipeBundleFile(
                     relativePath: "Recipe/recipe.json",
-                    sha256: String(repeating: "0", count: 64),
-                    byteCount: 0,
+                    sha256: sha256(recipeData),
+                    byteCount: Int64(recipeData.count),
                     role: .recipeManifest
                 ),
                 CoreAIRecipeBundleFile(
-                    relativePath: "Authoring/export.py",
-                    sha256: String(repeating: "1", count: 64),
-                    byteCount: 0,
+                    relativePath: "Authoring/worker",
+                    sha256: sha256(workerData),
+                    byteCount: Int64(workerData.count),
                     role: .data
                 )
-            ]
+            ],
+            recipeManifestPath: "Recipe/recipe.json"
         )
+        try fixture.write(manifest: manifest, to: bundleURL)
 
-        #expect(throws: CoreAIRecipeBundleError.self) {
-            try manifest.validate()
+        do {
+            _ = try await fixture.importer.importBundle(at: bundleURL)
+            Issue.record("Expected extensionless executable content to be rejected.")
+        } catch let error as CoreAIRecipeBundleError {
+            #expect(error == .hiddenCodeReference(path: "Authoring/worker"))
         }
     }
 
@@ -283,12 +455,86 @@ struct CoreAIRecipeBundleTests {
             path: "CoreAILab/Resources/Recipes/curated-recipes.json"
         ))
         let index = try CoreAIRecipeCatalog.decodeCurated(data)
+        try index.validateReferencedDigests(at: repositoryRootURL)
         let chatterbox = try #require(index.entries.first)
 
         #expect(chatterbox.trustState == .bundledCurated)
         #expect(chatterbox.verificationState == .fixturesValidated)
-        #expect(chatterbox.evidenceReference == nil)
+        #expect(chatterbox.evidenceReference != nil)
         #expect(chatterbox.verificationNotes.contains("does not claim a hardware"))
+        let manifestURL = repositoryRootURL.appending(
+            path: chatterbox.recipeManifestReference
+        )
+        #expect(sha256(try Data(contentsOf: manifestURL)) == chatterbox.recipeManifestSHA256)
+        let evidenceReference = try #require(chatterbox.evidenceReference)
+        let evidenceSHA256 = try #require(chatterbox.evidenceSHA256)
+        #expect(
+            sha256(try Data(contentsOf: repositoryRootURL.appending(path: evidenceReference)))
+                == evidenceSHA256
+        )
+    }
+
+    @Test
+    func catalogDigestValidationRejectsAlteredRecipeAndEvidence() throws {
+        let rootURL = FileManager.default.temporaryDirectory.appending(
+            path: "CoreAIRecipeCatalogDigestTests-\(UUID().uuidString)",
+            directoryHint: .isDirectory
+        )
+        defer { try? FileManager.default.removeItem(at: rootURL) }
+        try FileManager.default.createDirectory(
+            at: rootURL,
+            withIntermediateDirectories: true
+        )
+        let recipeURL = rootURL.appending(path: "recipe.json")
+        let evidenceURL = rootURL.appending(path: "evidence.json")
+        let recipeData = Data("{\"recipe\":true}\n".utf8)
+        let evidenceData = Data("{\"fixturesPassed\":true}\n".utf8)
+        try recipeData.write(to: recipeURL)
+        try evidenceData.write(to: evidenceURL)
+        let index = CoreAIRecipeCatalogIndex(
+            entries: [
+                CoreAIRecipeCatalogEntry(
+                    id: "example/catalog-entry",
+                    familyID: "example/family",
+                    revision: "0123456789abcdef",
+                    displayName: "Example",
+                    summary: "Digest-bound catalog fixture",
+                    recipeManifestReference: "recipe.json",
+                    recipeManifestSHA256: sha256(recipeData),
+                    trustState: .bundledCurated,
+                    verificationState: .fixturesValidated,
+                    verificationNotes: "Fixture evidence is bound by digest.",
+                    evidenceReference: "evidence.json",
+                    evidenceSHA256: sha256(evidenceData)
+                )
+            ]
+        )
+        try index.validateReferencedDigests(at: rootURL)
+
+        try Data("{\"recipe\":false}\n".utf8).write(to: recipeURL)
+        do {
+            try index.validateReferencedDigests(at: rootURL)
+            Issue.record("Expected altered recipe bytes to invalidate the catalog.")
+        } catch let error as CoreAIRecipeBundleError {
+            guard case .hashMismatch(let path, _, _) = error else {
+                Issue.record("Unexpected error: \(error)")
+                return
+            }
+            #expect(path == "recipe.json")
+        }
+
+        try recipeData.write(to: recipeURL)
+        try Data("{\"fixturesPassed\":false}\n".utf8).write(to: evidenceURL)
+        do {
+            try index.validateReferencedDigests(at: rootURL)
+            Issue.record("Expected altered evidence bytes to invalidate the catalog.")
+        } catch let error as CoreAIRecipeBundleError {
+            guard case .hashMismatch(let path, _, _) = error else {
+                Issue.record("Unexpected error: \(error)")
+                return
+            }
+            #expect(path == "evidence.json")
+        }
     }
 
 #if os(macOS)
@@ -351,6 +597,20 @@ private struct Fixture {
                     entryPoint: "export:main"
                 )
             ]
+        )
+    }
+
+    var draftManifest: CoreAIRecipeBundleManifest {
+        manifest(
+            files: [
+                CoreAIRecipeBundleFile(
+                    relativePath: "Recipe/recipe.json",
+                    sha256: String(repeating: "0", count: 64),
+                    byteCount: 0,
+                    role: .recipeManifest
+                )
+            ],
+            recipeManifestPath: "Recipe/recipe.json"
         )
     }
 
@@ -421,4 +681,12 @@ private struct Fixture {
     func remove() {
         try? FileManager.default.removeItem(at: rootURL)
     }
+}
+
+private func sha256(_ data: Data) -> String {
+    let digits = Array("0123456789abcdef".utf8)
+    let bytes = SHA256.hash(data: data).flatMap { byte in
+        [digits[Int(byte >> 4)], digits[Int(byte & 0x0f)]]
+    }
+    return String(decoding: bytes, as: UTF8.self)
 }

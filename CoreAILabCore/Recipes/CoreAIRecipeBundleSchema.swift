@@ -7,6 +7,7 @@ public enum CoreAIRecipeBundleError: Error, Equatable, LocalizedError, Sendable 
     case invalidRelativePath(path: String, value: String)
     case invalidDigest(path: String, value: String)
     case invalidByteCount(path: String, value: Int64)
+    case unknownKey(path: String)
     case duplicateIdentifier(path: String, identifier: String)
     case duplicatePath(String)
     case missingRecipeManifest(String)
@@ -39,6 +40,8 @@ public enum CoreAIRecipeBundleError: Error, Equatable, LocalizedError, Sendable 
             "\(path) must be a lowercase 64-character SHA-256 digest, but found \(value)."
         case .invalidByteCount(let path, let value):
             "\(path) must be zero or greater, but found \(value)."
+        case .unknownKey(let path):
+            "The recipe bundle contains an unknown field at \(path)."
         case .duplicateIdentifier(let path, let identifier):
             "\(path) contains the duplicate identifier \(identifier)."
         case .duplicatePath(let path):
@@ -120,6 +123,26 @@ public struct CoreAIRecipeBundleProvenance: Codable, Equatable, Sendable {
         self.author = author
     }
 
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case sourceRepository
+        case sourceRevision
+        case license
+        case author
+    }
+
+    public init(from decoder: any Decoder) throws {
+        try CoreAIRecipeBundleValidation.rejectUnknownKeys(
+            from: decoder,
+            allowedKeys: CodingKeys.allCases.map(\.rawValue),
+            path: "recipeBundle.provenance"
+        )
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceRepository = try container.decode(String.self, forKey: .sourceRepository)
+        sourceRevision = try container.decode(String.self, forKey: .sourceRevision)
+        license = try container.decode(String.self, forKey: .license)
+        author = try container.decode(String.self, forKey: .author)
+    }
+
     fileprivate func validate() throws {
         try CoreAIRecipeBundleValidation.requireNonempty(
             sourceRepository,
@@ -158,6 +181,26 @@ public struct CoreAIRecipeBundleFile: Codable, Equatable, Sendable {
         self.role = role
     }
 
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case relativePath
+        case sha256
+        case byteCount
+        case role
+    }
+
+    public init(from decoder: any Decoder) throws {
+        try CoreAIRecipeBundleValidation.rejectUnknownKeys(
+            from: decoder,
+            allowedKeys: CodingKeys.allCases.map(\.rawValue),
+            path: "recipeBundle.files[]"
+        )
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        relativePath = try container.decode(String.self, forKey: .relativePath)
+        sha256 = try container.decode(String.self, forKey: .sha256)
+        byteCount = try container.decode(Int64.self, forKey: .byteCount)
+        role = try container.decode(CoreAIRecipeBundleFileRole.self, forKey: .role)
+    }
+
     fileprivate func validate(path: String) throws {
         try CoreAIRecipeBundleValidation.requireSafeRelativePath(
             relativePath,
@@ -192,6 +235,26 @@ public struct CoreAIRecipeCodeReference: Codable, Equatable, Identifiable, Senda
         self.relativePath = relativePath
         self.language = language
         self.entryPoint = entryPoint
+    }
+
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case id
+        case relativePath
+        case language
+        case entryPoint
+    }
+
+    public init(from decoder: any Decoder) throws {
+        try CoreAIRecipeBundleValidation.rejectUnknownKeys(
+            from: decoder,
+            allowedKeys: CodingKeys.allCases.map(\.rawValue),
+            path: "recipeBundle.codeReferences[]"
+        )
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        relativePath = try container.decode(String.self, forKey: .relativePath)
+        language = try container.decode(CoreAIRecipeCodeLanguage.self, forKey: .language)
+        entryPoint = try container.decode(String.self, forKey: .entryPoint)
     }
 
     fileprivate func validate(path: String) throws {
@@ -244,6 +307,44 @@ public struct CoreAIRecipeBundleManifest: Codable, Equatable, Identifiable, Send
         self.provenance = provenance
         self.files = files
         self.codeReferences = codeReferences
+    }
+
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case schemaVersion
+        case id
+        case familyID
+        case revision
+        case displayName
+        case summary
+        case recipeManifestPath
+        case provenance
+        case files
+        case codeReferences
+    }
+
+    public init(from decoder: any Decoder) throws {
+        try CoreAIRecipeBundleValidation.rejectUnknownKeys(
+            from: decoder,
+            allowedKeys: CodingKeys.allCases.map(\.rawValue),
+            path: "recipeBundle"
+        )
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        id = try container.decode(String.self, forKey: .id)
+        familyID = try container.decode(String.self, forKey: .familyID)
+        revision = try container.decode(String.self, forKey: .revision)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        summary = try container.decode(String.self, forKey: .summary)
+        recipeManifestPath = try container.decode(String.self, forKey: .recipeManifestPath)
+        provenance = try container.decode(
+            CoreAIRecipeBundleProvenance.self,
+            forKey: .provenance
+        )
+        files = try container.decode([CoreAIRecipeBundleFile].self, forKey: .files)
+        codeReferences = try container.decode(
+            [CoreAIRecipeCodeReference].self,
+            forKey: .codeReferences
+        )
     }
 
     public var requiresCodeApproval: Bool {
@@ -342,7 +443,7 @@ public struct CoreAIRecipeBundleManifest: Codable, Equatable, Identifiable, Send
             let pathExtension = URL(filePath: file.relativePath)
                 .pathExtension
                 .lowercased()
-            if ["py", "swift", "sh", "command"].contains(pathExtension) {
+            if CoreAIRecipeBundleValidation.executablePathExtensions.contains(pathExtension) {
                 throw CoreAIRecipeBundleError.hiddenCodeReference(
                     path: file.relativePath
                 )
@@ -364,6 +465,13 @@ public struct CoreAIRecipeBundleManifest: Codable, Equatable, Identifiable, Send
 }
 
 enum CoreAIRecipeBundleValidation {
+    static let executablePathExtensions: Set<String> = [
+        "bash", "cjs", "class", "command", "dylib", "fish", "jar", "js",
+        "jsx", "lua", "metal", "metallib", "mjs", "php", "pl", "pm", "py",
+        "pyc", "pyo", "pyw", "r", "rb", "sh", "so", "swift", "ts", "tsx",
+        "wasm", "zsh"
+    ]
+
     static func requireNonempty(_ value: String, path: String) throws {
         guard !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw CoreAIRecipeBundleError.missingValue(path: path)
@@ -391,5 +499,36 @@ enum CoreAIRecipeBundleValidation {
         guard isValid else {
             throw CoreAIRecipeBundleError.invalidDigest(path: path, value: value)
         }
+    }
+
+    static func rejectUnknownKeys(
+        from decoder: any Decoder,
+        allowedKeys: [String],
+        path: String
+    ) throws {
+        let container = try decoder.container(keyedBy: CoreAIRecipeBundleCodingKey.self)
+        let allowedKeys = Set(allowedKeys)
+        if let unknownKey = container.allKeys
+            .map(\.stringValue)
+            .filter({ !allowedKeys.contains($0) })
+            .sorted()
+            .first {
+            throw CoreAIRecipeBundleError.unknownKey(path: "\(path).\(unknownKey)")
+        }
+    }
+}
+
+private struct CoreAIRecipeBundleCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+        intValue = nil
+    }
+
+    init?(intValue: Int) {
+        stringValue = String(intValue)
+        self.intValue = intValue
     }
 }

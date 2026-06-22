@@ -3,6 +3,12 @@
   "$id": "https://raw.githubusercontent.com/rudrankriyam/Core-AI-Framework-Lab/main/Documentation/recipe-bundle.schema.json",
   "title": "Core AI Lab Recipe Bundle",
   "description": "Declarative metadata for a reviewable Core AI recipe bundle. The manifest hashes every payload and explicitly labels all executable references.",
+  "x-coreai-semanticValidation": [
+    "Relative paths must be Unicode NFC normalized.",
+    "Declared payload paths and code-reference identifiers must be unique.",
+    "recipeManifestPath must name the payload whose role is recipeManifest.",
+    "Executable payload roles must have matching code references and languages."
+  ],
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -123,7 +129,8 @@
     "safeRelativePath": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!/|~)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)(?!.*//).+$"
+      "pattern": "^(?!/|~)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)(?!.*//)(?!.*\\/$).+$",
+      "x-coreai-normalization": "NFC"
     }
   }
 }
