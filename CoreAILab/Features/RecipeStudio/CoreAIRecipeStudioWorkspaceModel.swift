@@ -22,9 +22,9 @@ final class CoreAIRecipeStudioWorkspaceModel {
     }
 
     var tensorInputNames: [String] {
-        recipe.exampleInputs
+        Set(recipe.exampleInputs
             .filter { $0.kind == .tensor }
-            .map(\.name)
+            .map(\.name))
             .sorted()
     }
 
@@ -33,19 +33,23 @@ final class CoreAIRecipeStudioWorkspaceModel {
     }
 
     var sourceEndpoints: [CoreAIPipelineEndpoint] {
-        recipe.pipeline.nodes.flatMap { node in
+        uniqueValues(recipe.pipeline.nodes.flatMap { node in
             node.outputs.map {
                 CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
             }
-        }
+        })
     }
 
     var destinationEndpoints: [CoreAIPipelineEndpoint] {
-        recipe.pipeline.nodes.flatMap { node in
+        uniqueValues(recipe.pipeline.nodes.flatMap { node in
             node.inputs.map {
                 CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
             }
-        }
+        })
+    }
+
+    var displayedPipelineEdges: [CoreAIPipelineEdge] {
+        uniqueValues(recipe.pipeline.edges)
     }
 
     var canConnectSelectedEndpoints: Bool {
@@ -472,5 +476,10 @@ final class CoreAIRecipeStudioWorkspaceModel {
             index += 1
         }
         return "\(prefix)_\(index)"
+    }
+
+    private func uniqueValues<Value: Hashable>(_ values: [Value]) -> [Value] {
+        var seen = Set<Value>()
+        return values.filter { seen.insert($0).inserted }
     }
 }

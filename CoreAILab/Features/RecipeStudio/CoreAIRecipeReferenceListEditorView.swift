@@ -4,42 +4,79 @@ struct CoreAIRecipeReferenceListEditorView: View {
     let title: String
     @Binding var values: [String]
     let choices: [String]
+    @State private var valueIDs: [UUID]
+
+    init(
+        title: String,
+        values: Binding<[String]>,
+        choices: [String]
+    ) {
+        self.title = title
+        _values = values
+        self.choices = choices
+        _valueIDs = State(initialValue: values.wrappedValue.map { _ in UUID() })
+    }
 
     var body: some View {
         GroupBox(title) {
             VStack(alignment: .leading) {
-                if values.isEmpty {
+                if valueIDs.isEmpty {
                     Text("None")
                         .foregroundStyle(.secondary)
                 }
-                ForEach(values, id: \.self) { value in
-                    HStack {
-                        Text(value)
-                        Spacer()
-                        Button(
-                            "Remove \(value)",
-                            systemImage: "minus.circle",
-                            action: { remove(value) }
-                        )
-                        .labelStyle(.iconOnly)
+                ForEach(valueIDs, id: \.self) { valueID in
+                    if let value = value(for: valueID) {
+                        HStack {
+                            Text(value)
+                            Spacer()
+                            Button(
+                                "Remove \(value)",
+                                systemImage: "minus.circle",
+                                action: { remove(id: valueID) }
+                            )
+                            .labelStyle(.iconOnly)
+                        }
                     }
                 }
                 Menu("Add \(title)", systemImage: "plus") {
-                    ForEach(choices.filter { !values.contains($0) }, id: \.self) { value in
+                    ForEach(availableChoices, id: \.self) { value in
                         Button(value, action: { append(value) })
                     }
                 }
-                .disabled(choices.allSatisfy { values.contains($0) })
+                .disabled(availableChoices.isEmpty)
             }
         }
+    }
+
+    private var availableChoices: [String] {
+        Self.uniqueValues(choices).filter { !values.contains($0) }
+    }
+
+    static func uniqueValues(_ values: [String]) -> [String] {
+        var seen = Set<String>()
+        return values.filter { seen.insert($0).inserted }
     }
 
     private func append(_ value: String) {
         guard !values.contains(value) else { return }
         values.append(value)
+        valueIDs.append(UUID())
     }
 
-    private func remove(_ value: String) {
-        values.removeAll { $0 == value }
+    private func remove(id: UUID) {
+        guard let index = valueIDs.firstIndex(of: id),
+              values.indices.contains(index) else {
+            return
+        }
+        values.remove(at: index)
+        valueIDs.remove(at: index)
+    }
+
+    private func value(for id: UUID) -> String? {
+        guard let index = valueIDs.firstIndex(of: id),
+              values.indices.contains(index) else {
+            return nil
+        }
+        return values[index]
     }
 }

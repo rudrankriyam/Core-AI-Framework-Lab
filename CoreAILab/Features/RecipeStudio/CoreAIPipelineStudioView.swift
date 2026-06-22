@@ -68,11 +68,11 @@ struct CoreAIPipelineStudioView: View {
             }
 
             Section("Edges") {
-                if workspace.recipe.pipeline.edges.isEmpty {
+                if workspace.displayedPipelineEdges.isEmpty {
                     Text("No edges")
                         .foregroundStyle(.secondary)
                 }
-                ForEach(workspace.recipe.pipeline.edges) { edge in
+                ForEach(workspace.displayedPipelineEdges) { edge in
                     LabeledContent(
                         edge.source.diagnosticDescription,
                         value: edge.destination.diagnosticDescription

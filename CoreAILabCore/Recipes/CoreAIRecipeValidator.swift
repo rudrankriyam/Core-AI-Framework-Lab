@@ -231,7 +231,8 @@ enum CoreAIRecipeValidator {
             )
         })
 
-        return issues.sorted {
+        var seenIssues = Set<CoreAIRecipeValidationIssue>()
+        return issues.filter { seenIssues.insert($0).inserted }.sorted {
             if $0.location != $1.location { return $0.location < $1.location }
             if $0.code.rawValue != $1.code.rawValue {
                 return $0.code.rawValue < $1.code.rawValue

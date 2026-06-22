@@ -198,6 +198,24 @@ struct CoreAIRecipeStudioTests {
     }
 
     @Test
+    func referenceChoicesRemainStableWhenDraftNamesCollide() throws {
+        let values = ["features", "features", "attention_mask", "features"]
+
+        #expect(CoreAIRecipeReferenceListEditorView.uniqueValues(values) == [
+            "features", "attention_mask"
+        ])
+
+        var recipe = CoreAIRecipeManifest.starter
+        let duplicateInput = try #require(recipe.exampleInputs.first)
+        recipe.exampleInputs.append(duplicateInput)
+        recipe.exampleInputs.append(duplicateInput)
+        let issues = CoreAIRecipeValidator.issues(in: recipe)
+
+        #expect(issues.contains { $0.code == .duplicateValue })
+        #expect(Set(issues.map(\.id)).count == issues.count)
+    }
+
+    @Test
     func pipelinePortMutationsKeepOrRemoveEdgesAtomically() throws {
         let workspace = CoreAIRecipeStudioWorkspaceModel()
 
@@ -405,6 +423,29 @@ struct CoreAIRecipeStudioTests {
 
         #expect(first.diagnosticDescription == second.diagnosticDescription)
         #expect(first.id != second.id)
+    }
+
+    @Test
+    func pipelinePickersRemainStableWhileDuplicateNamesAreInvalid() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        let nodeIndex = try #require(workspace.recipe.pipeline.nodes.firstIndex {
+            $0.id == "model_forward"
+        })
+        let output = try #require(workspace.recipe.pipeline.nodes[nodeIndex].outputs.first)
+        workspace.recipe.pipeline.nodes[nodeIndex].outputs.append(output)
+        workspace.recipe.pipeline.nodes[nodeIndex].outputs.append(output)
+        let duplicateEdge = try #require(workspace.recipe.pipeline.edges.first)
+        workspace.recipe.pipeline.edges.append(duplicateEdge)
+
+        let endpoint = CoreAIPipelineEndpoint(
+            nodeID: "model_forward",
+            portName: output.name
+        )
+        #expect(workspace.sourceEndpoints.count(where: { $0 == endpoint }) == 1)
+        #expect(workspace.displayedPipelineEdges.count == workspace.recipe.pipeline.edges.count - 1)
+        #expect(workspace.pipelineIssues.contains { $0.code == .duplicatePort })
+        #expect(workspace.pipelineIssues.contains { $0.code == .duplicateEdge })
+        #expect(Set(workspace.pipelineIssues.map(\.id)).count == workspace.pipelineIssues.count)
     }
 
     private func finding() -> CoreAIUnsupportedOperationFinding {

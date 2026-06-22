@@ -26,8 +26,8 @@ struct CoreAIUnsupportedOperationReportView: View {
                     if !finding.exampleShapes.isEmpty {
                         LabeledContent("Example shapes") {
                             VStack(alignment: .trailing) {
-                                ForEach(finding.exampleShapes, id: \.self) { shape in
-                                    Text(shape)
+                                ForEach(finding.exampleShapes.indices, id: \.self) { index in
+                                    Text(finding.exampleShapes[index])
                                         .monospaced()
                                 }
                             }
