@@ -248,7 +248,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         let specializationConfiguration = assetWorkspace.selectedConfiguration
         let operationID = UUID()
         exportOperationID = operationID
-        exportStatusMessage = "Exporting model, manifest, and Swift runtime…"
+        exportStatusMessage = "Exporting a standalone Swift package…"
         exportedPackageURL = nil
         exportTask = Task { [weak self] in
             guard let self else { return }

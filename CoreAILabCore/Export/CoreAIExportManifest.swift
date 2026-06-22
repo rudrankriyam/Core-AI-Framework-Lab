@@ -1,21 +1,24 @@
 import Foundation
 
 struct CoreAIExportManifest: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 1
+    static let currentSchemaVersion = 2
 
     let schemaVersion: Int
+    let package: Package
     let artifact: Artifact
     let metadata: Metadata
     let specialization: Specialization
     let functions: [Function]
 
     init(
+        package: Package,
         artifact: Artifact,
         report: CoreAIModelAssetReport,
         specializationConfiguration: CoreAISpecializationConfiguration,
         contracts: [CoreAIFunctionContract]
     ) {
         schemaVersion = Self.currentSchemaVersion
+        self.package = package
         self.artifact = artifact
         metadata = Metadata(
             author: report.author,
@@ -25,6 +28,15 @@ struct CoreAIExportManifest: Codable, Equatable, Sendable {
         )
         specialization = Specialization(configuration: specializationConfiguration)
         functions = contracts.sorted { $0.name < $1.name }.map(Function.init)
+    }
+
+    struct Package: Codable, Equatable, Sendable {
+        let name: String
+        let productName: String
+        let targetName: String
+        let swiftToolsVersion: String
+        let generatedSourceRelativePath: String
+        let resourcesRelativePath: String
     }
 
     struct Artifact: Codable, Equatable, Sendable {
@@ -130,6 +142,9 @@ extension CoreAIFunctionContract {
     }
 
     var generatedRuntimeUnsupportedReason: String? {
+        if let unsupportedReason {
+            return unsupportedReason
+        }
         guard states.isEmpty else {
             return "Generated invocation does not manage mutable Core AI state."
         }
