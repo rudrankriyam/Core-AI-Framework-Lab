@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -14,7 +15,21 @@ DEFAULT_MATRIX_PATH = (
     REPOSITORY_ROOT / ".github/ci/verification-matrix.v1.json"
 )
 
-ROOT_KEYS = {"schemaVersion", "lanes"}
+ROOT_KEYS = {"schemaVersion", "rolloutRequirements", "lanes"}
+ROLLOUT_REQUIREMENT_KEYS = {
+    "protectedBranchRef",
+    "reviewedPullRequestsRequired",
+    "directPushesRestricted",
+    "actionsPolicy",
+    "controlsRequiredBeforeRunnerProvisioning",
+    "protectedEnvironments",
+}
+PROTECTED_ENVIRONMENT_KEYS = {
+    "name",
+    "requiredReviewers",
+    "preventSelfReview",
+    "deploymentBranchRef",
+}
 LANE_KEYS = {
     "id",
     "kind",
@@ -22,6 +37,7 @@ LANE_KEYS = {
     "executionBoundary",
     "triggers",
     "trustedRefs",
+    "environment",
     "signingPolicy",
     "provisioningUpdatesAllowed",
     "externalModelAssets",
@@ -105,6 +121,21 @@ def _require_choice(value: Any, choices: set[str], context: str) -> str:
     return result
 
 
+def _require_enabled(value: Any, context: str) -> None:
+    if value is not True:
+        raise MatrixValidationError(f"{context} must be true")
+
+
+def _workflow_declares_environment(workflow_path: Path, environment: str) -> bool:
+    pattern = (
+        rf"^[ \t]+environment:[ \t]*{re.escape(environment)}[ \t]*(?:#.*)?$"
+    )
+    return (
+        re.search(pattern, workflow_path.read_text(), flags=re.MULTILINE)
+        is not None
+    )
+
+
 def load_matrix(path: Path = DEFAULT_MATRIX_PATH) -> Mapping[str, Any]:
     try:
         document = json.loads(path.read_text())
@@ -123,6 +154,80 @@ def validate_matrix(
     _require_exact_keys(document, required=ROOT_KEYS, context="matrix")
     if document["schemaVersion"] != 1:
         raise MatrixValidationError("matrix.schemaVersion must equal 1")
+
+    rollout = _require_mapping(
+        document["rolloutRequirements"], "matrix.rolloutRequirements"
+    )
+    _require_exact_keys(
+        rollout,
+        required=ROLLOUT_REQUIREMENT_KEYS,
+        context="matrix.rolloutRequirements",
+    )
+    protected_branch_ref = _require_string(
+        rollout["protectedBranchRef"],
+        "matrix.rolloutRequirements.protectedBranchRef",
+    )
+    if protected_branch_ref != "refs/heads/main":
+        raise MatrixValidationError(
+            "matrix.rolloutRequirements.protectedBranchRef must equal refs/heads/main"
+        )
+    for requirement in (
+        "reviewedPullRequestsRequired",
+        "directPushesRestricted",
+        "controlsRequiredBeforeRunnerProvisioning",
+    ):
+        _require_enabled(
+            rollout[requirement], f"matrix.rolloutRequirements.{requirement}"
+        )
+    if rollout["actionsPolicy"] != "selected-actions-full-sha":
+        raise MatrixValidationError(
+            "matrix.rolloutRequirements.actionsPolicy must equal "
+            "selected-actions-full-sha"
+        )
+
+    raw_environments = rollout["protectedEnvironments"]
+    if not isinstance(raw_environments, list) or not raw_environments:
+        raise MatrixValidationError(
+            "matrix.rolloutRequirements.protectedEnvironments must be a non-empty list"
+        )
+    protected_environments: dict[str, int] = {}
+    for environment_index, raw_environment in enumerate(raw_environments):
+        context = (
+            "matrix.rolloutRequirements.protectedEnvironments"
+            f"[{environment_index}]"
+        )
+        environment = _require_mapping(raw_environment, context)
+        _require_exact_keys(
+            environment,
+            required=PROTECTED_ENVIRONMENT_KEYS,
+            context=context,
+        )
+        name = _require_string(environment["name"], f"{context}.name")
+        if name in protected_environments:
+            raise MatrixValidationError(f"duplicate protected environment: {name}")
+        required_reviewers = environment["requiredReviewers"]
+        if (
+            not isinstance(required_reviewers, int)
+            or isinstance(required_reviewers, bool)
+            or required_reviewers < 1
+        ):
+            raise MatrixValidationError(
+                f"{context}.requiredReviewers must be a positive integer"
+            )
+        _require_enabled(
+            environment["preventSelfReview"], f"{context}.preventSelfReview"
+        )
+        if environment["deploymentBranchRef"] != protected_branch_ref:
+            raise MatrixValidationError(
+                f"{context}.deploymentBranchRef must equal {protected_branch_ref}"
+            )
+        protected_environments[name] = required_reviewers
+    expected_environments = {"coreai-macos-hardware", "coreai-ios-hardware"}
+    if set(protected_environments) != expected_environments:
+        raise MatrixValidationError(
+            "rollout requires protected coreai-macos-hardware and "
+            "coreai-ios-hardware environments"
+        )
 
     lanes = document["lanes"]
     if not isinstance(lanes, list) or not lanes:
@@ -167,6 +272,12 @@ def validate_matrix(
         triggers = _require_string_list(lane["triggers"], f"{context}.triggers")
         trusted_refs = _require_string_list(
             lane["trustedRefs"], f"{context}.trustedRefs"
+        )
+        raw_environment = lane["environment"]
+        environment = (
+            None
+            if raw_environment is None
+            else _require_string(raw_environment, f"{context}.environment")
         )
         signing_policy = _require_choice(
             lane["signingPolicy"],
@@ -255,6 +366,10 @@ def validate_matrix(
                 )
             if required_secrets:
                 raise MatrixValidationError("hosted-software must not require secrets")
+            if environment is not None:
+                raise MatrixValidationError(
+                    "hosted-software must not use a protected environment"
+                )
         else:
             if boundary != "self-hosted":
                 raise MatrixValidationError(f"{kind} must be self-hosted")
@@ -262,9 +377,21 @@ def validate_matrix(
                 raise MatrixValidationError(
                     f"{kind} must never run for pull requests"
                 )
-            if trusted_refs != ["refs/heads/main"]:
+            if trusted_refs != [protected_branch_ref]:
                 raise MatrixValidationError(
-                    f"{kind} must be restricted to refs/heads/main"
+                    f"{kind} must be restricted to {protected_branch_ref}"
+                )
+            expected_environment = {
+                "xcode-macos": "coreai-macos-hardware",
+                "physical-ios": "coreai-ios-hardware",
+            }[kind]
+            if environment != expected_environment:
+                raise MatrixValidationError(
+                    f"{kind} must use protected environment {expected_environment}"
+                )
+            if not _workflow_declares_environment(workflow_path, environment):
+                raise MatrixValidationError(
+                    f"{workflow} must declare environment: {environment}"
                 )
 
         if kind == "xcode-macos":

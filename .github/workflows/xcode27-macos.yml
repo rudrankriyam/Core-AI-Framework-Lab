@@ -17,6 +17,7 @@ jobs:
   macos-contracts:
     name: Apple silicon / Xcode 27
     if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    environment: coreai-macos-hardware
     runs-on:
       - self-hosted
       - macOS

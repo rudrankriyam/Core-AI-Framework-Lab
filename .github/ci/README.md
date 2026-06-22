@@ -12,18 +12,25 @@ python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
 | Lane | Trigger | Runner labels | What it proves |
 | --- | --- | --- | --- |
 | Hosted software | Pull requests, `main`, manual | `ubuntu-latest` | The matrix contract and Python device-harness behavior work without Xcode, signing, credentials, downloaded weights, or a device. It does not prove Swift compilation or Core AI execution. |
-| Xcode 27 macOS | Trusted `main` pushes and manual runs from `main` | `self-hosted`, `macOS`, `ARM64`, `coreai-xcode27`, `coreai-macos-contracts` | The checked-in project builds and its default macOS contract tests pass with the macOS 27 SDK. Opt-in real-model tests remain disabled. |
+| Xcode 27 macOS | Approval-gated `main` pushes and manual runs from `main` | `self-hosted`, `macOS`, `ARM64`, `coreai-xcode27`, `coreai-macos-contracts` | The checked-in project builds and its default macOS contract tests pass with the macOS 27 SDK. Opt-in real-model tests remain disabled. |
 | Physical iOS 27 | Approval-gated manual runs from `main` | `self-hosted`, `macOS`, `ARM64`, `coreai-xcode27`, `coreai-ios-device` | The deterministic workbench fixture produces exactly one passing, unskipped test attributed to the attached physical iOS 27+ device. |
 
 Hardware workflows never run for pull requests. This prevents unreviewed code
-from executing on persistent self-hosted machines. A manual hardware run is
-also rejected unless its selected ref is `refs/heads/main`. Every external
-action is pinned to a reviewed full commit SHA; repository administrators should
-also restrict Actions to selected actions and require full-SHA pinning.
+from executing on persistent self-hosted machines only when `main` is also
+protected. Before registering either runner, add a branch protection rule or
+ruleset that requires an approved pull request and restricts direct pushes and
+bypass access. Both hardware jobs target dedicated environments with at least
+one required reviewer, self-review disabled, and deployment branches restricted
+to `main`. A manual hardware run is also rejected unless its selected ref is
+`refs/heads/main`. Every external action is pinned to a reviewed full commit
+SHA; repository administrators must also restrict Actions to selected actions
+and require full-SHA pinning before runner provisioning.
 
 ## Xcode 27 macOS runner
 
-Register an Apple-silicon self-hosted runner with the five labels above. Do not
+Create and protect the `coreai-macos-hardware` environment before registering
+an Apple-silicon self-hosted runner with the five labels above. Require at least
+one reviewer, prevent self-review, and allow deployment only from `main`. Do not
 put `coreai-macos-contracts` on the physical-device runner: that separation
 prevents automatic macOS jobs from running beside installed signing keys. The
 macOS runner needs:
@@ -48,8 +55,9 @@ or particular compute-unit placement.
 Use a dedicated Apple-silicon runner with all five labels in the matrix and an
 attached, paired, unlocked iPhone or iPad running iOS 27 or newer. Developer
 Mode and developer services must already work, and Git LFS must be installed.
-Configure a protected GitHub environment named `coreai-ios-hardware`, require a
-reviewer, and add one secret:
+Configure a protected GitHub environment named `coreai-ios-hardware`, require at
+least one reviewer, prevent self-review, restrict deployment to `main`, and add
+one secret:
 
 - `COREAI_APPLE_TEAM_ID`: the 10-character team identifier for the installed
   Apple Development identity and development profile.
@@ -82,7 +90,14 @@ it controls execution beside the installed private key.
 ## Rollout status
 
 These workflows are configuration, not current hardware evidence. Before
-calling either lane operational, provision separate self-hosted runners, create
-and reviewer-protect the `coreai-ios-hardware` environment, add its team-ID
-secret, enable a selected-actions/full-SHA repository policy, and record a
-passing run from `main` for each hardware lane.
+registering either self-hosted runner:
+
+1. Protect `main` with a rule requiring reviewed pull requests and restricting
+   direct pushes and bypass access.
+2. Create `coreai-macos-hardware` and `coreai-ios-hardware`, require at least one
+   reviewer, prevent self-review, and allow deployments only from `main`.
+3. Add the iOS environment's team-ID secret and enable a
+   selected-actions/full-SHA repository policy.
+
+Only then provision the separate runners. Before calling either lane
+operational, record a passing `main` run for both hardware lanes.

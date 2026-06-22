@@ -473,13 +473,16 @@ device; an empty or misrouted filtered run fails the harness.
 The checked-in CI matrix keeps software-only pull-request checks separate from
 Xcode 27 and physical-device evidence. Hosted Linux verifies the versioned
 matrix and Python harness tests without model weights, Xcode, signing, or
-secrets. Trusted `main` runs can use an explicitly labeled self-hosted Xcode 27
-Mac, while real iOS fixture execution is a manual, approval-gated workflow that
-uses only signing assets already installed on its dedicated runner.
+secrets. Reviewed `main` runs can use an explicitly labeled self-hosted Xcode 27
+Mac, while real iOS fixture execution is a manual hardware workflow that uses
+only signing assets already installed on its dedicated runner. Both hardware
+jobs require distinct reviewer-protected environments restricted to `main`.
 Because this repository is public, hardware workflows suppress and delete raw
 logs/xcresults and retain only identifier-free summaries. The checked-in lanes
-remain configuration until their separate runners, protected environment, and
-secret are provisioned and a real `main` run passes.
+remain configuration until `main` requires reviewed pull requests and restricts
+direct pushes, both environments and the iOS secret are provisioned, the
+selected-actions/full-SHA policy is enabled, and a real `main` run passes.
+Those controls must be active before either self-hosted runner is registered.
 
 See [`.github/ci/README.md`](.github/ci/README.md) for runner labels, the one
 required environment secret, safety boundaries, and retained evidence.

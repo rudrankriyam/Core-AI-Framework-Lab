@@ -1,5 +1,26 @@
 {
   "schemaVersion": 1,
+  "rolloutRequirements": {
+    "protectedBranchRef": "refs/heads/main",
+    "reviewedPullRequestsRequired": true,
+    "directPushesRestricted": true,
+    "actionsPolicy": "selected-actions-full-sha",
+    "controlsRequiredBeforeRunnerProvisioning": true,
+    "protectedEnvironments": [
+      {
+        "name": "coreai-macos-hardware",
+        "requiredReviewers": 1,
+        "preventSelfReview": true,
+        "deploymentBranchRef": "refs/heads/main"
+      },
+      {
+        "name": "coreai-ios-hardware",
+        "requiredReviewers": 1,
+        "preventSelfReview": true,
+        "deploymentBranchRef": "refs/heads/main"
+      }
+    ]
+  },
   "lanes": [
     {
       "id": "hosted-software",
@@ -14,6 +35,7 @@
       "trustedRefs": [
         "*"
       ],
+      "environment": null,
       "signingPolicy": "disabled",
       "provisioningUpdatesAllowed": false,
       "externalModelAssets": "none",
@@ -46,6 +68,7 @@
       "trustedRefs": [
         "refs/heads/main"
       ],
+      "environment": "coreai-macos-hardware",
       "signingPolicy": "disabled",
       "provisioningUpdatesAllowed": false,
       "externalModelAssets": "repository-lfs",
@@ -82,6 +105,7 @@
       "trustedRefs": [
         "refs/heads/main"
       ],
+      "environment": "coreai-ios-hardware",
       "signingPolicy": "installed-assets-only",
       "provisioningUpdatesAllowed": false,
       "externalModelAssets": "fixture-only",

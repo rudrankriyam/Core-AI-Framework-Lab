@@ -31,10 +31,77 @@ class CIMatrixTests(unittest.TestCase):
         ci_matrix.validate_matrix(self.document)
 
         self.assertEqual(self.document["schemaVersion"], 1)
+        rollout = self.document["rolloutRequirements"]
+        self.assertEqual(rollout["protectedBranchRef"], "refs/heads/main")
+        self.assertTrue(rollout["reviewedPullRequestsRequired"])
+        self.assertTrue(rollout["directPushesRestricted"])
+        self.assertTrue(rollout["controlsRequiredBeforeRunnerProvisioning"])
         self.assertEqual(
             {lane["id"] for lane in self.document["lanes"]},
             {"hosted-software", "xcode27-macos", "physical-ios27"},
         )
+
+    def test_rollout_cannot_precede_branch_protection(self) -> None:
+        for requirement in (
+            "reviewedPullRequestsRequired",
+            "directPushesRestricted",
+            "controlsRequiredBeforeRunnerProvisioning",
+        ):
+            with self.subTest(requirement=requirement):
+                invalid = copy.deepcopy(self.document)
+                invalid["rolloutRequirements"][requirement] = False
+
+                with self.assertRaisesRegex(
+                    ci_matrix.MatrixValidationError,
+                    f"{requirement} must be true",
+                ):
+                    ci_matrix.validate_matrix(invalid)
+
+    def test_hardware_lanes_require_reviewer_protected_environments(self) -> None:
+        environments = {
+            item["name"]: item
+            for item in self.document["rolloutRequirements"][
+                "protectedEnvironments"
+            ]
+        }
+        self.assertEqual(
+            set(environments),
+            {"coreai-macos-hardware", "coreai-ios-hardware"},
+        )
+        for environment in environments.values():
+            self.assertEqual(environment["requiredReviewers"], 1)
+            self.assertTrue(environment["preventSelfReview"])
+            self.assertEqual(
+                environment["deploymentBranchRef"], "refs/heads/main"
+            )
+
+        for lane in self.document["lanes"]:
+            workflow = (ci_matrix.REPOSITORY_ROOT / lane["workflow"]).read_text()
+            if lane["executionBoundary"] == "self-hosted":
+                self.assertIn(f"environment: {lane['environment']}", workflow)
+            else:
+                self.assertIsNone(lane["environment"])
+
+        invalid = copy.deepcopy(self.document)
+        invalid["rolloutRequirements"]["protectedEnvironments"][0][
+            "requiredReviewers"
+        ] = 0
+        with self.assertRaisesRegex(
+            ci_matrix.MatrixValidationError,
+            "requiredReviewers must be a positive integer",
+        ):
+            ci_matrix.validate_matrix(invalid)
+
+        invalid = copy.deepcopy(self.document)
+        macos = next(
+            item for item in invalid["lanes"] if item["kind"] == "xcode-macos"
+        )
+        macos["environment"] = "coreai-ios-hardware"
+        with self.assertRaisesRegex(
+            ci_matrix.MatrixValidationError,
+            "xcode-macos must use protected environment coreai-macos-hardware",
+        ):
+            ci_matrix.validate_matrix(invalid)
 
     def test_github_matrix_contains_only_selected_lane(self) -> None:
         matrix = ci_matrix.github_matrix(self.document, "xcode27-macos")
