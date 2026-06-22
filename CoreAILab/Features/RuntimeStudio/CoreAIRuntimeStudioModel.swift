@@ -25,10 +25,10 @@ final class CoreAIRuntimeStudioModel {
     }
 
     var filteredMappings: [CoreAIRecipeExperienceMapping] {
-        availableMappings.filter { mapping in
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return availableMappings.filter { mapping in
             let matchesWorkload = selectedWorkload == nil
                 || mapping.experience.workload == selectedWorkload
-            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
             let matchesSearch = query.isEmpty
                 || mapping.experience.title.localizedStandardContains(query)
                 || mapping.experience.summary.localizedStandardContains(query)

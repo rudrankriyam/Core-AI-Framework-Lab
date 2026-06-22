@@ -261,11 +261,7 @@ final class CoreAIRecipeStudioWorkspaceModel {
         let value = recipe.pipeline.nodes.lazy
             .flatMap(\.outputs)
             .first?.value
-            ?? CoreAIPipelineValueContract(
-                kind: .tensor,
-                scalarType: "float32",
-                shape: [.fixed(1)]
-            )
+            ?? CoreAIPipelineValueContract.authoringDefault
         let id = uniqueID(prefix: kind.rawValue)
         let inputs: [CoreAIPipelinePort] = switch kind {
         case .input, .state, .seededRandom:

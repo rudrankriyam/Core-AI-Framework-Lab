@@ -4,13 +4,17 @@ import Testing
 @testable import CoreAILab
 
 struct AppleObjectDetectionIntegrationTests {
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_YOLOS_MODEL_PATH"] != nil
+                && ProcessInfo.processInfo.environment["COREAI_YOLOS_IMAGE_PATH"] != nil,
+            "Requires COREAI_YOLOS_MODEL_PATH and COREAI_YOLOS_IMAGE_PATH."
+        )
+    )
     func exportedYOLOSModelRunsThroughAppleRuntime() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let modelPath = environment["COREAI_YOLOS_MODEL_PATH"],
-              let imagePath = environment["COREAI_YOLOS_IMAGE_PATH"] else {
-            return
-        }
+        let modelPath = try #require(environment["COREAI_YOLOS_MODEL_PATH"])
+        let imagePath = try #require(environment["COREAI_YOLOS_IMAGE_PATH"])
 
         let modelURL = URL(filePath: modelPath)
         let report = try CoreAIModelAssetInspector.inspect(url: modelURL)

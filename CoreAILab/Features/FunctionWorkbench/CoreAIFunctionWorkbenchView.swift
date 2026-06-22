@@ -33,6 +33,8 @@ struct CoreAIFunctionWorkbenchView: View {
     }
 
     var body: some View {
+        @Bindable var assetWorkspace = workspace.assetWorkspace
+
         Group {
             if let report = workspace.assetWorkspace.report {
                 List {
@@ -106,7 +108,7 @@ struct CoreAIFunctionWorkbenchView: View {
                                 }
                             }
                         }
-                    } else if !workspace.contracts.isEmpty {
+                    } else {
                         CoreAIFunctionContractView(workspace: workspace)
                         CoreAIFunctionInputsView(
                             drafts: workspace.inputDrafts,
@@ -204,10 +206,12 @@ struct CoreAIFunctionWorkbenchView: View {
         ) { result in
             handleBenchmarkEvidenceExport(result)
         }
-        .background {
-            CoreAIFunctionWorkbenchErrorPresenter(
-                assetWorkspace: workspace.assetWorkspace
-            )
+        .alert(
+            "Function Workbench Error",
+            isPresented: $assetWorkspace.isShowingError
+        ) {
+        } message: {
+            Text(assetWorkspace.errorMessage ?? "The Core AI operation failed.")
         }
         .task(id: initialURL) {
             do {

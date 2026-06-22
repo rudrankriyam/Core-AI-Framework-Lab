@@ -58,7 +58,7 @@ struct CoreAIConversionCheckpointArtifactVerifier: CoreAIConversionCheckpointArt
                 kind: expected.kind,
                 digestScheme: .sha256TreeV1,
                 relativePath: expected.relativePath,
-                sha256: Data(hasher.finalize()).hexadecimalString,
+                sha256: CoreAIHexadecimal.lowercase(hasher.finalize()),
                 byteCount: byteCount,
                 fileCount: fileCount
             )
@@ -174,7 +174,7 @@ struct CoreAIConversionCheckpointArtifactVerifier: CoreAIConversionCheckpointArt
         }
         let digestData = Data(hasher.finalize())
         return FileDigest(
-            sha256: digestData.hexadecimalString,
+            sha256: CoreAIHexadecimal.lowercase(digestData),
             digestData: digestData,
             byteCount: byteCount
         )
@@ -222,18 +222,5 @@ struct CoreAIConversionCheckpointArtifactVerifier: CoreAIConversionCheckpointArt
         let sha256: String
         let digestData: Data
         let byteCount: Int64
-    }
-}
-
-private extension Data {
-    var hexadecimalString: String {
-        let digits = Array("0123456789abcdef".utf8)
-        var output: [UInt8] = []
-        output.reserveCapacity(count * 2)
-        for byte in self {
-            output.append(digits[Int(byte >> 4)])
-            output.append(digits[Int(byte & 0x0F)])
-        }
-        return String(decoding: output, as: UTF8.self)
     }
 }

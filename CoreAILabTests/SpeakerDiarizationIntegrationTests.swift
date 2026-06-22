@@ -3,12 +3,15 @@ import Testing
 @testable import CoreAILab
 
 struct SpeakerDiarizationIntegrationTests {
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_DIARIZATION_MEDIA_PATH"] != nil,
+            "Requires COREAI_DIARIZATION_MEDIA_PATH."
+        )
+    )
     func convertedCAMPlusDiarizesImportedMediaThroughCoreAI() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let mediaPath = environment["COREAI_DIARIZATION_MEDIA_PATH"] else {
-            return
-        }
+        let mediaPath = try #require(environment["COREAI_DIARIZATION_MEDIA_PATH"])
 
         let engine = SpeakerDiarizationEngine()
         let modelURL: URL

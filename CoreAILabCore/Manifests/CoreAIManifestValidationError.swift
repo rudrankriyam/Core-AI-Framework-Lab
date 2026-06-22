@@ -27,6 +27,21 @@ enum CoreAIManifestValidationError: Error, Equatable, LocalizedError {
 }
 
 enum CoreAIManifestValidator {
+    static func isValidIdentifier(_ value: String) -> Bool {
+        guard let first = value.unicodeScalars.first,
+              CharacterSet.letters.union(CharacterSet(charactersIn: "_")).contains(first)
+        else {
+            return false
+        }
+        let allowed = CharacterSet.alphanumerics.union(
+            CharacterSet(charactersIn: "_-./")
+        )
+        return value.unicodeScalars.allSatisfy(allowed.contains)
+            && !value.contains("..")
+            && !value.hasPrefix("/")
+            && !value.hasSuffix("/")
+    }
+
     static func requireCurrentSchemaVersion(
         _ found: Int,
         supported: Int,

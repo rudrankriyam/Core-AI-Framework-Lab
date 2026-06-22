@@ -1,7 +1,7 @@
 struct CoreAIRecipeAuthoringManifest: Codable, Hashable, Sendable {
     static let currentSchemaVersion = 1
 
-    var schemaVersion: Int
+    var schemaVersion: Int = Self.currentSchemaVersion
     var id: String
     var displayName: String
     var source: CoreAIRecipeSource
@@ -13,34 +13,6 @@ struct CoreAIRecipeAuthoringManifest: Codable, Hashable, Sendable {
     var functionEntrypoints: [CoreAIRecipeFunctionEntrypoint]
     var unsupportedOperations: [CoreAIUnsupportedOperationFinding]
     var pipeline: CoreAIPipelineManifest
-
-    init(
-        schemaVersion: Int = Self.currentSchemaVersion,
-        id: String,
-        displayName: String,
-        source: CoreAIRecipeSource,
-        module: CoreAIRecipeModule,
-        exampleInputs: [CoreAIRecipeExampleInput],
-        dynamicDimensions: [CoreAIRecipeDynamicDimension],
-        stateBindings: [CoreAIRecipeStateBinding],
-        externalizationRules: [CoreAIRecipeExternalizationRule],
-        functionEntrypoints: [CoreAIRecipeFunctionEntrypoint],
-        unsupportedOperations: [CoreAIUnsupportedOperationFinding],
-        pipeline: CoreAIPipelineManifest
-    ) {
-        self.schemaVersion = schemaVersion
-        self.id = id
-        self.displayName = displayName
-        self.source = source
-        self.module = module
-        self.exampleInputs = exampleInputs
-        self.dynamicDimensions = dynamicDimensions
-        self.stateBindings = stateBindings
-        self.externalizationRules = externalizationRules
-        self.functionEntrypoints = functionEntrypoints
-        self.unsupportedOperations = unsupportedOperations
-        self.pipeline = pipeline
-    }
 
     static var starter: Self {
         let value = CoreAIPipelineValueContract(

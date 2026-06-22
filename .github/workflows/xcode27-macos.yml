@@ -69,6 +69,10 @@ jobs:
           private_log="$RUNNER_TEMP/coreai-macos-private.log"
           if ! env \
             -u CHATTERBOX_SMOKE_OUTPUT \
+            -u COREAI_CAMPPLUS_MODEL_PATH \
+            -u COREAI_DIARIZATION_EXPECTED_PATTERN \
+            -u COREAI_DIARIZATION_MEDIA_PATH \
+            -u COREAI_DIARIZATION_MIN_SPEAKERS \
             -u COREAI_DIFFUSION_BUNDLE_PATH \
             -u COREAI_EFFICIENT_SAM_BUNDLE_PATH \
             -u COREAI_QWEN_BUNDLE_PATH \

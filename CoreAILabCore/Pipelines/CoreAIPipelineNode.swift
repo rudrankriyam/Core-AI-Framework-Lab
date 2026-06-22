@@ -3,8 +3,8 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
     var kind: CoreAIPipelineNodeKind
     var title: String
     var reference: String?
-    var inputs: [CoreAIPipelinePort]
-    var outputs: [CoreAIPipelinePort]
+    var inputs: [CoreAIPipelinePort] = []
+    var outputs: [CoreAIPipelinePort] = []
     var stateKey: String?
     var ownerNodeID: String?
     var fixedSeed: UInt64?
@@ -12,42 +12,10 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
     var maximumIterations: Int?
     var stopConditionInputPort: String?
 
-    init(
-        id: String,
-        kind: CoreAIPipelineNodeKind,
-        title: String,
-        reference: String? = nil,
-        inputs: [CoreAIPipelinePort] = [],
-        outputs: [CoreAIPipelinePort] = [],
-        stateKey: String? = nil,
-        ownerNodeID: String? = nil,
-        fixedSeed: UInt64? = nil,
-        seedInputPort: String? = nil,
-        maximumIterations: Int? = nil,
-        stopConditionInputPort: String? = nil
-    ) {
-        self.id = id
-        self.kind = kind
-        self.title = title
-        self.reference = reference
-        self.inputs = inputs
-        self.outputs = outputs
-        self.stateKey = stateKey
-        self.ownerNodeID = ownerNodeID
-        self.fixedSeed = fixedSeed
-        self.seedInputPort = seedInputPort
-        self.maximumIterations = maximumIterations
-        self.stopConditionInputPort = stopConditionInputPort
-    }
-
     mutating func applyConfigurationDefaults() {
         let previousSeedInputPort = seedInputPort
         let previousStopConditionInputPort = stopConditionInputPort
-        let defaultValue = CoreAIPipelineValueContract(
-            kind: .tensor,
-            scalarType: "float32",
-            shape: [.fixed(1)]
-        )
+        let defaultValue = CoreAIPipelineValueContract.authoringDefault
         reference = [.assetFunction, .hostOperator].contains(kind)
             ? (reference ?? "executable.reference")
             : nil

@@ -54,7 +54,14 @@ def main() -> None:
     )
 
     products = derived_data / "Build" / "Products"
-    source = products / "CoreAILabMac_macosx27.0-arm64.xctestrun"
+    sdk_version = subprocess.run(
+        ["xcrun", "--sdk", "macosx", "--show-sdk-version"],
+        cwd=REPOSITORY_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    source = products / f"CoreAILabMac_macosx{sdk_version}-arm64.xctestrun"
     with source.open("rb") as file:
         configuration = plistlib.load(file)
     test_target = configuration["CoreAILabMacTests"]

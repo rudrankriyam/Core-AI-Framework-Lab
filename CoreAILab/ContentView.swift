@@ -8,76 +8,18 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section("Workspaces") {
-                    NavigationLink(value: CoreAILabSection.projects) {
-                        Label(
-                            CoreAILabSection.projects.title,
-                            systemImage: CoreAILabSection.projects.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.appleModels) {
-                        Label(
-                            CoreAILabSection.appleModels.title,
-                            systemImage: CoreAILabSection.appleModels.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.recipes) {
-                        Label(
-                            CoreAILabSection.recipes.title,
-                            systemImage: CoreAILabSection.recipes.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.conversion) {
-                        Label(
-                            CoreAILabSection.conversion.title,
-                            systemImage: CoreAILabSection.conversion.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.recipeStudio) {
-                        Label(
-                            CoreAILabSection.recipeStudio.title,
-                            systemImage: CoreAILabSection.recipeStudio.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.chatterbox) {
-                        Label(
-                            CoreAILabSection.chatterbox.title,
-                            systemImage: CoreAILabSection.chatterbox.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.diarization) {
-                        Label(
-                            CoreAILabSection.diarization.title,
-                            systemImage: CoreAILabSection.diarization.systemImage
-                        )
+                    ForEach(CoreAILabSection.workspaces) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
                     }
                 }
 
                 Section("Tools") {
-                    NavigationLink(value: CoreAILabSection.assetInspector) {
-                        Label(
-                            CoreAILabSection.assetInspector.title,
-                            systemImage: CoreAILabSection.assetInspector.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.runtime) {
-                        Label(
-                            CoreAILabSection.runtime.title,
-                            systemImage: CoreAILabSection.runtime.systemImage
-                        )
-                    }
-
-                    NavigationLink(value: CoreAILabSection.deviceLab) {
-                        Label(
-                            CoreAILabSection.deviceLab.title,
-                            systemImage: CoreAILabSection.deviceLab.systemImage
-                        )
+                    ForEach(CoreAILabSection.tools) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
                     }
                 }
             }
@@ -104,7 +46,7 @@ struct ContentView: View {
             case .assetInspector:
                 CoreAIAssetInspectorView()
             case .runtime:
-                CoreAIRuntimeView()
+                CoreAIRuntimeStudioView()
             case .deviceLab:
                 NavigationStack {
                     CoreAIDeviceLabView()

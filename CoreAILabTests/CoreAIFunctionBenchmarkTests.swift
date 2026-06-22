@@ -5,6 +5,14 @@ import Testing
 
 struct CoreAIFunctionBenchmarkTests {
     @Test
+    func durationConversionsPreserveSecondsAndMilliseconds() {
+        let duration = Duration.seconds(1) + .milliseconds(250)
+
+        #expect(duration.coreAISeconds == 1.25)
+        #expect(duration.coreAIMilliseconds == 1_250)
+    }
+
+    @Test
     func defaultProtocolUsesOneWarmupAndFiveMeasuredRuns() throws {
         let configuration = CoreAIFunctionBenchmarkConfiguration()
 

@@ -11,6 +11,8 @@ struct SpeakerDiarizationResultsView: View {
                 .accessibilityAddTraits(.isHeader)
 
             if let result {
+                let speakerNames = result.speakerNames
+
                 VStack(spacing: 0) {
                     LabeledContent("Engine", value: result.engineName)
                         .padding(.vertical, 6)
@@ -19,9 +21,9 @@ struct SpeakerDiarizationResultsView: View {
 
                     LabeledContent(
                         "Speakers",
-                        value: result.speakerNames.isEmpty
+                        value: speakerNames.isEmpty
                             ? "None detected"
-                            : result.speakerNames.joined(separator: ", ")
+                            : speakerNames.joined(separator: ", ")
                     )
                         .padding(.vertical, 6)
 

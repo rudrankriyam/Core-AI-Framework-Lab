@@ -197,7 +197,7 @@ actor ChatterboxCoreAIEngine {
         }
         let textPreparationTime = textPreparationStartedAt.duration(
             to: .now
-        ).timeInterval
+        ).coreAISeconds
 
         let maximumGeneratedTokens = min(
             max(request.maximumGeneratedTokens, 1),
@@ -248,8 +248,8 @@ actor ChatterboxCoreAIEngine {
         )
         let audioPostprocessingTime = audioPostprocessingStartedAt.duration(
             to: .now
-        ).timeInterval
-        let elapsedTime = startedAt.duration(to: .now).timeInterval
+        ).coreAISeconds
+        let elapsedTime = startedAt.duration(to: .now).coreAISeconds
 
         return ChatterboxGenerationResult(
             audioURL: outputURL,
@@ -333,7 +333,7 @@ actor ChatterboxCoreAIEngine {
         let embeddingDecode = pipeline.embeddingDecode
         let transformerPrefill = pipeline.transformerPrefill
         let transformerDecode = pipeline.transformerDecode
-        let setupTime = setupStartedAt.duration(to: .now).timeInterval
+        let setupTime = setupStartedAt.duration(to: .now).coreAISeconds
 
         let prefillStartedAt = ContinuousClock.now
         var embeddingOutputs = try await embeddingPrefill.run(
@@ -407,7 +407,7 @@ actor ChatterboxCoreAIEngine {
             generatedTokens: [capacity.t3StartSpeechToken],
             random: random
         )
-        let prefillTime = prefillStartedAt.duration(to: .now).timeInterval
+        let prefillTime = prefillStartedAt.duration(to: .now).coreAISeconds
         if token == capacity.t3StopSpeechToken {
             return SpeechTokenGeneration(
                 tokens: [],
@@ -442,7 +442,7 @@ actor ChatterboxCoreAIEngine {
             }
             embeddingInferenceTime += embeddingInferenceStartedAt.duration(
                 to: .now
-            ).timeInterval
+            ).coreAISeconds
 
             sequenceLength += 1
             let transformerInferenceStartedAt = ContinuousClock.now
@@ -462,7 +462,7 @@ actor ChatterboxCoreAIEngine {
             )
             transformerInferenceTime += transformerInferenceStartedAt.duration(
                 to: .now
-            ).timeInterval
+            ).coreAISeconds
 
             let decodeHostStartedAt = ContinuousClock.now
             let cacheOffset = sequenceLength - 1
@@ -485,7 +485,7 @@ actor ChatterboxCoreAIEngine {
             )
             decodeHostTime += decodeHostStartedAt.duration(
                 to: .now
-            ).timeInterval
+            ).coreAISeconds
             if token == capacity.t3StopSpeechToken {
                 return SpeechTokenGeneration(
                     tokens: generatedTokens,
@@ -541,11 +541,11 @@ actor ChatterboxCoreAIEngine {
         let noise = (0..<noiseCount).map { _ in
             Float16(random.nextNormal())
         }
-        let noiseTime = noiseStartedAt.duration(to: .now).timeInterval
+        let noiseTime = noiseStartedAt.duration(to: .now).coreAISeconds
         let setupStartedAt = ContinuousClock.now
         let model = try await loadModel(at: modelURL)
         let function = try loadFunction(functionName, from: model)
-        let setupTime = setupStartedAt.duration(to: .now).timeInterval
+        let setupTime = setupStartedAt.duration(to: .now).coreAISeconds
         let inferenceStartedAt = ContinuousClock.now
         var outputs = try await function.run(
             inputs: [
@@ -566,7 +566,7 @@ actor ChatterboxCoreAIEngine {
             mel: mel,
             setupTime: setupTime,
             noiseTime: noiseTime,
-            inferenceTime: inferenceStartedAt.duration(to: .now).timeInterval
+            inferenceTime: inferenceStartedAt.duration(to: .now).coreAISeconds
         )
     }
 
@@ -600,11 +600,11 @@ actor ChatterboxCoreAIEngine {
         let noise = (0..<noiseCount).map { _ in
             Float16(random.nextNormal())
         }
-        let noiseTime = noiseStartedAt.duration(to: .now).timeInterval
+        let noiseTime = noiseStartedAt.duration(to: .now).coreAISeconds
         let setupStartedAt = ContinuousClock.now
         let model = try await loadModel(at: modelURL)
         let function = try loadFunction(functionName, from: model)
-        let setupTime = setupStartedAt.duration(to: .now).timeInterval
+        let setupTime = setupStartedAt.duration(to: .now).coreAISeconds
         let inferenceStartedAt = ContinuousClock.now
         var outputs = try await function.run(
             inputs: [
@@ -630,7 +630,7 @@ actor ChatterboxCoreAIEngine {
             waveform: try ChatterboxNDArray.floats(from: waveform),
             setupTime: setupTime,
             noiseTime: noiseTime,
-            inferenceTime: inferenceStartedAt.duration(to: .now).timeInterval
+            inferenceTime: inferenceStartedAt.duration(to: .now).coreAISeconds
         )
     }
 
@@ -704,13 +704,5 @@ actor ChatterboxCoreAIEngine {
             )
         }
         return total
-    }
-}
-
-private extension Duration {
-    var timeInterval: TimeInterval {
-        let components = self.components
-        return Double(components.seconds)
-            + Double(components.attoseconds) / 1_000_000_000_000_000_000
     }
 }

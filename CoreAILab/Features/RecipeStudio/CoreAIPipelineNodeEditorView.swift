@@ -232,11 +232,7 @@ struct CoreAIPipelineNodeEditorView: View {
         }
         return CoreAIPipelinePort(
             name: "\(prefix)_\(index)",
-            value: CoreAIPipelineValueContract(
-                kind: .tensor,
-                scalarType: "float32",
-                shape: [.fixed(1)]
-            )
+            value: CoreAIPipelineValueContract.authoringDefault
         )
     }
 }

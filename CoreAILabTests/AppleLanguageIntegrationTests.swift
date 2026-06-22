@@ -3,11 +3,16 @@ import Testing
 @testable import CoreAILab
 
 struct AppleLanguageIntegrationTests {
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["COREAI_QWEN_BUNDLE_PATH"] != nil,
+            "Requires COREAI_QWEN_BUNDLE_PATH."
+        )
+    )
     func exportedQwenGeneratesThroughAppleRuntime() async throws {
-        guard let bundlePath = ProcessInfo.processInfo.environment["COREAI_QWEN_BUNDLE_PATH"] else {
-            return
-        }
+        let bundlePath = try #require(
+            ProcessInfo.processInfo.environment["COREAI_QWEN_BUNDLE_PATH"]
+        )
 
         let engine = AppleLanguageModelEngine()
         try await engine.loadModel(at: URL(filePath: bundlePath))

@@ -4,6 +4,8 @@ struct CoreAIPipelineStudioView: View {
     @Bindable var workspace: CoreAIRecipeStudioWorkspaceModel
 
     var body: some View {
+        let displayedEdges = workspace.displayedPipelineEdges
+
         Form {
             Section("Pipeline Manifest") {
                 TextField("Display name", text: $workspace.recipe.pipeline.displayName)
@@ -68,11 +70,11 @@ struct CoreAIPipelineStudioView: View {
             }
 
             Section("Edges") {
-                if workspace.displayedPipelineEdges.isEmpty {
+                if displayedEdges.isEmpty {
                     Text("No edges")
                         .foregroundStyle(.secondary)
                 }
-                ForEach(workspace.displayedPipelineEdges) { edge in
+                ForEach(displayedEdges) { edge in
                     LabeledContent(
                         edge.source.diagnosticDescription,
                         value: edge.destination.diagnosticDescription

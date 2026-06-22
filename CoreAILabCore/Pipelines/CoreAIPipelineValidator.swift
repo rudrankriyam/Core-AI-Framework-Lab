@@ -17,7 +17,7 @@ enum CoreAIPipelineValidator {
                 "Pipeline schema version \(manifest.schemaVersion) is unsupported."
             ))
         }
-        if !isValidIdentifier(manifest.id) {
+        if !CoreAIManifestValidator.isValidIdentifier(manifest.id) {
             issues.append(issue(.invalidIdentifier, at: "id", "Pipeline ID is invalid."))
         }
         if manifest.hostOperatorRegistryVersion < 1 {
@@ -30,7 +30,7 @@ enum CoreAIPipelineValidator {
 
         var nodesByID: [String: CoreAIPipelineNode] = [:]
         for node in manifest.nodes {
-            if !isValidIdentifier(node.id) {
+            if !CoreAIManifestValidator.isValidIdentifier(node.id) {
                 issues.append(issue(
                     .invalidIdentifier,
                     at: "nodes.\(node.id)",
@@ -172,7 +172,7 @@ enum CoreAIPipelineValidator {
             var names = Set<String>()
             for port in ports {
                 let location = "nodes.\(node.id).\(direction).\(port.name)"
-                if !isValidIdentifier(port.name) {
+                if !CoreAIManifestValidator.isValidIdentifier(port.name) {
                     issues.append(issue(
                         .invalidIdentifier,
                         at: location,
@@ -225,7 +225,7 @@ enum CoreAIPipelineValidator {
                 ))
                 return issues
             }
-            if !isValidIdentifier(reference) {
+            if !CoreAIManifestValidator.isValidIdentifier(reference) {
                 issues.append(issue(
                     .invalidReference,
                     at: "nodes.\(node.id).reference",
@@ -340,7 +340,7 @@ enum CoreAIPipelineValidator {
         for node in nodesByID.values.sorted(by: { $0.id < $1.id })
         where node.kind == .state {
             guard let stateKey = node.stateKey,
-                  isValidIdentifier(stateKey),
+                  CoreAIManifestValidator.isValidIdentifier(stateKey),
                   let ownerNodeID = node.ownerNodeID,
                   ownerNodeID != node.id,
                   let ownerNode = nodesByID[ownerNodeID],
@@ -374,9 +374,11 @@ enum CoreAIPipelineValidator {
     ) -> Bool {
         var indegree = indegree
         var queue = indegree.compactMap { $0.value == 0 ? $0.key : nil }.sorted()
+        var queueIndex = 0
         var visited = 0
-        while let node = queue.first {
-            queue.removeFirst()
+        while queueIndex < queue.count {
+            let node = queue[queueIndex]
+            queueIndex += 1
             visited += 1
             for destination in (adjacency[node] ?? []).sorted() {
                 indegree[destination, default: 0] -= 1
@@ -396,7 +398,7 @@ enum CoreAIPipelineValidator {
                 && dimension.maximum == nil
         }
         guard let name = dimension.name,
-              isValidIdentifier(name),
+              CoreAIManifestValidator.isValidIdentifier(name),
               dimension.minimum.map({ $0 > 0 }) ?? true,
               dimension.maximum.map({ $0 > 0 }) ?? true else {
             return false
@@ -405,21 +407,6 @@ enum CoreAIPipelineValidator {
             return minimum <= maximum
         }
         return true
-    }
-
-    private static func isValidIdentifier(_ value: String) -> Bool {
-        guard let first = value.unicodeScalars.first,
-              CharacterSet.letters.union(CharacterSet(charactersIn: "_")).contains(first)
-        else {
-            return false
-        }
-        let allowed = CharacterSet.alphanumerics.union(
-            CharacterSet(charactersIn: "_-./")
-        )
-        return value.unicodeScalars.allSatisfy(allowed.contains)
-            && !value.contains("..")
-            && !value.hasPrefix("/")
-            && !value.hasSuffix("/")
     }
 
     private static func issue(

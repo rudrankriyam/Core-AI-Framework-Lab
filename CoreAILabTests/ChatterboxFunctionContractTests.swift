@@ -102,14 +102,13 @@ struct ChatterboxFunctionContractTests {
         #expect(first == second)
     }
 
-    @Test
+    @Test(
+        .enabled(
+            if: ProcessInfo.processInfo.environment["RUN_CHATTERBOX_INTEGRATION"] == "1",
+            "Requires RUN_CHATTERBOX_INTEGRATION=1."
+        )
+    )
     func bundledCoreAISmokeTest() async throws {
-        guard ProcessInfo.processInfo.environment[
-            "RUN_CHATTERBOX_INTEGRATION"
-        ] == "1" else {
-            return
-        }
-
         let engine = ChatterboxCoreAIEngine(bundle: .main)
         let inspection = try await engine.prepareBundledModels()
         #expect(inspection.contractValidation.isComplete)

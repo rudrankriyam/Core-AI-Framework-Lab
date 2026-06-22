@@ -17,7 +17,7 @@ enum CoreAIRecipeValidator {
                 "Recipe schema version \(recipe.schemaVersion) is unsupported."
             ))
         }
-        if !isIdentifier(recipe.id) {
+        if !CoreAIManifestValidator.isValidIdentifier(recipe.id) {
             issues.append(issue(.invalidIdentifier, at: "id", "Recipe ID is invalid."))
         }
         if recipe.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -45,7 +45,8 @@ enum CoreAIRecipeValidator {
         )
         for input in recipe.exampleInputs {
             let location = "exampleInputs.\(input.id)"
-            if !isIdentifier(input.id) || !isIdentifier(input.name) {
+            if !CoreAIManifestValidator.isValidIdentifier(input.id)
+                || !CoreAIManifestValidator.isValidIdentifier(input.name) {
                 issues.append(issue(
                     .invalidIdentifier,
                     at: location,
@@ -88,7 +89,7 @@ enum CoreAIRecipeValidator {
         )
         for dimension in recipe.dynamicDimensions {
             let location = "dynamicDimensions.\(dimension.id)"
-            if !isIdentifier(dimension.id) {
+            if !CoreAIManifestValidator.isValidIdentifier(dimension.id) {
                 issues.append(issue(
                     .invalidIdentifier,
                     at: location,
@@ -115,7 +116,7 @@ enum CoreAIRecipeValidator {
             }
             if input.kind != .tensor
                 || !input.shape.indices.contains(dimension.axis)
-                || !isIdentifier(dimension.symbol)
+                || !CoreAIManifestValidator.isValidIdentifier(dimension.symbol)
                 || dimension.minimum < 1
                 || dimension.maximum < dimension.minimum {
                 issues.append(issue(
@@ -136,10 +137,11 @@ enum CoreAIRecipeValidator {
             location: "stateBindings",
             issues: &issues
         )
-        for state in recipe.stateBindings where !isIdentifier(state.id)
-            || !isIdentifier(state.name)
-            || !isIdentifier(state.inputName)
-            || !isIdentifier(state.outputName) {
+        for state in recipe.stateBindings
+        where !CoreAIManifestValidator.isValidIdentifier(state.id)
+            || !CoreAIManifestValidator.isValidIdentifier(state.name)
+            || !CoreAIManifestValidator.isValidIdentifier(state.inputName)
+            || !CoreAIManifestValidator.isValidIdentifier(state.outputName) {
             issues.append(issue(
                 .invalidState,
                 at: "stateBindings.\(state.id)",
@@ -153,10 +155,10 @@ enum CoreAIRecipeValidator {
             issues: &issues
         )
         for rule in recipe.externalizationRules {
-            if !isIdentifier(rule.id)
+            if !CoreAIManifestValidator.isValidIdentifier(rule.id)
                 || rule.modulePath.isEmpty
                 || rule.minimumBytes < 0
-                || !isIdentifier(rule.resourceName) {
+                || !CoreAIManifestValidator.isValidIdentifier(rule.resourceName) {
                 issues.append(issue(
                     .invalidExternalization,
                     at: "externalizationRules.\(rule.id)",
@@ -177,11 +179,13 @@ enum CoreAIRecipeValidator {
         )
         for function in recipe.functionEntrypoints {
             let location = "functionEntrypoints.\(function.id)"
-            if !isIdentifier(function.id)
-                || !isIdentifier(function.name)
+            if !CoreAIManifestValidator.isValidIdentifier(function.id)
+                || !CoreAIManifestValidator.isValidIdentifier(function.name)
                 || function.moduleMethod.isEmpty
                 || function.outputNames.isEmpty
-                || function.outputNames.contains(where: { !isIdentifier($0) }) {
+                || function.outputNames.contains(where: {
+                    !CoreAIManifestValidator.isValidIdentifier($0)
+                }) {
                 issues.append(issue(
                     .invalidEntrypoint,
                     at: location,
@@ -210,7 +214,7 @@ enum CoreAIRecipeValidator {
             issues: &issues
         )
         for finding in recipe.unsupportedOperations {
-            if !isIdentifier(finding.id)
+            if !CoreAIManifestValidator.isValidIdentifier(finding.id)
                 || finding.operatorName.isEmpty
                 || finding.modulePath.isEmpty
                 || finding.sourceFile.isEmpty
@@ -256,21 +260,6 @@ enum CoreAIRecipeValidator {
             ))
         }
         return uniqueNames
-    }
-
-    private static func isIdentifier(_ value: String) -> Bool {
-        guard let first = value.unicodeScalars.first,
-              CharacterSet.letters.union(CharacterSet(charactersIn: "_")).contains(first)
-        else {
-            return false
-        }
-        let allowed = CharacterSet.alphanumerics.union(
-            CharacterSet(charactersIn: "_-./")
-        )
-        return value.unicodeScalars.allSatisfy(allowed.contains)
-            && !value.contains("..")
-            && !value.hasPrefix("/")
-            && !value.hasSuffix("/")
     }
 
     private static func issue(

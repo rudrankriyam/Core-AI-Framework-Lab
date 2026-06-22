@@ -7,6 +7,7 @@ struct CoreAIRecipeCatalogView: View {
 
     var body: some View {
         @Bindable var model = model
+        let entries = model.entries
 
         NavigationStack {
             List {
@@ -22,13 +23,13 @@ struct CoreAIRecipeCatalogView: View {
                             systemImage: "exclamationmark.triangle",
                             description: Text(catalogError)
                         )
-                    } else if model.entries.isEmpty {
+                    } else if entries.isEmpty {
                         ContentUnavailableView(
                             "No Curated Recipes",
                             systemImage: "books.vertical"
                         )
                     } else {
-                        ForEach(model.entries) { entry in
+                        ForEach(entries) { entry in
                             CoreAIRecipeCatalogEntryView(entry: entry)
                         }
                     }

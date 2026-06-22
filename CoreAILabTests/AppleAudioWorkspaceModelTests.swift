@@ -75,7 +75,7 @@ struct AppleAudioWorkspaceModelTests {
     @Test
     func audioLoaderResamplesToSixteenKilohertzMono() throws {
         let url = FileManager.default.temporaryDirectory
-            .appending(path: "core-ai-audio-(UUID().uuidString).wav")
+            .appending(path: "core-ai-audio-\(UUID().uuidString).wav")
         defer { try? FileManager.default.removeItem(at: url) }
         let sourceSamples = (0..<2_400).map { index in
             Float(sin(Double(index) * 0.05) * 0.2)
