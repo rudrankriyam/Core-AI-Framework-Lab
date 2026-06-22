@@ -236,6 +236,118 @@ struct CoreAIRecipeStudioTests {
         #expect(state.ownerNodeID == ownerID)
     }
 
+    @Test
+    func pipelineSpecialPortRenamesPreserveConfigurationAndRemovalGuards() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .boundedLoop)
+        let loop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        let stopIndex = try #require(loop.inputs.firstIndex {
+            $0.name == loop.stopConditionInputPort
+        })
+        workspace.renamePipelinePort(
+            nodeID: loop.id,
+            output: false,
+            index: stopIndex,
+            to: "should_stop"
+        )
+
+        var renamedLoop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == loop.id
+        })
+        #expect(renamedLoop.stopConditionInputPort == "should_stop")
+        #expect(!workspace.pipelineIssues.contains { $0.code == .missingLoopStopCondition })
+
+        let renamedStopIndex = try #require(renamedLoop.inputs.firstIndex {
+            $0.name == renamedLoop.stopConditionInputPort
+        })
+        workspace.removePipelinePort(
+            nodeID: renamedLoop.id,
+            output: false,
+            index: renamedStopIndex
+        )
+        renamedLoop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == loop.id
+        })
+        #expect(renamedLoop.inputs.contains { $0.name == "should_stop" })
+
+        let seedValue = CoreAIPipelineValueContract(
+            kind: .scalar,
+            scalarType: "int64"
+        )
+        workspace.recipe.pipeline.nodes.append(CoreAIPipelineNode(
+            id: "random",
+            kind: .seededRandom,
+            title: "Random",
+            inputs: [CoreAIPipelinePort(name: "seed", value: seedValue)],
+            outputs: [CoreAIPipelinePort(name: "output", value: seedValue)],
+            seedInputPort: "seed"
+        ))
+        workspace.renamePipelinePort(
+            nodeID: "random",
+            output: false,
+            index: 0,
+            to: "random_seed"
+        )
+
+        var random = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "random"
+        })
+        #expect(random.seedInputPort == "random_seed")
+        #expect(!workspace.pipelineIssues.contains { issue in
+            issue.code == .missingPort && issue.location.contains("random")
+        })
+
+        workspace.removePipelinePort(nodeID: random.id, output: false, index: 0)
+        random = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "random"
+        })
+        #expect(random.inputs.contains { $0.name == "random_seed" })
+    }
+
+    @Test
+    func connectionEligibilityMatchesOptionalityValidation() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        let sourceEndpoint = CoreAIPipelineEndpoint(
+            nodeID: "features_input",
+            portName: "features"
+        )
+        let destinationEndpoint = CoreAIPipelineEndpoint(
+            nodeID: "model_forward",
+            portName: "features"
+        )
+        workspace.recipe.pipeline.edges.removeAll {
+            $0.source == sourceEndpoint && $0.destination == destinationEndpoint
+        }
+        let sourceIndex = try #require(workspace.recipe.pipeline.nodes.firstIndex {
+            $0.id == sourceEndpoint.nodeID
+        })
+        let destinationIndex = try #require(workspace.recipe.pipeline.nodes.firstIndex {
+            $0.id == destinationEndpoint.nodeID
+        })
+        workspace.recipe.pipeline.nodes[sourceIndex].outputs[0].isOptional = true
+        workspace.recipe.pipeline.nodes[destinationIndex].inputs[0].isOptional = false
+        workspace.selectedSourceEndpoint = sourceEndpoint
+        workspace.selectedDestinationEndpoint = destinationEndpoint
+
+        #expect(!workspace.canConnectSelectedEndpoints)
+
+        workspace.recipe.pipeline.nodes[destinationIndex].inputs[0].isOptional = true
+
+        #expect(workspace.canConnectSelectedEndpoints)
+    }
+
+    @Test
+    func pipelineEndpointIdentityKeepsStructuredComponentsDistinct() {
+        let first = CoreAIPipelineEndpoint(nodeID: "a.b", portName: "c")
+        let second = CoreAIPipelineEndpoint(nodeID: "a", portName: "b.c")
+
+        #expect(first.diagnosticDescription == second.diagnosticDescription)
+        #expect(first.id != second.id)
+    }
+
     private func finding() -> CoreAIUnsupportedOperationFinding {
         CoreAIUnsupportedOperationFinding(
             id: "stft",

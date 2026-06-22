@@ -44,13 +44,15 @@ struct CoreAIPipelineStudioView: View {
                 Picker("Source", selection: $workspace.selectedSourceEndpoint) {
                     Text("Choose source").tag(nil as CoreAIPipelineEndpoint?)
                     ForEach(workspace.sourceEndpoints) { endpoint in
-                        Text(endpoint.id).tag(endpoint as CoreAIPipelineEndpoint?)
+                        Text(endpoint.diagnosticDescription)
+                            .tag(endpoint as CoreAIPipelineEndpoint?)
                     }
                 }
                 Picker("Destination", selection: $workspace.selectedDestinationEndpoint) {
                     Text("Choose destination").tag(nil as CoreAIPipelineEndpoint?)
                     ForEach(workspace.destinationEndpoints) { endpoint in
-                        Text(endpoint.id).tag(endpoint as CoreAIPipelineEndpoint?)
+                        Text(endpoint.diagnosticDescription)
+                            .tag(endpoint as CoreAIPipelineEndpoint?)
                     }
                 }
                 Button(
@@ -71,7 +73,10 @@ struct CoreAIPipelineStudioView: View {
                         .foregroundStyle(.secondary)
                 }
                 ForEach(workspace.recipe.pipeline.edges) { edge in
-                    LabeledContent(edge.source.id, value: edge.destination.id)
+                    LabeledContent(
+                        edge.source.diagnosticDescription,
+                        value: edge.destination.diagnosticDescription
+                    )
                         .textSelection(.enabled)
                     Button(
                         "Remove \(edge.diagnosticDescription)",

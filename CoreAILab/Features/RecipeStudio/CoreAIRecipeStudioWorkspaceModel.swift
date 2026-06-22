@@ -56,7 +56,8 @@ final class CoreAIRecipeStudioWorkspaceModel {
             source: selectedSourceEndpoint,
             destination: selectedDestinationEndpoint
         )
-        return source.value.isCompatible(with: destination.value)
+        return (!source.isOptional || destination.isOptional)
+            && source.value.isCompatible(with: destination.value)
             && !recipe.pipeline.edges.contains(edge)
             && !recipe.pipeline.edges.contains {
                 $0.destination == selectedDestinationEndpoint
@@ -327,6 +328,12 @@ final class CoreAIRecipeStudioWorkspaceModel {
             guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
             previousName = recipe.pipeline.nodes[nodeIndex].inputs[index].name
             recipe.pipeline.nodes[nodeIndex].inputs[index].name = name
+            if recipe.pipeline.nodes[nodeIndex].seedInputPort == previousName {
+                recipe.pipeline.nodes[nodeIndex].seedInputPort = name
+            }
+            if recipe.pipeline.nodes[nodeIndex].stopConditionInputPort == previousName {
+                recipe.pipeline.nodes[nodeIndex].stopConditionInputPort = name
+            }
         }
         guard previousName != name else { return }
         for edgeIndex in recipe.pipeline.edges.indices {
@@ -371,9 +378,9 @@ final class CoreAIRecipeStudioWorkspaceModel {
             }
         } else {
             guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
-            if recipe.pipeline.nodes[nodeIndex].kind == .boundedLoop,
-               recipe.pipeline.nodes[nodeIndex].inputs[index].name
-                == recipe.pipeline.nodes[nodeIndex].stopConditionInputPort {
+            let inputName = recipe.pipeline.nodes[nodeIndex].inputs[index].name
+            if inputName == recipe.pipeline.nodes[nodeIndex].seedInputPort
+                || inputName == recipe.pipeline.nodes[nodeIndex].stopConditionInputPort {
                 return
             }
             name = recipe.pipeline.nodes[nodeIndex].inputs.remove(at: index).name

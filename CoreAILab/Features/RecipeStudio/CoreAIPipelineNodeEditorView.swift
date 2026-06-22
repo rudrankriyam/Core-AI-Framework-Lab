@@ -59,8 +59,8 @@ struct CoreAIPipelineNodeEditorView: View {
                             action: { removeInputPort(at: index) }
                         )
                         .disabled(
-                            node.kind == .boundedLoop
-                                && node.inputs[index].name == node.stopConditionInputPort
+                            node.inputs[index].name == node.seedInputPort
+                                || node.inputs[index].name == node.stopConditionInputPort
                         )
                     }
                     Button("Add Input Port", systemImage: "plus", action: addInputPort)
