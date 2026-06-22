@@ -202,6 +202,11 @@ class CIMatrixTests(unittest.TestCase):
             workflow,
         )
         self.assertIn("Unresolved fixture LFS pointers", workflow)
+        self.assertIn("tr '[:lower:]' '[:upper:]'", workflow)
+        self.assertIn(
+            "printf 'APPLE_TEAM_ID=%s\\n' \"$normalized_team_id\" >> \"$GITHUB_ENV\"",
+            workflow,
+        )
         self.assertIn("lfs: false", workflow)
         self.assertNotIn("lfs: true", workflow)
         self.assertNotIn("allowProvisioningUpdates", workflow)

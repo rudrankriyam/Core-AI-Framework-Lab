@@ -79,10 +79,14 @@ jobs:
           [[ "$(uname -m)" == "arm64" ]]
           [[ "$(xcodebuild -version | awk 'NR == 1 { print $2 }')" == 27* ]]
           [[ "$(xcrun --sdk iphoneos --show-sdk-version)" == 27.* ]]
-          if [[ ! "$APPLE_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]]; then
+          normalized_team_id="$(
+            printf '%s' "$APPLE_TEAM_ID" | LC_ALL=C tr '[:lower:]' '[:upper:]'
+          )"
+          if [[ ! "$normalized_team_id" =~ ^[A-Z0-9]{10}$ ]]; then
             echo "::error::COREAI_APPLE_TEAM_ID must be a 10-character team ID"
             exit 1
           fi
+          printf 'APPLE_TEAM_ID=%s\n' "$normalized_team_id" >> "$GITHUB_ENV"
 
       - name: Run the physical-device fixture with installed signing assets
         shell: bash
