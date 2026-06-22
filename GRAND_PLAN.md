@@ -112,6 +112,12 @@ The first platform slice is now represented in the repository:
   adapter owns their lifecycle.
 - A checked-in two-function Core AI fixture proving real Float32 and Int32
   specialization and inference rather than only mocked orchestration.
+- A first iPhone Device Lab foundation with versioned connected-target and
+  device-trial evidence contracts, static context/shape diagnostics,
+  overflow-safe app-download/on-demand storage planning, explicit Neural Engine
+  evidence gates, and importable dry-run/physical harness JSON. Compute
+  preference remains separate from measured placement; real latency, memory,
+  thermal, energy, and placement trials remain open Milestone 7 hardware work.
 - A runnable YOLOS Tiny playground built on Apple’s `CoreAIObjectDetection` package, with image import, Core AI execution, bounding-box overlays, confidence values, and an accessible result table.
 - Runnable EfficientSAM and SAM 3 playgrounds built on Apple’s `CoreAISegmentation` package, with point or text prompts, bundle-aware conversion handoff, mask overlays, and explicit gated-weight licensing boundaries.
 - A runnable Qwen3 0.6B playground built on Apple’s `CoreAILanguageModels`

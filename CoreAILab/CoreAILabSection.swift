@@ -9,6 +9,7 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case diarization
     case assetInspector
     case runtime
+    case deviceLab
 
     var id: Self { self }
 
@@ -30,6 +31,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "Asset Inspector"
         case .runtime:
             "Runtime Studio"
+        case .deviceLab:
+            "Device Lab"
         }
     }
 
@@ -51,6 +54,8 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "doc.text.magnifyingglass"
         case .runtime:
             "play.square.stack"
+        case .deviceLab:
+            "iphone.gen3"
         }
     }
 }
