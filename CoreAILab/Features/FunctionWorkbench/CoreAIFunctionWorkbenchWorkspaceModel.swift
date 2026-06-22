@@ -29,6 +29,8 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     @ObservationIgnored
     private let integrationExporter: CoreAIIntegrationExporter
     @ObservationIgnored
+    private let artifactDigester: any CoreAIArtifactDigesting
+    @ObservationIgnored
     private var contractOperationID = UUID()
     @ObservationIgnored
     private var benchmarkTask: Task<Void, Never>?
@@ -39,10 +41,12 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     init(
         inspectionService: any CoreAIAssetInspecting = CoreAIAssetInspectionService(),
         runtimeService: any CoreAIFunctionRuntimeServicing = CoreAISpecializationService(),
-        integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter()
+        integrationExporter: CoreAIIntegrationExporter = CoreAIIntegrationExporter(),
+        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared
     ) {
         self.runtimeService = runtimeService
         self.integrationExporter = integrationExporter
+        self.artifactDigester = artifactDigester
         assetWorkspace = CoreAIAssetWorkspaceModel(
             inspectionService: inspectionService,
             specializationService: runtimeService
@@ -157,7 +161,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             return
         }
 
-        benchmarkStatusMessage = nil
+        benchmarkStatusMessage = "Hashing the model artifact before measurement…"
         phase = .benchmarking
         let configuration = benchmarkConfiguration
         benchmarkTask = Task { [weak self] in
@@ -165,6 +169,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             await self.performBenchmark(
                 functionName: selectedFunctionName,
                 assetName: asset.url.lastPathComponent,
+                assetURL: asset.url,
                 specialization: specialization,
                 plans: plans,
                 configuration: configuration
@@ -258,6 +263,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
     private func performBenchmark(
         functionName: String,
         assetName: String,
+        assetURL: URL,
         specialization: CoreAISpecializationResult,
         plans: [CoreAIFunctionInputPlan],
         configuration: CoreAIFunctionBenchmarkConfiguration
@@ -270,6 +276,13 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         }
 
         do {
+            let artifactDigest = try await artifactDigester.digest(at: assetURL)
+            try Task.checkCancellation()
+            guard artifactDigest == specialization.artifactDigest else {
+                throw CoreAIFunctionBenchmarkError
+                    .artifactChangedSinceSpecialization
+            }
+            benchmarkStatusMessage = "Running the benchmark protocol…"
             let result = try await runtimeService.benchmarkFunction(
                 named: functionName,
                 inputs: plans,
@@ -279,9 +292,11 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
             benchmarkHistory.insert(
                 CoreAIFunctionBenchmarkReport(
                     assetName: assetName,
+                    artifactDigest: specialization.artifactDigest,
                     specializationConfiguration: specialization.configuration,
                     specializationDuration: specialization.duration,
                     loadedFromCache: specialization.loadedFromCache,
+                    benchmarkConfiguration: configuration,
                     inputPlans: plans,
                     result: result
                 ),
@@ -293,6 +308,7 @@ final class CoreAIFunctionWorkbenchWorkspaceModel {
         } catch is CancellationError {
             benchmarkStatusMessage = "Benchmark stopped before a measured trial completed."
         } catch {
+            benchmarkStatusMessage = nil
             assetWorkspace.presentImportError(error)
         }
     }

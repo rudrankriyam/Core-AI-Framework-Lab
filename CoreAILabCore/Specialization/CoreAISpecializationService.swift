@@ -3,12 +3,19 @@ import CoreVideo
 import Foundation
 
 actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
+    private let artifactDigester: any CoreAIArtifactDigesting
     private var model: AIModel?
     private var modelURL: URL?
     private var configuration: CoreAISpecializationConfiguration?
     private var specializationGeneration = UUID()
     private var activeSpecializationGeneration: UUID?
     private var hasActiveRun = false
+
+    init(
+        artifactDigester: any CoreAIArtifactDigesting = CoreAIArtifactStore.shared
+    ) {
+        self.artifactDigester = artifactDigester
+    }
 
     func reset() {
         guard !hasActiveRun else { return }
@@ -60,6 +67,11 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
             }
         }
 
+        let artifactDigest = try await artifactDigester.digest(at: url)
+        guard specializationGeneration == generation else {
+            throw CancellationError()
+        }
+
         let clock = ContinuousClock()
         let startedAt = clock.now
         let cachedModel = try cachedModel(
@@ -87,6 +99,7 @@ actor CoreAISpecializationService: CoreAIFunctionRuntimeServicing {
         self.configuration = configuration
         return CoreAISpecializationResult(
             configuration: configuration,
+            artifactDigest: artifactDigest,
             duration: startedAt.duration(to: clock.now),
             loadedFromCache: loadedFromCache,
             functionNames: specializedModel.functionNames.sorted(),

@@ -123,7 +123,8 @@ struct CoreAIFunctionBenchmarkTests {
         )
         let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
             inspectionService: CoreAIDelayedAssetInspectorStub(),
-            runtimeService: runtime
+            runtimeService: runtime,
+            artifactDigester: CoreAIArtifactDigesterStub()
         )
         await prepare(workspace)
 
@@ -164,7 +165,8 @@ struct CoreAIFunctionBenchmarkTests {
         )
         let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
             inspectionService: CoreAIDelayedAssetInspectorStub(),
-            runtimeService: runtime
+            runtimeService: runtime,
+            artifactDigester: CoreAIArtifactDigesterStub()
         )
         await prepare(workspace)
 
@@ -198,7 +200,8 @@ struct CoreAIFunctionBenchmarkTests {
         )
         let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
             inspectionService: CoreAIDelayedAssetInspectorStub(),
-            runtimeService: runtime
+            runtimeService: runtime,
+            artifactDigester: CoreAIArtifactDigesterStub()
         )
         await prepare(workspace)
         workspace.startBenchmark()
@@ -213,6 +216,40 @@ struct CoreAIFunctionBenchmarkTests {
         #expect(workspace.phase == .ready)
     }
 
+    @MainActor
+    @Test
+    func changedSourceAfterSpecializationCannotProduceBenchmarkEvidence() async {
+        let runtime = CoreAISpecializationServiceStub(
+            contractResponses: [[contract(named: "main")]]
+        )
+        let changedDigest = CoreAIArtifactDigest(
+            sha256: String(repeating: "b", count: 64),
+            kind: .modelAsset,
+            byteCount: 13,
+            fileCount: 2
+        )
+        let workspace = CoreAIFunctionWorkbenchWorkspaceModel(
+            inspectionService: CoreAIDelayedAssetInspectorStub(),
+            runtimeService: runtime,
+            artifactDigester: CoreAIArtifactDigesterStub(
+                artifactDigest: changedDigest
+            )
+        )
+        await prepare(workspace)
+
+        workspace.startBenchmark()
+        await waitForBenchmark(workspace)
+
+        #expect(workspace.benchmarkHistory.isEmpty)
+        #expect(await runtime.completedBenchmarkRunCount() == 0)
+        #expect(
+            workspace.assetWorkspace.errorMessage
+                == CoreAIFunctionBenchmarkError
+                    .artifactChangedSinceSpecialization
+                    .localizedDescription
+        )
+    }
+
     @Test
     func realFixtureRunsWarmupAndMeasuredInference() async throws {
         let service = CoreAISpecializationService()
@@ -220,11 +257,15 @@ struct CoreAIFunctionBenchmarkTests {
         try? await service.removeCachedEntries(at: fixtureURL)
 
         do {
-            _ = try await service.specialize(
+            let specialization = try await service.specialize(
                 at: fixtureURL,
                 configuration: CoreAISpecializationConfiguration(profile: .automatic),
                 cachePolicy: .standard
             )
+            let currentDigest = try await CoreAIArtifactStore.shared.digest(
+                at: fixtureURL
+            )
+            #expect(specialization.artifactDigest == currentDigest)
             let result = try await service.benchmarkFunction(
                 named: "scale_and_bias",
                 inputs: [

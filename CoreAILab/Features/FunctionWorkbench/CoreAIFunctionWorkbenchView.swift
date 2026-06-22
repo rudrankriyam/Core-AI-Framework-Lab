@@ -1,9 +1,13 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CoreAIFunctionWorkbenchView: View {
     @State private var workspace = CoreAIFunctionWorkbenchWorkspaceModel()
     @State private var isImportingModel = false
     @State private var isChoosingExportDestination = false
+    @State private var benchmarkEvidenceFile: CoreAIBenchmarkEvidenceFileDocument?
+    @State private var benchmarkEvidenceFilename = "coreai-benchmark-evidence"
+    @State private var isExportingBenchmarkEvidence = false
     let initialURL: URL?
 
     init(initialURL: URL? = nil) {
@@ -112,7 +116,8 @@ struct CoreAIFunctionWorkbenchView: View {
 
                         if !workspace.benchmarkHistory.isEmpty {
                             CoreAIFunctionBenchmarkResultsView(
-                                reports: workspace.benchmarkHistory
+                                reports: workspace.benchmarkHistory,
+                                exportEvidence: prepareBenchmarkEvidenceExport
                             )
                         }
 
@@ -166,6 +171,14 @@ struct CoreAIFunctionWorkbenchView: View {
             allowedContentTypes: [.folder]
         ) { result in
             handleExportDestination(result)
+        }
+        .fileExporter(
+            isPresented: $isExportingBenchmarkEvidence,
+            document: benchmarkEvidenceFile,
+            contentType: .json,
+            defaultFilename: benchmarkEvidenceFilename
+        ) { result in
+            handleBenchmarkEvidenceExport(result)
         }
         .background {
             CoreAIFunctionWorkbenchErrorPresenter(
@@ -229,6 +242,32 @@ struct CoreAIFunctionWorkbenchView: View {
     private func reloadContracts() {
         Task {
             await workspace.reloadContracts()
+        }
+    }
+
+    private func prepareBenchmarkEvidenceExport(
+        _ report: CoreAIFunctionBenchmarkReport
+    ) {
+        do {
+            let document = CoreAIBenchmarkEvidenceDocument(report: report)
+            let data = try CoreAIBenchmarkEvidenceCodec().encode(document)
+            benchmarkEvidenceFile = CoreAIBenchmarkEvidenceFileDocument(
+                data: data
+            )
+            benchmarkEvidenceFilename = "coreai-benchmark-\(report.id.uuidString.lowercased())"
+            isExportingBenchmarkEvidence = true
+        } catch {
+            workspace.presentImportError(error)
+        }
+    }
+
+    private func handleBenchmarkEvidenceExport(
+        _ result: Result<URL, any Error>
+    ) {
+        benchmarkEvidenceFile = nil
+        if case .failure(let error) = result,
+           (error as? CocoaError)?.code != .userCancelled {
+            workspace.presentImportError(error)
         }
     }
 }

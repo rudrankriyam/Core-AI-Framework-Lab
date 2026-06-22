@@ -65,6 +65,12 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
         cachedConfigurations.insert(configuration)
         return CoreAISpecializationResult(
             configuration: configuration,
+            artifactDigest: CoreAIArtifactDigest(
+                sha256: String(repeating: "a", count: 64),
+                kind: .modelAsset,
+                byteCount: 13,
+                fileCount: 2
+            ),
             duration: .milliseconds(25),
             loadedFromCache: false,
             functionNames: ["main"],
@@ -161,9 +167,20 @@ actor CoreAISpecializationServiceStub: CoreAIFunctionRuntimeServicing {
                 operatingSystem: "test",
                 deviceArchitectureName: "test",
                 availableComputeUnits: ["CPU"],
+                processorCount: 8,
+                physicalMemoryBytes: 16_000_000_000,
                 buildConfiguration: .debug,
                 startedThermalState: .nominal,
-                endedThermalState: .nominal
+                endedThermalState: .nominal,
+                toolchain: CoreAIBenchmarkToolchain(
+                    xcodeVersionCode: "2700",
+                    xcodeBuild: "test",
+                    sdkName: "macosx27.0",
+                    sdkBuild: "test",
+                    compilerIdentifier: "test",
+                    swiftCompilerVersionConstraint: ">=6.4",
+                    swiftLanguageMode: "6"
+                )
             )
         )
     }

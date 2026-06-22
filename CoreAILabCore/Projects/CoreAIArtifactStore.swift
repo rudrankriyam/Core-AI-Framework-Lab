@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-actor CoreAIArtifactStore {
+actor CoreAIArtifactStore: CoreAIArtifactDigesting {
     nonisolated static let defaultRootURL = CoreAIStorageLocation.artifactRootURL
     nonisolated static let shared = CoreAIArtifactStore()
 
@@ -16,6 +16,24 @@ actor CoreAIArtifactStore {
     ) {
         self.rootURL = rootURL
         self.fileManager = fileManager
+    }
+
+    func digest(at sourceURL: URL) async throws -> CoreAIArtifactDigest {
+        try Task.checkCancellation()
+        let isAccessing = sourceURL.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let fingerprint = try fingerprint(at: sourceURL)
+        return CoreAIArtifactDigest(
+            sha256: fingerprint.sha256Digest,
+            kind: fingerprint.kind,
+            byteCount: fingerprint.byteCount,
+            fileCount: fingerprint.fileCount
+        )
     }
 
     func importArtifact(from sourceURL: URL) throws -> CoreAIStoredArtifact {
@@ -124,6 +142,7 @@ actor CoreAIArtifactStore {
     }
 
     private func fingerprint(at sourceURL: URL) throws -> Fingerprint {
+        try Task.checkCancellation()
         guard fileManager.fileExists(atPath: sourceURL.path) else {
             throw CoreAIArtifactStoreError.sourceMissing(sourceURL.lastPathComponent)
         }
@@ -151,6 +170,7 @@ actor CoreAIArtifactStore {
         if isDirectory {
             let entries = try entries(in: sourceURL)
             for entry in entries {
+                try Task.checkCancellation()
                 update(entry.isDirectory ? "directory" : "file", in: &hasher)
                 update(entry.relativePath, in: &hasher)
                 if !entry.isDirectory {
@@ -237,6 +257,7 @@ actor CoreAIArtifactStore {
         var updatedByteCount = currentByteCount
         var fileByteCount: UInt64 = 0
         while let chunk = try handle.read(upToCount: readChunkSize), !chunk.isEmpty {
+            try Task.checkCancellation()
             let (nextFileByteCount, fileOverflow) = fileByteCount.addingReportingOverflow(
                 UInt64(chunk.count)
             )

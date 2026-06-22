@@ -161,15 +161,28 @@ trial remains visible alongside function-load, input-setup, and warmup timing;
 the summary reports minimum, median, mean, maximum, standard deviation, and
 runs per second. P95 appears only for 20 or more measured runs.
 
-Each in-memory report captures the asset, function, shapes, generators, seeds,
-full specialization configuration, cache state, Core AI device architecture,
-OS, available compute units, build configuration, and start/end thermal state.
-Use a Release build for comparisons. **Stop After Current Inference** cancels
-between Core AI calls because an active generic inference cannot be interrupted
-by the Lab, while retaining every measured trial that completed. The history
-supports honest A/B checks across shapes and compute or
-reshape preferences without claiming hardware placement, energy, or memory
-measurements that Core AI did not report.
+Immediately before specialization, the Workbench computes a content-addressed
+artifact digest. It recomputes that digest immediately before benchmarking and
+refuses to run if the source bytes changed, so evidence cannot be attached to a
+different asset than the loaded specialization. Each in-memory report captures
+that digest, every benchmark timing and trial, function and input configuration,
+shapes, generators, seeds, full specialization configuration, cache and warmup
+state, Core AI device architecture, OS, processor and physical-memory capacity,
+available compute units, build configuration, embedded Xcode/SDK metadata, and
+benchmark start/end thermal state. Use a Release build for comparisons. **Stop
+After Current Inference** cancels between Core AI calls because an active generic
+inference cannot be interrupted by the Lab, while retaining every measured trial
+that completed.
+
+**Export Evidence JSON** writes a validated, schema-versioned, deterministic
+report with no source URL or local filesystem path. Peak resident memory and
+energy remain explicit `null` values marked `notMeasured`; device capacity is
+not a runtime memory measurement, and compute preferences do not prove hardware
+placement. Specialization duration remains visible in the session UI but is
+intentionally omitted from export because the current runtime does not capture
+timestamp and thermal metadata for that earlier phase. The exported file is
+durable, but benchmark history is still in-memory until evidence records join
+Lab Project persistence.
 
 ### Integration Export
 
@@ -484,9 +497,10 @@ device; an empty or misrouted filtered run fails the harness.
   and authenticate with `hf auth login` before export; the Lab never reads or
   stores Hugging Face credentials.
 - Projects and imported artifacts persist across launches. Conversion job
-  execution and benchmark evidence are not restart-safe yet.
+  execution and in-app benchmark history are not restart-safe yet; benchmark
+  evidence can be exported manually as deterministic JSON.
 - The generic function workbench currently generates NDArray inputs only.
-  Stateful execution, image-input adaptation, imported fixtures, persisted
+  Stateful execution, image-input adaptation, imported fixtures, project-linked
   benchmark evidence, and raw-output export remain later Runtime Studio work.
   Integration export generates invocation code, not task-specific
   preprocessing or mutable-state orchestration.
