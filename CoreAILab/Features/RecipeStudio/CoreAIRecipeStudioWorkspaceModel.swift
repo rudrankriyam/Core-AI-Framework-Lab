@@ -302,6 +302,10 @@ final class CoreAIRecipeStudioWorkspaceModel {
         }
         recipe.pipeline.nodes[index].kind = kind
         recipe.pipeline.nodes[index].applyConfigurationDefaults()
+        if kind == .state,
+           recipe.pipeline.nodes[index].ownerNodeID?.isEmpty ?? true {
+            recipe.pipeline.nodes[index].ownerNodeID = executableNodeIDs.first
+        }
         pruneInvalidPipelineEdges()
     }
 
@@ -367,6 +371,11 @@ final class CoreAIRecipeStudioWorkspaceModel {
             }
         } else {
             guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
+            if recipe.pipeline.nodes[nodeIndex].kind == .boundedLoop,
+               recipe.pipeline.nodes[nodeIndex].inputs[index].name
+                == recipe.pipeline.nodes[nodeIndex].stopConditionInputPort {
+                return
+            }
             name = recipe.pipeline.nodes[nodeIndex].inputs.remove(at: index).name
             recipe.pipeline.edges.removeAll {
                 $0.destination == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)

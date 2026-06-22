@@ -58,6 +58,10 @@ struct CoreAIPipelineNodeEditorView: View {
                             systemImage: "minus.circle",
                             action: { removeInputPort(at: index) }
                         )
+                        .disabled(
+                            node.kind == .boundedLoop
+                                && node.inputs[index].name == node.stopConditionInputPort
+                        )
                     }
                     Button("Add Input Port", systemImage: "plus", action: addInputPort)
                         .disabled(node.kind == .input)

@@ -41,6 +41,7 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
     }
 
     mutating func applyConfigurationDefaults() {
+        let previousStopConditionInputPort = stopConditionInputPort
         let defaultValue = CoreAIPipelineValueContract(
             kind: .tensor,
             scalarType: "float32",
@@ -50,11 +51,15 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
             ? (reference ?? "executable.reference")
             : nil
         stateKey = kind == .state ? (stateKey ?? "state") : nil
-        ownerNodeID = kind == .state ? (ownerNodeID ?? "") : nil
+        ownerNodeID = kind == .state ? ownerNodeID : nil
         fixedSeed = kind == .seededRandom ? (fixedSeed ?? 0) : nil
         seedInputPort = nil
         maximumIterations = kind == .boundedLoop ? (maximumIterations ?? 1) : nil
         stopConditionInputPort = kind == .boundedLoop ? "stop" : nil
+
+        if kind != .boundedLoop, let previousStopConditionInputPort {
+            inputs.removeAll { $0.name == previousStopConditionInputPort }
+        }
 
         switch kind {
         case .input:

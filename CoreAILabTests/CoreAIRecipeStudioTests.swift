@@ -196,6 +196,46 @@ struct CoreAIRecipeStudioTests {
         #expect(!workspace.pipelineIssues.contains { $0.code == .missingPort })
     }
 
+    @Test
+    func pipelineKindChangesMaintainStructuralConfiguration() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .boundedLoop)
+        let loop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        let stopIndex = try #require(loop.inputs.firstIndex {
+            $0.name == loop.stopConditionInputPort
+        })
+
+        workspace.removePipelinePort(
+            nodeID: "model_forward",
+            output: false,
+            index: stopIndex
+        )
+
+        let preservedLoop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        #expect(preservedLoop.stopConditionInputPort == "stop")
+        #expect(preservedLoop.inputs.contains { $0.name == "stop" })
+
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .assetFunction)
+        let function = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        #expect(function.stopConditionInputPort == nil)
+        #expect(!function.inputs.contains { $0.name == "stop" })
+
+        workspace.addPipelineNode(kind: .assetFunction)
+        let ownerID = try #require(workspace.recipe.pipeline.nodes.last?.id)
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .state)
+        let state = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        #expect(state.ownerNodeID == ownerID)
+    }
+
     private func finding() -> CoreAIUnsupportedOperationFinding {
         CoreAIUnsupportedOperationFinding(
             id: "stft",
