@@ -5,15 +5,29 @@ struct SpeakerDiarizationResultsView: View {
     let activeTurnID: Int?
 
     var body: some View {
-        Section("Stub Results") {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Stub Results")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+
             if let result {
-                LabeledContent("Engine", value: result.engineName)
-                LabeledContent("Speakers", value: result.speakerNames.joined(separator: ", "))
-                ForEach(result.turns) { turn in
-                    SpeakerDiarizationTurnRow(
-                        turn: turn,
-                        isActive: turn.id == activeTurnID
-                    )
+                VStack(spacing: 0) {
+                    LabeledContent("Engine", value: result.engineName)
+                        .padding(.vertical, 6)
+
+                    Divider()
+
+                    LabeledContent("Speakers", value: result.speakerNames.joined(separator: ", "))
+                        .padding(.vertical, 6)
+
+                    ForEach(result.turns) { turn in
+                        Divider()
+                        SpeakerDiarizationTurnRow(
+                            turn: turn,
+                            isActive: turn.id == activeTurnID
+                        )
+                        .padding(.vertical, 8)
+                    }
                 }
             } else {
                 ContentUnavailableView(
@@ -21,6 +35,7 @@ struct SpeakerDiarizationResultsView: View {
                     systemImage: "person.2.slash",
                     description: Text("Run the stub engine after import to preview the diarization timeline.")
                 )
+                .frame(maxWidth: .infinity, minHeight: 180)
             }
         }
     }

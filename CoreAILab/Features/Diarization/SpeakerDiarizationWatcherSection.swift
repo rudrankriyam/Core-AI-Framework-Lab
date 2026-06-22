@@ -1,4 +1,4 @@
-import AVKit
+import AVFoundation
 import SwiftUI
 
 struct SpeakerDiarizationWatcherSection: View {
@@ -14,7 +14,7 @@ struct SpeakerDiarizationWatcherSection: View {
         Section("Playback Watcher") {
             if let summary, let player {
                 if summary.kind == .video {
-                    VideoPlayer(player: player)
+                    SpeakerDiarizationVideoPlayer(player: player)
                         .frame(minHeight: 220)
                         .clipShape(.rect(cornerRadius: 14))
                         .accessibilityLabel("Imported video preview")

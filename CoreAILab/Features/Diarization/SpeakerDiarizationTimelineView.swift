@@ -6,7 +6,11 @@ struct SpeakerDiarizationTimelineView: View {
     let playheadTime: Double
 
     var body: some View {
-        Section("Timeline") {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Timeline")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+
             if let waveform {
                 SpeakerDiarizationWaveformView(
                     waveform: waveform,
@@ -15,24 +19,36 @@ struct SpeakerDiarizationTimelineView: View {
                 )
                 .frame(minHeight: 150)
 
-                LabeledContent(
-                    "Playhead",
-                    value: SpeakerDiarizationTimeFormatter.format(playheadTime)
-                )
-                LabeledContent(
-                    "Duration",
-                    value: SpeakerDiarizationTimeFormatter.format(waveform.durationSeconds)
-                )
-                LabeledContent(
-                    "Turns",
-                    value: (result?.turns.count ?? 0).formatted()
-                )
+                VStack(spacing: 0) {
+                    LabeledContent(
+                        "Playhead",
+                        value: SpeakerDiarizationTimeFormatter.format(playheadTime)
+                    )
+                    .padding(.vertical, 6)
+
+                    Divider()
+
+                    LabeledContent(
+                        "Duration",
+                        value: SpeakerDiarizationTimeFormatter.format(waveform.durationSeconds)
+                    )
+                    .padding(.vertical, 6)
+
+                    Divider()
+
+                    LabeledContent(
+                        "Turns",
+                        value: (result?.turns.count ?? 0).formatted()
+                    )
+                    .padding(.vertical, 6)
+                }
             } else {
                 ContentUnavailableView(
                     "No Media Selected",
                     systemImage: "waveform",
                     description: Text("Choose an audio or video file to build the first timeline.")
                 )
+                .frame(maxWidth: .infinity, minHeight: 180)
             }
         }
     }
