@@ -41,6 +41,7 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
     }
 
     mutating func applyConfigurationDefaults() {
+        let previousSeedInputPort = seedInputPort
         let previousStopConditionInputPort = stopConditionInputPort
         let defaultValue = CoreAIPipelineValueContract(
             kind: .tensor,
@@ -52,13 +53,30 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
             : nil
         stateKey = kind == .state ? (stateKey ?? "state") : nil
         ownerNodeID = kind == .state ? ownerNodeID : nil
-        fixedSeed = kind == .seededRandom ? (fixedSeed ?? 0) : nil
-        seedInputPort = nil
+        if kind == .seededRandom {
+            if seedInputPort == nil || fixedSeed != nil {
+                fixedSeed = fixedSeed ?? 0
+                seedInputPort = nil
+            }
+        } else {
+            fixedSeed = nil
+            seedInputPort = nil
+        }
         maximumIterations = kind == .boundedLoop ? (maximumIterations ?? 1) : nil
-        stopConditionInputPort = kind == .boundedLoop ? "stop" : nil
+        if kind == .boundedLoop {
+            if stopConditionInputPort?.isEmpty ?? true {
+                stopConditionInputPort = "stop"
+            }
+        } else {
+            stopConditionInputPort = nil
+        }
 
         if kind != .boundedLoop, let previousStopConditionInputPort {
             inputs.removeAll { $0.name == previousStopConditionInputPort }
+        }
+        if let previousSeedInputPort,
+           kind != .seededRandom || seedInputPort == nil {
+            inputs.removeAll { $0.name == previousSeedInputPort }
         }
 
         switch kind {
@@ -83,7 +101,9 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
             inputs = []
             outputs = []
         case .seededRandom:
-            inputs = []
+            if seedInputPort == nil {
+                inputs = []
+            }
             if outputs.isEmpty {
                 outputs = [CoreAIPipelinePort(name: "output", value: defaultValue)]
             }
@@ -91,9 +111,10 @@ struct CoreAIPipelineNode: Codable, Hashable, Identifiable, Sendable {
             if !inputs.contains(where: { $0.name == "input" }) {
                 inputs.append(CoreAIPipelinePort(name: "input", value: defaultValue))
             }
-            if !inputs.contains(where: { $0.name == "stop" }) {
+            let stopPortName = stopConditionInputPort ?? "stop"
+            if !inputs.contains(where: { $0.name == stopPortName }) {
                 inputs.append(CoreAIPipelinePort(
-                    name: "stop",
+                    name: stopPortName,
                     value: CoreAIPipelineValueContract(
                         kind: .scalar,
                         scalarType: "bool"

@@ -296,6 +296,14 @@ struct CoreAIRecipeStudioTests {
         #expect(renamedLoop.stopConditionInputPort == "should_stop")
         #expect(!workspace.pipelineIssues.contains { $0.code == .missingLoopStopCondition })
 
+        workspace.updatePipelineNodeKind(id: renamedLoop.id, to: .boundedLoop)
+        renamedLoop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == loop.id
+        })
+        #expect(renamedLoop.stopConditionInputPort == "should_stop")
+        #expect(renamedLoop.inputs.contains { $0.name == "should_stop" })
+        #expect(!renamedLoop.inputs.contains { $0.name == "stop" })
+
         let renamedStopIndex = try #require(renamedLoop.inputs.firstIndex {
             $0.name == renamedLoop.stopConditionInputPort
         })
@@ -341,6 +349,21 @@ struct CoreAIRecipeStudioTests {
             $0.id == "random"
         })
         #expect(random.inputs.contains { $0.name == "random_seed" })
+
+        workspace.updatePipelineNodeKind(id: random.id, to: .seededRandom)
+        random = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "random"
+        })
+        #expect(random.fixedSeed == nil)
+        #expect(random.seedInputPort == "random_seed")
+        #expect(random.inputs.contains { $0.name == "random_seed" })
+
+        workspace.updatePipelineNodeKind(id: random.id, to: .hostOperator)
+        random = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "random"
+        })
+        #expect(random.seedInputPort == nil)
+        #expect(!random.inputs.contains { $0.name == "random_seed" })
     }
 
     @Test
