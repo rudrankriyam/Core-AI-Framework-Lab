@@ -18,6 +18,8 @@ struct AppleLanguageWorkspaceModelTests {
         #expect(await engine.requests == [.init(prompt: "Why local?", maximumTokens: 64)])
         #expect(workspace.response == "On-device AI keeps data local.")
         #expect(!workspace.isShowingError)
+        #expect(workspace.runCoordinator.history.first?.state == .succeeded)
+        #expect(workspace.runCoordinator.history.first?.timingClass == .cold)
     }
 
     @Test
@@ -66,6 +68,7 @@ struct AppleLanguageWorkspaceModelTests {
 
         #expect(workspace.response.isEmpty)
         #expect(workspace.statusMessage == "Generation canceled.")
+        #expect(workspace.runCoordinator.history.first?.state == .canceled)
     }
 
     private func waitForGeneration(_ workspace: AppleLanguageWorkspaceModel) async {

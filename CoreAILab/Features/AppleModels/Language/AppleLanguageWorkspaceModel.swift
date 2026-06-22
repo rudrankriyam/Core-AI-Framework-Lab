@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class AppleLanguageWorkspaceModel {
     let example: AppleLanguageExample
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     private(set) var modelName: String?
     private(set) var response = ""
     private(set) var statusMessage = "Import an Apple-exported Qwen resource bundle."
@@ -20,13 +21,23 @@ final class AppleLanguageWorkspaceModel {
     private let engine: any AppleLanguageGenerating
     @ObservationIgnored
     private var generationTask: Task<Void, Never>?
+    @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleLanguageExample,
-        engine: any AppleLanguageGenerating = AppleLanguageModelEngine()
+        engine: any AppleLanguageGenerating = AppleLanguageModelEngine(),
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
         self.example = example
         self.engine = engine
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-language-\(example.rawValue)",
+            title: example.title,
+            modelIdentifier: "qwen3-0.6b"
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
     }
 
     var isBusy: Bool {
@@ -44,8 +55,17 @@ final class AppleLanguageWorkspaceModel {
         defer { isLoadingModel = false }
 
         do {
+            try CoreAIRuntimeArtifactValidator.validate(
+                url,
+                for: .appleLanguage,
+                context: runContext
+            )
             try await engine.loadModel(at: url)
             modelName = url.lastPathComponent
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: url.lastPathComponent
+            )
             response = ""
             clearError()
             statusMessage = "Qwen is ready for a new session."
@@ -61,10 +81,20 @@ final class AppleLanguageWorkspaceModel {
         response = ""
         isGenerating = true
         statusMessage = "Generating locally with \(example.title)…"
-        generationTask = Task { [weak self] in
-            await self?.performGeneration(
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: modelName ?? runContext.comparisonIdentity.modelIdentifier
+        )
+        let coordinator = runCoordinator
+        generationTask = Task { [weak self, coordinator] in
+            guard let self else {
+                coordinator.cancel(runToken, summary: "Language workspace closed.")
+                return
+            }
+            await self.performGeneration(
                 prompt: submittedPrompt,
-                maximumResponseTokens: submittedMaximumTokens
+                maximumResponseTokens: submittedMaximumTokens,
+                runToken: runToken
             )
         }
     }
@@ -100,7 +130,8 @@ final class AppleLanguageWorkspaceModel {
 
     private func performGeneration(
         prompt: String,
-        maximumResponseTokens: Int
+        maximumResponseTokens: Int,
+        runToken: CoreAIRuntimeRunToken
     ) async {
         defer {
             generationTask = nil
@@ -116,10 +147,13 @@ final class AppleLanguageWorkspaceModel {
             response = generated
             clearError()
             statusMessage = "Generated \(generated.count) characters on device."
+            runCoordinator.succeed(runToken, summary: statusMessage)
         } catch is CancellationError {
             response = ""
             statusMessage = "Generation canceled."
+            runCoordinator.cancel(runToken, summary: statusMessage)
         } catch {
+            runCoordinator.fail(runToken, error: error)
             present(error)
         }
     }

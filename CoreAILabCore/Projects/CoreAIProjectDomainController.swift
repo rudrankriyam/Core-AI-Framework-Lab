@@ -112,6 +112,58 @@ extension CoreAIProjectLibraryController {
         try saveDomainChange(project: project, modelContext: modelContext)
     }
 
+    func finishRuntimeRun(
+        _ run: CoreAIRunRecord,
+        status: CoreAIRunStatus,
+        summary: String,
+        endedAt: Date,
+        metricEvidence: CoreAIRuntimeMetricEvidence?,
+        modelContext: ModelContext
+    ) throws {
+        guard status == .cancelled || status == .failed || status == .succeeded else {
+            throw CoreAIProjectLibraryError.terminalRunRequiresUpdate
+        }
+        guard let project = run.project else {
+            throw CoreAIProjectLibraryError.projectUnavailable
+        }
+
+        let encodedMetricMetadata = try metricEvidence.map {
+            try encoded($0.metadata)
+        }
+        let alreadyHasMetric = metricEvidence.map { metric in
+            run.evidence.contains { $0.id == metric.id }
+        } ?? true
+        if run.status == status,
+           run.summary == summary,
+           run.endedAt == endedAt,
+           alreadyHasMetric {
+            return
+        }
+
+        run.update(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            status: status,
+            summary: summary,
+            endedAt: endedAt
+        )
+        if let metricEvidence,
+           let encodedMetricMetadata,
+           !alreadyHasMetric {
+            let evidence = CoreAIEvidenceRecord(
+                authorization: CoreAIProjectDomainWriteAuthorization(),
+                id: metricEvidence.id,
+                kind: .metric,
+                label: metricEvidence.label,
+                summary: metricEvidence.summary,
+                metadataData: encodedMetricMetadata,
+                project: project,
+                run: run
+            )
+            modelContext.insert(evidence)
+        }
+        try saveDomainChange(project: project, modelContext: modelContext)
+    }
+
     @discardableResult
     func recordEvidence(
         kind: CoreAIEvidenceKind,
@@ -181,5 +233,40 @@ extension CoreAIProjectLibraryController {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         return try encoder.encode(value)
+    }
+}
+
+extension CoreAIProjectLibraryController: CoreAIProjectRunWriting {
+    func createRuntimeRun(
+        in project: LabProject,
+        recipeRevision: CoreAIRecipeRevisionRecord?,
+        provenanceEvidence: CoreAIRuntimeProvenanceEvidence,
+        modelContext: ModelContext
+    ) throws -> CoreAIRunRecord {
+        if let recipeRevision {
+            try requireSameProject(project, recordProject: recipeRevision.project)
+        }
+        let metadataData = try encoded(provenanceEvidence.metadata)
+        let run = CoreAIRunRecord(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            kind: .inference,
+            status: .running,
+            project: project,
+            recipeRevision: recipeRevision
+        )
+        let evidence = CoreAIEvidenceRecord(
+            authorization: CoreAIProjectDomainWriteAuthorization(),
+            id: provenanceEvidence.id,
+            kind: .validation,
+            label: provenanceEvidence.label,
+            summary: provenanceEvidence.summary,
+            metadataData: metadataData,
+            project: project,
+            run: run
+        )
+        modelContext.insert(run)
+        modelContext.insert(evidence)
+        try saveDomainChange(project: project, modelContext: modelContext)
+        return run
     }
 }

@@ -15,6 +15,40 @@ struct AppleDiffusionWorkspaceModelTests {
     }
 
     @Test
+    func selectedRecipeRejectsAMismatchedDiffusionFamilyBeforeLoading() async throws {
+        let engine = try AppleDiffusionGeneratorStub(image: makeTestImage())
+        let runContext = CoreAIRuntimeRunContext(
+            experienceID: "apple-sd15-generation",
+            experienceTitle: "Stable Diffusion 1.5",
+            recipeIdentifier: "apple.coreai-models.sd-1.5",
+            recipeRevision: "fixture-revision",
+            recipeProvenance: .unverifiedIntent,
+            comparisonIdentity: CoreAIRuntimeComparisonIdentity(
+                experienceID: "apple-sd15-generation",
+                modelIdentifier: "sd-1.5",
+                displayName: "Stable Diffusion 1.5"
+            )
+        )
+        let workspace = AppleDiffusionWorkspaceModel(
+            example: .stableDiffusion15,
+            engine: engine,
+            runContext: runContext
+        )
+
+        await workspace.loadPipeline(
+            from: URL(filePath: "/tmp/flux2-klein-4b-export")
+        )
+
+        #expect(workspace.modelName == nil)
+        #expect(workspace.isShowingError)
+        #expect(
+            workspace.errorMessage
+                == "This experience expects sd-1.5, but the imported artifact identifies as flux2-klein-4b."
+        )
+        #expect(await engine.loadAttempts == 0)
+    }
+
+    @Test
     func generationUsesNormalizedControls() async throws {
         let engine = try AppleDiffusionGeneratorStub(image: makeTestImage())
         let workspace = AppleDiffusionWorkspaceModel(
@@ -136,6 +170,7 @@ private actor AppleDiffusionGeneratorStub: AppleDiffusionGenerating {
     private let modelInfo: AppleDiffusionModelInfo
     private let generationDelay: Duration?
     private(set) var requests: [AppleDiffusionRequest] = []
+    private(set) var loadAttempts = 0
     private var isLoaded = false
 
     init(
@@ -157,6 +192,7 @@ private actor AppleDiffusionGeneratorStub: AppleDiffusionGenerating {
     }
 
     func loadPipeline(at url: URL) throws -> AppleDiffusionModelInfo {
+        loadAttempts += 1
         if url.lastPathComponent.contains("invalid") {
             throw AppleDiffusionGeneratorStubError.invalidPipeline
         }

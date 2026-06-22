@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class AppleAudioWorkspaceModel {
     let example: AppleAudioExample
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     private(set) var modelName: String?
     private(set) var modelInfo: AppleAudioModelInfo?
     private(set) var audioName: String?
@@ -21,13 +22,23 @@ final class AppleAudioWorkspaceModel {
     private var audioURL: URL?
     @ObservationIgnored
     private var transcriptionTask: Task<Void, Never>?
+    @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleAudioExample = .wav2Vec2,
-        engine: any AppleAudioTranscribing = AppleWav2Vec2Engine()
+        engine: any AppleAudioTranscribing = AppleWav2Vec2Engine(),
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
         self.example = example
         self.engine = engine
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-wav2vec2-transcription",
+            title: example.title,
+            modelIdentifier: "wav2vec2-base"
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
     }
 
     var isBusy: Bool {
@@ -45,8 +56,17 @@ final class AppleAudioWorkspaceModel {
         defer { isLoadingModel = false }
 
         do {
+            try CoreAIRuntimeArtifactValidator.validate(
+                url,
+                for: .appleAudioTranscription,
+                context: runContext
+            )
             let info = try await engine.loadModel(at: url)
             modelName = url.lastPathComponent
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: url.lastPathComponent
+            )
             modelInfo = info
             result = nil
             clearError()
@@ -71,16 +91,34 @@ final class AppleAudioWorkspaceModel {
         result = nil
         isTranscribing = true
         statusMessage = "Decoding, resampling, and transcribing locally…"
-        transcriptionTask = Task { [weak self] in
-            await self?.performTranscription(audioURL)
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: modelName ?? runContext.comparisonIdentity.modelIdentifier
+        )
+        let coordinator = runCoordinator
+        transcriptionTask = Task { [weak self, coordinator] in
+            guard let self else {
+                coordinator.cancel(runToken, summary: "Audio workspace closed.")
+                return
+            }
+            await self.performTranscription(audioURL, runToken: runToken)
         }
+    }
+
+    func cancelTranscription() {
+        guard transcriptionTask != nil else { return }
+        statusMessage = "Canceling transcription…"
+        transcriptionTask?.cancel()
     }
 
     func presentImportError(_ error: any Error) {
         present(error)
     }
 
-    private func performTranscription(_ audioURL: URL) async {
+    private func performTranscription(
+        _ audioURL: URL,
+        runToken: CoreAIRuntimeRunToken
+    ) async {
         defer {
             transcriptionTask = nil
             isTranscribing = false
@@ -92,7 +130,13 @@ final class AppleAudioWorkspaceModel {
             result = transcription
             clearError()
             statusMessage = "Transcribed on device in \(transcription.inferenceDurationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds."
+            runCoordinator.succeed(runToken, summary: statusMessage)
+        } catch is CancellationError {
+            result = nil
+            statusMessage = "Transcription canceled."
+            runCoordinator.cancel(runToken, summary: statusMessage)
         } catch {
+            runCoordinator.fail(runToken, error: error)
             present(error)
         }
     }

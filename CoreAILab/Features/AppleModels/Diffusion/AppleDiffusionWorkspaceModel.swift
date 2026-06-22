@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class AppleDiffusionWorkspaceModel {
     let example: AppleDiffusionExample
+    let runCoordinator: CoreAIRunLifecycleCoordinator
     private(set) var modelName: String?
     private(set) var modelInfo: AppleDiffusionModelInfo?
     private(set) var result: AppleDiffusionResult?
@@ -23,13 +24,23 @@ final class AppleDiffusionWorkspaceModel {
     private let engine: any AppleDiffusionGenerating
     @ObservationIgnored
     private var generationTask: Task<Void, Never>?
+    @ObservationIgnored
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleDiffusionExample,
-        engine: any AppleDiffusionGenerating = AppleDiffusionPipelineEngine()
+        engine: any AppleDiffusionGenerating = AppleDiffusionPipelineEngine(),
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
         self.example = example
         self.engine = engine
+        self.runContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-diffusion-\(example.rawValue)",
+            title: example.title,
+            modelIdentifier: example.rawValue
+        )
+        self.runCoordinator = runCoordinator ?? CoreAIRunLifecycleCoordinator()
     }
 
     var isBusy: Bool {
@@ -47,8 +58,17 @@ final class AppleDiffusionWorkspaceModel {
         defer { isLoadingModel = false }
 
         do {
+            try CoreAIRuntimeArtifactValidator.validate(
+                url,
+                for: .appleDiffusion,
+                context: runContext
+            )
             let loadedInfo = try await engine.loadPipeline(at: url)
             modelName = url.lastPathComponent
+            runCoordinator.modelDidLoad(
+                context: runContext,
+                modelIdentity: url.lastPathComponent
+            )
             modelInfo = loadedInfo
             stepCount = loadedInfo.defaultStepCount
             guidanceScale = Double(loadedInfo.defaultGuidanceScale)
@@ -74,8 +94,17 @@ final class AppleDiffusionWorkspaceModel {
         result = nil
         isGenerating = true
         statusMessage = "Generating locally with \(modelInfo?.pipelineName ?? example.title)…"
-        generationTask = Task { [weak self] in
-            await self?.performGeneration(request)
+        let runToken = runCoordinator.start(
+            context: runContext,
+            modelIdentity: modelName ?? runContext.comparisonIdentity.modelIdentifier
+        )
+        let coordinator = runCoordinator
+        generationTask = Task { [weak self, coordinator] in
+            guard let self else {
+                coordinator.cancel(runToken, summary: "Diffusion workspace closed.")
+                return
+            }
+            await self.performGeneration(request, runToken: runToken)
         }
     }
 
@@ -93,7 +122,10 @@ final class AppleDiffusionWorkspaceModel {
         prompt.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func performGeneration(_ request: AppleDiffusionRequest) async {
+    private func performGeneration(
+        _ request: AppleDiffusionRequest,
+        runToken: CoreAIRuntimeRunToken
+    ) async {
         defer {
             generationTask = nil
             isGenerating = false
@@ -105,10 +137,13 @@ final class AppleDiffusionWorkspaceModel {
             result = generated
             clearError()
             statusMessage = "Generated on device in \(generated.durationSeconds.formatted(.number.precision(.fractionLength(2)))) seconds."
+            runCoordinator.succeed(runToken, summary: statusMessage)
         } catch is CancellationError {
             result = nil
             statusMessage = "Image generation canceled."
+            runCoordinator.cancel(runToken, summary: statusMessage)
         } catch {
+            runCoordinator.fail(runToken, error: error)
             present(error)
         }
     }

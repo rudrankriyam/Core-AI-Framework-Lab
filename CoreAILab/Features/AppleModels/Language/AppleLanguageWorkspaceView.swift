@@ -5,13 +5,28 @@ struct AppleLanguageWorkspaceView: View {
     @State private var workspace: AppleLanguageWorkspaceModel
     @State private var isImportingModel = false
     private let initialModelURL: URL?
+    private let runContext: CoreAIRuntimeRunContext
 
     init(
         example: AppleLanguageExample,
-        initialModelURL: URL? = nil
+        initialModelURL: URL? = nil,
+        runContext: CoreAIRuntimeRunContext? = nil,
+        runCoordinator: CoreAIRunLifecycleCoordinator? = nil
     ) {
-        _workspace = State(initialValue: AppleLanguageWorkspaceModel(example: example))
+        let resolvedContext = runContext ?? .workspaceDefault(
+            experienceID: "apple-language-\(example.rawValue)",
+            title: example.title,
+            modelIdentifier: "qwen3-0.6b"
+        )
+        _workspace = State(
+            initialValue: AppleLanguageWorkspaceModel(
+                example: example,
+                runContext: resolvedContext,
+                runCoordinator: runCoordinator
+            )
+        )
         self.initialModelURL = initialModelURL
+        self.runContext = resolvedContext
     }
 
     var body: some View {
@@ -26,6 +41,11 @@ struct AppleLanguageWorkspaceView: View {
             } header: {
                 Label(workspace.example.title, systemImage: "text.bubble.fill")
             }
+
+            CoreAIRuntimeLifecycleView(
+                coordinator: workspace.runCoordinator,
+                context: runContext
+            )
 
             Section("Model Bundle") {
                 HStack {

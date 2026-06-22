@@ -42,9 +42,9 @@ Current official references:
 
 ## 3. What exists today
 
-The repository is already a strong vertical prototype:
+The repository began as a strong vertical prototype:
 
-- A SwiftUI macOS/iOS shell with a Chatterbox workspace and a static runtime catalog.
+- A SwiftUI macOS/iOS shell with a Chatterbox workspace and an early runtime catalog.
 - Four bundled Chatterbox `.aimodel` assets totaling roughly 600 MiB.
 - Six native Core AI functions:
   - T3 embeddings: `prefill`, `decode`
@@ -56,16 +56,16 @@ The repository is already a strong vertical prototype:
 - Bespoke adapters for T3, S3Gen, the HiFT vocoder, and reference encoders.
 - PyTorch parity tests, Core AI runtime validation, native contract tests, a known no-cut regression sentence, and measured Release performance.
 
-The limiting architecture is also clear:
+The original limiting architecture was also clear:
 
-- `ContentView` is a two-tab demo shell.
-- `CoreAIRuntimeView` is a static list rather than a real asset explorer.
+- `ContentView` was a two-tab demo shell.
+- `CoreAIRuntimeView` was a static list rather than a recipe-backed studio.
 - `ChatterboxCoreAIEngine` remains a model-specific runtime adapter, but its asset
   paths, native entrypoints, display metadata, target preference, tokenizer, and
   capacity now come from a validated bundled recipe manifest.
-- Conversion is reproducible from the terminal but invisible to the app.
-- Large assets live in the app bundle and Git history rather than a managed artifact library.
-- Experiments and benchmarks exist as chat/terminal evidence, not durable project records.
+- Conversion was reproducible from the terminal but invisible to the app.
+- Large assets lived only in the app bundle and Git history rather than a managed artifact library.
+- Experiments and benchmarks existed as chat/terminal evidence, not durable project records.
 
 The next step is therefore not “add another model tab.” It is to extract the system hiding inside Chatterbox.
 
@@ -125,13 +125,29 @@ The first platform slice is now represented in the repository:
 - A runnable Wav2Vec2 audio playground built directly on Core AI, with
   AVFoundation decoding and 16 kHz mono resampling, static-contract validation,
   greedy CTC decoding, timing, and direct conversion handoff.
+- A versioned recipe-to-experience registry drives Runtime Studio navigation,
+  workload grouping, current-OS availability, and capability presentation.
+  Multiple segmentation and diffusion recipes reuse one semantic adapter
+  without adding another navigation screen.
+- Qwen, YOLOS, EfficientSAM/SAM 3, Wav2Vec2, and diffusion workspaces share a
+  run coordinator for running/succeeded/failed/canceled state, session-scoped
+  cold/warm classification, and comparison identity. Users can optionally
+  record future runs into a Lab Project; successful runs add measured timing
+  metric evidence without fabricating output artifacts. Imported families are
+  checked against the selected registry intent; because current exports do not
+  prove an artifact-bound recipe revision, each persisted run has explicit
+  `unverified_intent` validation evidence and no recipe snapshot is linked.
+  Terminal status plus timing evidence is an idempotent write that remains
+  retryable after a persistence failure.
 - A macOS Conversion Workbench that configures every pinned Apple recipe, validates the local `uv`/Xcode/repository/storage environment, previews typed arguments, launches conversion without a shell, streams logs, supports cancellation, persists evidence, discovers outputs, and hands artifacts to the inspector.
 - A reproducible catalog-refresh script and gated integration test.
 
 This proves the Library -> Recipe -> Convert -> Inspect -> Specialize -> Run
 loop without pretending that Apple distributes converted weights. Milestone 0's
-schema, manifest, and persistence foundation slice is implemented; automatic
-workspace run/evidence capture remains follow-up integration. Milestone 1
+schema, manifest, and persistence foundation slice is implemented. Milestone 2
+now has a shared registry and lifecycle slice, while embeddings, persistent
+output files, real modality-aware comparisons, imported bookmarks, and
+cross-launch active-run recovery remain open. Milestone 1
 remains incomplete because generic resource-folder metadata, descriptor
 snapshots, provenance editing, and specialization-cache ownership are not yet
 unified in the project library. Restart-safe conversion execution remains
