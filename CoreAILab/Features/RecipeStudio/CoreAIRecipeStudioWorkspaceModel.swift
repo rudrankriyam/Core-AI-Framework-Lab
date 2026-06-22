@@ -87,6 +87,23 @@ final class CoreAIRecipeStudioWorkspaceModel {
         }
     }
 
+    func renameExampleInput(id: String, to name: String) {
+        guard let index = recipe.exampleInputs.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+        let previousName = recipe.exampleInputs[index].name
+        guard previousName != name else { return }
+        recipe.exampleInputs[index].name = name
+        for index in recipe.dynamicDimensions.indices
+        where recipe.dynamicDimensions[index].inputName == previousName {
+            recipe.dynamicDimensions[index].inputName = name
+        }
+        for index in recipe.functionEntrypoints.indices {
+            recipe.functionEntrypoints[index].inputNames = recipe.functionEntrypoints[index]
+                .inputNames.map { $0 == previousName ? name : $0 }
+        }
+    }
+
     func addDynamicDimension() {
         guard let input = recipe.exampleInputs.first(where: { $0.kind == .tensor }),
               !input.shape.isEmpty else {
@@ -95,7 +112,9 @@ final class CoreAIRecipeStudioWorkspaceModel {
         let usedAxes = Set(recipe.dynamicDimensions.filter {
             $0.inputName == input.name
         }.map(\.axis))
-        let axis = input.shape.indices.first { !usedAxes.contains($0) } ?? 0
+        guard let axis = input.shape.indices.first(where: { !usedAxes.contains($0) }) else {
+            return
+        }
         recipe.dynamicDimensions.append(CoreAIRecipeDynamicDimension(
             id: uniqueID(prefix: "dimension"),
             inputName: input.name,
@@ -132,6 +151,19 @@ final class CoreAIRecipeStudioWorkspaceModel {
         recipe.stateBindings.removeAll { $0.id == id }
         for index in recipe.functionEntrypoints.indices {
             recipe.functionEntrypoints[index].stateNames.removeAll { $0 == state.name }
+        }
+    }
+
+    func renameStateBinding(id: String, to name: String) {
+        guard let index = recipe.stateBindings.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+        let previousName = recipe.stateBindings[index].name
+        guard previousName != name else { return }
+        recipe.stateBindings[index].name = name
+        for index in recipe.functionEntrypoints.indices {
+            recipe.functionEntrypoints[index].stateNames = recipe.functionEntrypoints[index]
+                .stateNames.map { $0 == previousName ? name : $0 }
         }
     }
 
@@ -264,6 +296,88 @@ final class CoreAIRecipeStudioWorkspaceModel {
         recipe.pipeline.edges.removeAll { $0.id == id }
     }
 
+    func updatePipelineNodeKind(id: String, to kind: CoreAIPipelineNodeKind) {
+        guard let index = recipe.pipeline.nodes.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+        recipe.pipeline.nodes[index].kind = kind
+        recipe.pipeline.nodes[index].applyConfigurationDefaults()
+        pruneInvalidPipelineEdges()
+    }
+
+    func renamePipelinePort(
+        nodeID: String,
+        output: Bool,
+        index: Int,
+        to name: String
+    ) {
+        guard let nodeIndex = recipe.pipeline.nodes.firstIndex(where: { $0.id == nodeID }) else {
+            return
+        }
+        let previousName: String
+        if output {
+            guard recipe.pipeline.nodes[nodeIndex].outputs.indices.contains(index) else { return }
+            previousName = recipe.pipeline.nodes[nodeIndex].outputs[index].name
+            recipe.pipeline.nodes[nodeIndex].outputs[index].name = name
+        } else {
+            guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
+            previousName = recipe.pipeline.nodes[nodeIndex].inputs[index].name
+            recipe.pipeline.nodes[nodeIndex].inputs[index].name = name
+        }
+        guard previousName != name else { return }
+        for edgeIndex in recipe.pipeline.edges.indices {
+            if output,
+               recipe.pipeline.edges[edgeIndex].source.nodeID == nodeID,
+               recipe.pipeline.edges[edgeIndex].source.portName == previousName {
+                recipe.pipeline.edges[edgeIndex].source.portName = name
+            }
+            if !output,
+               recipe.pipeline.edges[edgeIndex].destination.nodeID == nodeID,
+               recipe.pipeline.edges[edgeIndex].destination.portName == previousName {
+                recipe.pipeline.edges[edgeIndex].destination.portName = name
+            }
+        }
+        if output,
+           selectedSourceEndpoint
+            == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
+            selectedSourceEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+        }
+        if !output,
+           selectedDestinationEndpoint
+            == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
+            selectedDestinationEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+        }
+        deduplicatePipelineEdges()
+    }
+
+    func removePipelinePort(nodeID: String, output: Bool, index: Int) {
+        guard let nodeIndex = recipe.pipeline.nodes.firstIndex(where: { $0.id == nodeID }) else {
+            return
+        }
+        let name: String
+        if output {
+            guard recipe.pipeline.nodes[nodeIndex].outputs.indices.contains(index) else { return }
+            name = recipe.pipeline.nodes[nodeIndex].outputs.remove(at: index).name
+            recipe.pipeline.edges.removeAll {
+                $0.source == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+            }
+            if selectedSourceEndpoint
+                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
+                selectedSourceEndpoint = nil
+            }
+        } else {
+            guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
+            name = recipe.pipeline.nodes[nodeIndex].inputs.remove(at: index).name
+            recipe.pipeline.edges.removeAll {
+                $0.destination == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+            }
+            if selectedDestinationEndpoint
+                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
+                selectedDestinationEndpoint = nil
+            }
+        }
+    }
+
     private var executableNodeIDs: [String] {
         recipe.pipeline.nodes.filter {
             [.assetFunction, .hostOperator, .boundedLoop].contains($0.kind)
@@ -282,6 +396,37 @@ final class CoreAIRecipeStudioWorkspaceModel {
         return (output ? node.outputs : node.inputs).first {
             $0.name == endpoint.portName
         }
+    }
+
+    private func pruneInvalidPipelineEdges() {
+        let outputEndpoints = Set(recipe.pipeline.nodes.flatMap { node in
+            node.outputs.map {
+                CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
+            }
+        })
+        let inputEndpoints = Set(recipe.pipeline.nodes.flatMap { node in
+            node.inputs.map {
+                CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
+            }
+        })
+        recipe.pipeline.edges.removeAll { edge in
+            !outputEndpoints.contains(edge.source)
+                || !inputEndpoints.contains(edge.destination)
+        }
+        if let selectedSourceEndpoint,
+           !outputEndpoints.contains(selectedSourceEndpoint) {
+            self.selectedSourceEndpoint = nil
+        }
+        if let selectedDestinationEndpoint,
+           !inputEndpoints.contains(selectedDestinationEndpoint) {
+            self.selectedDestinationEndpoint = nil
+        }
+        deduplicatePipelineEdges()
+    }
+
+    private func deduplicatePipelineEdges() {
+        var seen = Set<CoreAIPipelineEdge.ID>()
+        recipe.pipeline.edges.removeAll { !seen.insert($0.id).inserted }
     }
 
     private func uniqueID(prefix: String) -> String {

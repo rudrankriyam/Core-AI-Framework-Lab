@@ -15,7 +15,7 @@ struct CoreAIRecipeExampleInputsEditorView: View {
 
             ForEach($workspace.recipe.exampleInputs) { $input in
                 Section(input.name.isEmpty ? "Unnamed Input" : input.name) {
-                    TextField("Name", text: $input.name)
+                    TextField("Name", text: inputNameBinding(id: input.id))
                         .coreAIRecipeIdentifierInput()
                     Picker("Value kind", selection: $input.kind) {
                         ForEach(CoreAIRecipeExampleInput.ValueKind.allCases, id: \.self) { kind in
@@ -78,5 +78,14 @@ struct CoreAIRecipeExampleInputsEditorView: View {
 
     private func removeInput(id: String) {
         workspace.removeExampleInput(id: id)
+    }
+
+    private func inputNameBinding(id: String) -> Binding<String> {
+        Binding(
+            get: {
+                workspace.recipe.exampleInputs.first { $0.id == id }?.name ?? ""
+            },
+            set: { workspace.renameExampleInput(id: id, to: $0) }
+        )
     }
 }

@@ -131,6 +131,71 @@ struct CoreAIRecipeStudioTests {
         #expect(workspace.pipelineIssues.isEmpty)
     }
 
+    @Test
+    func workspaceRenamesAuthoringReferencesAndStopsAtAvailableDynamicAxes() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        let input = try #require(workspace.recipe.exampleInputs.first)
+
+        workspace.renameExampleInput(id: input.id, to: "renamed_features")
+
+        #expect(workspace.recipe.dynamicDimensions.first?.inputName == "renamed_features")
+        #expect(workspace.recipe.functionEntrypoints.first?.inputNames == ["renamed_features"])
+
+        workspace.addStateBinding()
+        let state = try #require(workspace.recipe.stateBindings.first)
+        workspace.recipe.functionEntrypoints[0].stateNames = [state.name]
+        workspace.renameStateBinding(id: state.id, to: "renamed_state")
+
+        #expect(workspace.recipe.functionEntrypoints[0].stateNames == ["renamed_state"])
+
+        workspace.addDynamicDimension()
+        workspace.addDynamicDimension()
+        let completeAxisCount = workspace.recipe.dynamicDimensions.count
+        workspace.addDynamicDimension()
+
+        #expect(completeAxisCount == input.shape.count)
+        #expect(workspace.recipe.dynamicDimensions.count == completeAxisCount)
+        #expect(
+            Set(workspace.recipe.dynamicDimensions.map { "\($0.inputName):\($0.axis)" }).count
+                == completeAxisCount
+        )
+    }
+
+    @Test
+    func pipelinePortMutationsKeepOrRemoveEdgesAtomically() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+
+        workspace.renamePipelinePort(
+            nodeID: "model_forward",
+            output: false,
+            index: 0,
+            to: "renamed_features"
+        )
+        #expect(workspace.recipe.pipeline.edges.contains {
+            $0.destination
+                == CoreAIPipelineEndpoint(
+                    nodeID: "model_forward",
+                    portName: "renamed_features"
+                )
+        })
+        #expect(workspace.pipelineIssues.isEmpty)
+
+        workspace.removePipelinePort(
+            nodeID: "model_forward",
+            output: true,
+            index: 0
+        )
+        #expect(!workspace.recipe.pipeline.edges.contains {
+            $0.source.nodeID == "model_forward"
+        })
+
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .output)
+        #expect(!workspace.recipe.pipeline.edges.contains {
+            $0.source.nodeID == "model_forward"
+        })
+        #expect(!workspace.pipelineIssues.contains { $0.code == .missingPort })
+    }
+
     private func finding() -> CoreAIUnsupportedOperationFinding {
         CoreAIUnsupportedOperationFinding(
             id: "stft",

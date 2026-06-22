@@ -20,7 +20,10 @@ struct CoreAIPipelineStudioView: View {
             Section("Asset-Level Nodes") {
                 ForEach($workspace.recipe.pipeline.nodes) { $node in
                     DisclosureGroup(node.title.isEmpty ? node.id : node.title) {
-                        CoreAIPipelineNodeEditorView(node: $node)
+                        CoreAIPipelineNodeEditorView(
+                            workspace: workspace,
+                            node: $node
+                        )
                         Button(
                             "Remove Node",
                             systemImage: "trash",

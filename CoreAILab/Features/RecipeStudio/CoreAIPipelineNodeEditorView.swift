@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CoreAIPipelineNodeEditorView: View {
+    @Bindable var workspace: CoreAIRecipeStudioWorkspaceModel
     @Binding var node: CoreAIPipelineNode
 
     var body: some View {
@@ -11,12 +12,11 @@ struct CoreAIPipelineNodeEditorView: View {
                     .textSelection(.enabled)
             }
             TextField("Title", text: $node.title)
-            Picker("Kind", selection: $node.kind) {
+            Picker("Kind", selection: nodeKindBinding) {
                 ForEach(CoreAIPipelineNodeKind.allCases, id: \.self) { kind in
                     Text(kind.title).tag(kind)
                 }
             }
-            .onChange(of: node.kind, normalizeConfiguration)
 
             if let reference = Binding($node.reference) {
                 TextField("Executable reference", text: reference)
@@ -42,7 +42,17 @@ struct CoreAIPipelineNodeEditorView: View {
             GroupBox("Inputs") {
                 VStack(alignment: .leading) {
                     ForEach(node.inputs.indices, id: \.self) { index in
-                        CoreAIPipelinePortEditorView(port: $node.inputs[index])
+                        CoreAIPipelinePortEditorView(
+                            port: $node.inputs[index],
+                            renamePort: { name in
+                                workspace.renamePipelinePort(
+                                    nodeID: node.id,
+                                    output: false,
+                                    index: index,
+                                    to: name
+                                )
+                            }
+                        )
                         Button(
                             "Remove Input Port",
                             systemImage: "minus.circle",
@@ -57,7 +67,17 @@ struct CoreAIPipelineNodeEditorView: View {
             GroupBox("Outputs") {
                 VStack(alignment: .leading) {
                     ForEach(node.outputs.indices, id: \.self) { index in
-                        CoreAIPipelinePortEditorView(port: $node.outputs[index])
+                        CoreAIPipelinePortEditorView(
+                            port: $node.outputs[index],
+                            renamePort: { name in
+                                workspace.renamePipelinePort(
+                                    nodeID: node.id,
+                                    output: true,
+                                    index: index,
+                                    to: name
+                                )
+                            }
+                        )
                         Button(
                             "Remove Output Port",
                             systemImage: "minus.circle",
@@ -71,8 +91,11 @@ struct CoreAIPipelineNodeEditorView: View {
         }
     }
 
-    private func normalizeConfiguration() {
-        node.applyConfigurationDefaults()
+    private var nodeKindBinding: Binding<CoreAIPipelineNodeKind> {
+        Binding(
+            get: { node.kind },
+            set: { workspace.updatePipelineNodeKind(id: node.id, to: $0) }
+        )
     }
 
     private func addInputPort() {
@@ -84,13 +107,11 @@ struct CoreAIPipelineNodeEditorView: View {
     }
 
     private func removeInputPort(at index: Int) {
-        guard node.inputs.indices.contains(index) else { return }
-        node.inputs.remove(at: index)
+        workspace.removePipelinePort(nodeID: node.id, output: false, index: index)
     }
 
     private func removeOutputPort(at index: Int) {
-        guard node.outputs.indices.contains(index) else { return }
-        node.outputs.remove(at: index)
+        workspace.removePipelinePort(nodeID: node.id, output: true, index: index)
     }
 
     private func defaultPort(

@@ -2,10 +2,17 @@ import SwiftUI
 
 struct CoreAIPipelinePortEditorView: View {
     @Binding var port: CoreAIPipelinePort
+    let renamePort: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
-            TextField("Port name", text: $port.name)
+            TextField(
+                "Port name",
+                text: Binding(
+                    get: { port.name },
+                    set: { renamePort($0) }
+                )
+            )
                 .coreAIRecipeIdentifierInput()
             Picker("Value kind", selection: $port.value.kind) {
                 ForEach(CoreAIPipelineValueKind.allCases, id: \.self) { kind in

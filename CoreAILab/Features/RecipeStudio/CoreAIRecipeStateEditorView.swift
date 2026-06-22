@@ -15,7 +15,7 @@ struct CoreAIRecipeStateEditorView: View {
 
             ForEach($workspace.recipe.stateBindings) { $state in
                 Section(state.name.isEmpty ? "Unnamed State" : state.name) {
-                    TextField("State name", text: $state.name)
+                    TextField("State name", text: stateNameBinding(id: state.id))
                         .coreAIRecipeIdentifierInput()
                     TextField("Input binding", text: $state.inputName)
                         .coreAIRecipeIdentifierInput()
@@ -44,5 +44,14 @@ struct CoreAIRecipeStateEditorView: View {
 
     private func removeState(id: String) {
         workspace.removeStateBinding(id: id)
+    }
+
+    private func stateNameBinding(id: String) -> Binding<String> {
+        Binding(
+            get: {
+                workspace.recipe.stateBindings.first { $0.id == id }?.name ?? ""
+            },
+            set: { workspace.renameStateBinding(id: id, to: $0) }
+        )
     }
 }
