@@ -141,6 +141,27 @@ struct AppleDiffusionWorkspaceModelTests {
         #expect(workspace.statusMessage == "Image generation canceled.")
     }
 
+    @Test
+    func generationInputsStayLockedUntilTheSubmittedRequestFinishes() async throws {
+        let engine = try AppleDiffusionGeneratorStub(
+            image: makeTestImage(),
+            generationDelay: .milliseconds(50)
+        )
+        let workspace = AppleDiffusionWorkspaceModel(
+            example: .stableDiffusion15,
+            engine: engine
+        )
+        await workspace.loadPipeline(from: URL(filePath: "/tmp/stable-diffusion"))
+
+        #expect(workspace.canEditGenerationInputs)
+        workspace.startGeneration()
+        #expect(!workspace.canEditGenerationInputs)
+
+        await waitForGeneration(workspace)
+
+        #expect(workspace.canEditGenerationInputs)
+    }
+
     private func waitForGeneration(_ workspace: AppleDiffusionWorkspaceModel) async {
         while workspace.isGenerating {
             await Task.yield()

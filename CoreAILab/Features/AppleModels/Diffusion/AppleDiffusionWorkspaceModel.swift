@@ -51,6 +51,10 @@ final class AppleDiffusionWorkspaceModel {
         modelInfo != nil && !normalizedPrompt.isEmpty && !isBusy
     }
 
+    var canEditGenerationInputs: Bool {
+        !isBusy
+    }
+
     func loadPipeline(from url: URL) async {
         guard !isBusy else { return }
         isLoadingModel = true

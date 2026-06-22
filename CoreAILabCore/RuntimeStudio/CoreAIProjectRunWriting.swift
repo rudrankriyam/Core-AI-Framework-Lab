@@ -4,6 +4,7 @@ import SwiftData
 @MainActor
 protocol CoreAIProjectRunWriting: AnyObject {
     func createRuntimeRun(
+        id: UUID,
         in project: LabProject,
         recipeRevision: CoreAIRecipeRevisionRecord?,
         provenanceEvidence: CoreAIRuntimeProvenanceEvidence,
@@ -18,4 +19,11 @@ protocol CoreAIProjectRunWriting: AnyObject {
         metricEvidence: CoreAIRuntimeMetricEvidence?,
         modelContext: ModelContext
     ) throws
+
+    @discardableResult
+    func recoverInterruptedRuntimeRuns(
+        in project: LabProject,
+        endedAt: Date,
+        modelContext: ModelContext
+    ) throws -> Int
 }

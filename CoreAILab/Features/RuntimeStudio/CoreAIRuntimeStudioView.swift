@@ -64,6 +64,13 @@ struct CoreAIRuntimeStudioView: View {
                         mapping: mapping,
                         coordinator: coordinator
                     )
+                } else {
+                    ContentUnavailableView(
+                        "Experience Unavailable",
+                        systemImage: "questionmark.folder",
+                        description: Text(route.unavailableDescription)
+                    )
+                    .navigationTitle("Experience Unavailable")
                 }
             }
             .task {
@@ -89,12 +96,12 @@ struct CoreAIRuntimeStudioView: View {
             coordinator.configurePersistence(nil)
             return
         }
-        coordinator.configurePersistence(
-            CoreAIProjectRunPersistence(
-                project: project,
-                modelContext: modelContext
-            )
+        let persistence = CoreAIProjectRunPersistence(
+            project: project,
+            modelContext: modelContext
         )
+        coordinator.configurePersistence(persistence)
+        coordinator.recoverInterruptedPersistence()
     }
 
     private func keepValidProjectSelection() {

@@ -64,19 +64,24 @@ struct AppleDiffusionWorkspaceView: View {
             Section("Prompt") {
                 TextField("Describe an image", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
+                    .disabled(!workspace.canEditGenerationInputs)
                 if workspace.modelInfo?.supportsNegativePrompt == false {
                     Text("FLUX.2 does not consume a negative prompt.")
                         .foregroundStyle(.secondary)
                 } else {
                     TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
                         .lineLimit(2...5)
+                        .disabled(!workspace.canEditGenerationInputs)
                 }
 
                 Stepper("Seed: \(workspace.seed)", value: $workspace.seed, in: 0...Int(UInt32.max))
+                    .disabled(!workspace.canEditGenerationInputs)
                 Stepper("Steps: \(workspace.stepCount)", value: $workspace.stepCount, in: 1...100)
+                    .disabled(!workspace.canEditGenerationInputs)
                 LabeledContent("Guidance: \(workspace.guidanceScale.formatted(.number.precision(.fractionLength(1))))") {
                     Slider(value: $workspace.guidanceScale, in: 0...20, step: 0.5)
                         .frame(minWidth: 160)
+                        .disabled(!workspace.canEditGenerationInputs)
                 }
 
                 HStack {

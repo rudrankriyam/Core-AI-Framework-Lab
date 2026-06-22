@@ -179,6 +179,102 @@ struct CoreAIRuntimeProjectPersistenceTests {
     }
 
     @Test
+    func startFailureRemainsRetryableBeforeTheRunFinishes() throws {
+        try verifyStartRetry(
+            after: .startFailureBeforeCommit,
+            retryBeforeFinish: true
+        )
+    }
+
+    @Test
+    func ambiguousStartSaveFinishesExactlyOnePersistentRun() throws {
+        try verifyStartRetry(
+            after: .reportedStartFailureAfterCommit,
+            retryBeforeFinish: false
+        )
+    }
+
+    @Test
+    func repositoryRestartRecoversInterruptedRunningRecordsExactlyOnce() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(
+            path: "CoreAIRuntimeRecoveryTests-\(UUID().uuidString)",
+            directoryHint: .isDirectory
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appending(path: "projects.store")
+        let runID = try #require(
+            UUID(uuidString: "00000000-0000-0000-0000-000000000099")
+        )
+        let projectID: UUID
+
+        do {
+            let container = try CoreAIProjectModelContainer.makePersistent(
+                storeURL: storeURL
+            )
+            let context = container.mainContext
+            let controller = CoreAIProjectLibraryController()
+            let project = try controller.createProject(
+                named: "Interrupted Runtime Run",
+                modelContext: context
+            )
+            projectID = project.id
+            let persistence = CoreAIProjectRunPersistence(
+                project: project,
+                modelContext: context,
+                controller: controller
+            )
+            let start = CoreAIRuntimeRunStart(
+                id: runID,
+                context: .workspaceDefault(
+                    experienceID: "interrupted",
+                    title: "Interrupted",
+                    modelIdentifier: "fixture"
+                ),
+                modelIdentity: "fixture.aimodel",
+                timingClass: .cold,
+                selectedComparisonIdentity: nil,
+                startedAt: Date(timeIntervalSince1970: 30)
+            )
+            _ = try persistence.startRun(start: start)
+        }
+
+        do {
+            let reopenedContainer = try CoreAIProjectModelContainer.makePersistent(
+                storeURL: storeURL
+            )
+            let context = reopenedContainer.mainContext
+            let project = try #require(
+                try context.fetch(FetchDescriptor<LabProject>())
+                    .first { $0.id == projectID }
+            )
+            let restartedPersistence = CoreAIProjectRunPersistence(
+                project: project,
+                modelContext: context
+            )
+            let recoveredAt = Date(timeIntervalSince1970: 40)
+            let recoveredCount = try restartedPersistence.recoverInterruptedRuns(
+                endedAt: recoveredAt
+            )
+            let secondRecoveryCount = try restartedPersistence.recoverInterruptedRuns(
+                endedAt: Date(timeIntervalSince1970: 50)
+            )
+
+            let runs = try context.fetch(FetchDescriptor<CoreAIRunRecord>())
+            let run = try #require(runs.first)
+            #expect(recoveredCount == 1)
+            #expect(secondRecoveryCount == 0)
+            #expect(runs.count == 1)
+            #expect(run.id == runID)
+            #expect(run.status == .failed)
+            #expect(run.endedAt == recoveredAt)
+            #expect(
+                run.summary
+                    == "Run was interrupted before completion and recovered when project recording resumed."
+            )
+        }
+    }
+
+    @Test
     func evidenceFailureRetainsTheTerminalWriteForRetry() throws {
         try verifyRetry(after: .evidenceFailureBeforeCommit)
     }
@@ -186,6 +282,67 @@ struct CoreAIRuntimeProjectPersistenceTests {
     @Test
     func reportedSaveFailureAfterCommitRetriesWithoutDuplicatingTheMetric() throws {
         try verifyRetry(after: .reportedSaveFailureAfterCommit)
+    }
+
+    private func verifyStartRetry(
+        after failure: ProjectRunWriterFailureMode,
+        retryBeforeFinish: Bool
+    ) throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let libraryController = CoreAIProjectLibraryController()
+        let project = try libraryController.createProject(
+            named: "Retryable Runtime Start",
+            modelContext: context
+        )
+        let writer = ProjectRunWriterFailureFixture(
+            controller: libraryController,
+            failureMode: failure
+        )
+        let persistence = CoreAIProjectRunPersistence(
+            project: project,
+            modelContext: context,
+            controller: writer
+        )
+        var dates = [Date(timeIntervalSince1970: 20), Date(timeIntervalSince1970: 21)]
+        var monotonicTimes = [20.0, 21.0]
+        let coordinator = CoreAIRunLifecycleCoordinator(
+            persistence: persistence,
+            now: { dates.removeFirst() },
+            monotonicNow: { monotonicTimes.removeFirst() }
+        )
+        let token = coordinator.start(
+            context: .workspaceDefault(
+                experienceID: "retryable-start",
+                title: "Retryable Start",
+                modelIdentifier: "fixture"
+            ),
+            modelIdentity: "fixture.aimodel"
+        )
+
+        #expect(coordinator.hasPendingPersistenceWrites)
+        #expect(writer.startAttempts == 1)
+        if retryBeforeFinish {
+            coordinator.retryPendingPersistence()
+            #expect(!coordinator.hasPendingPersistenceWrites)
+            #expect(writer.startAttempts == 2)
+        }
+
+        coordinator.succeed(token, summary: "Finished after a start retry")
+
+        let runs = try context.fetch(FetchDescriptor<CoreAIRunRecord>())
+        let evidence = try context.fetch(FetchDescriptor<CoreAIEvidenceRecord>())
+        #expect(!coordinator.hasPendingPersistenceWrites)
+        #expect(coordinator.persistenceMessage == nil)
+        #expect(coordinator.history.count == 1)
+        #expect(coordinator.history.first?.id == token.id)
+        #expect(writer.startAttempts == 2)
+        #expect(writer.finishAttempts == 1)
+        #expect(runs.count == 1)
+        #expect(runs.first?.id == token.id)
+        #expect(runs.first?.status == .succeeded)
+        #expect(evidence.filter { $0.kind == .validation }.count == 1)
+        #expect(evidence.filter { $0.kind == .metric }.count == 1)
     }
 
     private func verifyRetry(
@@ -263,6 +420,8 @@ struct CoreAIRuntimeProjectPersistenceTests {
 }
 
 private enum ProjectRunWriterFailureMode: Equatable {
+    case startFailureBeforeCommit
+    case reportedStartFailureAfterCommit
     case evidenceFailureBeforeCommit
     case reportedSaveFailureAfterCommit
 }
@@ -271,6 +430,7 @@ private enum ProjectRunWriterFailureMode: Equatable {
 private final class ProjectRunWriterFailureFixture: CoreAIProjectRunWriting {
     private let controller: CoreAIProjectLibraryController
     private var failureMode: ProjectRunWriterFailureMode?
+    private(set) var startAttempts = 0
     private(set) var finishAttempts = 0
 
     init(
@@ -282,17 +442,30 @@ private final class ProjectRunWriterFailureFixture: CoreAIProjectRunWriting {
     }
 
     func createRuntimeRun(
+        id: UUID,
         in project: LabProject,
         recipeRevision: CoreAIRecipeRevisionRecord?,
         provenanceEvidence: CoreAIRuntimeProvenanceEvidence,
         modelContext: ModelContext
     ) throws -> CoreAIRunRecord {
-        try controller.createRuntimeRun(
+        startAttempts += 1
+        let pendingFailure = failureMode
+        if pendingFailure == .startFailureBeforeCommit {
+            failureMode = nil
+            throw ProjectRunWriterFixtureError.startWriteFailed
+        }
+        let run = try controller.createRuntimeRun(
+            id: id,
             in: project,
             recipeRevision: recipeRevision,
             provenanceEvidence: provenanceEvidence,
             modelContext: modelContext
         )
+        if pendingFailure == .reportedStartFailureAfterCommit {
+            failureMode = nil
+            throw ProjectRunWriterFixtureError.startSaveReportedFailure
+        }
+        return run
     }
 
     func finishRuntimeRun(
@@ -322,14 +495,32 @@ private final class ProjectRunWriterFailureFixture: CoreAIProjectRunWriting {
             throw ProjectRunWriterFixtureError.saveReportedFailure
         }
     }
+
+    func recoverInterruptedRuntimeRuns(
+        in project: LabProject,
+        endedAt: Date,
+        modelContext: ModelContext
+    ) throws -> Int {
+        try controller.recoverInterruptedRuntimeRuns(
+            in: project,
+            endedAt: endedAt,
+            modelContext: modelContext
+        )
+    }
 }
 
 private enum ProjectRunWriterFixtureError: LocalizedError {
+    case startWriteFailed
+    case startSaveReportedFailure
     case evidenceWriteFailed
     case saveReportedFailure
 
     var errorDescription: String? {
         switch self {
+        case .startWriteFailed:
+            "The run start write failed."
+        case .startSaveReportedFailure:
+            "The run start save reported failure after committing."
         case .evidenceWriteFailed:
             "The metric evidence write failed."
         case .saveReportedFailure:

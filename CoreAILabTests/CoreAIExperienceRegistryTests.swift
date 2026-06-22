@@ -146,6 +146,16 @@ struct CoreAIExperienceRegistryTests {
         )
     }
 
+    @Test
+    func missingRuntimeRouteExplainsWhyTheExperienceIsUnavailable() {
+        let route = CoreAIRuntimeExperienceRoute(
+            experienceID: "missing-experience"
+        )
+
+        #expect(route.unavailableDescription.contains("missing-experience"))
+        #expect(route.unavailableDescription.contains("current runtime registry"))
+    }
+
     private func makeManifest(
         experience: CoreAIExperienceDescriptor
     ) -> CoreAIExperienceRegistryManifest {

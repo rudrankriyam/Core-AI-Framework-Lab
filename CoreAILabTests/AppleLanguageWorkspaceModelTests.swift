@@ -71,6 +71,24 @@ struct AppleLanguageWorkspaceModelTests {
         #expect(workspace.runCoordinator.history.first?.state == .canceled)
     }
 
+    @Test
+    func generationInputsStayLockedUntilTheSubmittedRequestFinishes() async {
+        let engine = AppleLanguageGeneratorStub(
+            response: "Submitted response",
+            responseDelay: .milliseconds(50)
+        )
+        let workspace = AppleLanguageWorkspaceModel(example: .qwen3_0_6B, engine: engine)
+        await workspace.loadModel(from: URL(filePath: "/tmp/qwen"))
+
+        #expect(workspace.canEditGenerationInputs)
+        workspace.startGeneration()
+        #expect(!workspace.canEditGenerationInputs)
+
+        await waitForGeneration(workspace)
+
+        #expect(workspace.canEditGenerationInputs)
+    }
+
     private func waitForGeneration(_ workspace: AppleLanguageWorkspaceModel) async {
         while workspace.isGenerating {
             await Task.yield()

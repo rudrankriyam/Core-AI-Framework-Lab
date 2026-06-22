@@ -20,6 +20,7 @@ final class CoreAIProjectRunPersistence: CoreAIRunPersisting {
 
     func startRun(start: CoreAIRuntimeRunStart) throws -> UUID {
         let run = try controller.createRuntimeRun(
+            id: start.id,
             in: project,
             recipeRevision: nil,
             provenanceEvidence: provenanceEvidence(for: start),
@@ -48,6 +49,15 @@ final class CoreAIProjectRunPersistence: CoreAIRunPersisting {
             modelContext: modelContext
         )
         activeRuns.removeValue(forKey: persistentRunID)
+    }
+
+    @discardableResult
+    func recoverInterruptedRuns(endedAt: Date) throws -> Int {
+        try controller.recoverInterruptedRuntimeRuns(
+            in: project,
+            endedAt: endedAt,
+            modelContext: modelContext
+        )
     }
 
     private func provenanceEvidence(

@@ -32,7 +32,7 @@ struct CoreAIRuntimeRecordingControlsView: View {
                 }
             }
 
-            Text("The first attempt for an imported model in this Runtime Studio session is classified as cold; later attempts with the same experience and model identity are warm.")
+            Text("Attempts remain cold until one run succeeds for the imported model in this Runtime Studio session; later runs with the same experience and model identity are warm.")
                 .foregroundStyle(.secondary)
 
             Text("A comparison identity records the intended comparator only; this slice does not claim that outputs were compared.")

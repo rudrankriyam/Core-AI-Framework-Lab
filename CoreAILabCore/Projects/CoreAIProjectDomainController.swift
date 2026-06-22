@@ -238,6 +238,7 @@ extension CoreAIProjectLibraryController {
 
 extension CoreAIProjectLibraryController: CoreAIProjectRunWriting {
     func createRuntimeRun(
+        id: UUID,
         in project: LabProject,
         recipeRevision: CoreAIRecipeRevisionRecord?,
         provenanceEvidence: CoreAIRuntimeProvenanceEvidence,
@@ -246,9 +247,26 @@ extension CoreAIProjectLibraryController: CoreAIProjectRunWriting {
         if let recipeRevision {
             try requireSameProject(project, recordProject: recipeRevision.project)
         }
+        let descriptor = FetchDescriptor<CoreAIRunRecord>(
+            predicate: #Predicate { $0.id == id }
+        )
+        if let existing = try modelContext.fetch(descriptor).first {
+            try requireSameProject(project, recordProject: existing.project)
+            guard let status = existing.status else {
+                throw CoreAIProjectLibraryError.runStatusUnavailable
+            }
+            guard status == .running else {
+                throw CoreAIProjectLibraryError.invalidRunStatusTransition(
+                    from: status,
+                    to: .running
+                )
+            }
+            return existing
+        }
         let metadataData = try encoded(provenanceEvidence.metadata)
         let run = CoreAIRunRecord(
             authorization: CoreAIProjectDomainWriteAuthorization(),
+            id: id,
             kind: .inference,
             status: .running,
             project: project,
@@ -268,5 +286,28 @@ extension CoreAIProjectLibraryController: CoreAIProjectRunWriting {
         modelContext.insert(evidence)
         try saveDomainChange(project: project, modelContext: modelContext)
         return run
+    }
+
+    func recoverInterruptedRuntimeRuns(
+        in project: LabProject,
+        endedAt: Date,
+        modelContext: ModelContext
+    ) throws -> Int {
+        let runs = try modelContext.fetch(FetchDescriptor<CoreAIRunRecord>())
+        let interruptedRuns = runs.filter {
+            $0.project?.id == project.id && $0.status == .running
+        }
+        guard !interruptedRuns.isEmpty else { return 0 }
+
+        for run in interruptedRuns {
+            run.update(
+                authorization: CoreAIProjectDomainWriteAuthorization(),
+                status: .failed,
+                summary: "Run was interrupted before completion and recovered when project recording resumed.",
+                endedAt: endedAt
+            )
+        }
+        try saveDomainChange(project: project, modelContext: modelContext)
+        return interruptedRuns.count
     }
 }

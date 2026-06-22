@@ -10,4 +10,7 @@ protocol CoreAIRunPersisting: AnyObject {
         persistentRunID: UUID,
         summary: CoreAIRuntimeRunSummary
     ) throws
+
+    @discardableResult
+    func recoverInterruptedRuns(endedAt: Date) throws -> Int
 }

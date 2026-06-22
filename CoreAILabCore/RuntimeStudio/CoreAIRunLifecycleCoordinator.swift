@@ -15,7 +15,7 @@ final class CoreAIRunLifecycleCoordinator {
     @ObservationIgnored
     private var persistenceRuns: [UUID: CoreAIRuntimePersistenceRun] = [:]
     @ObservationIgnored
-    private var seenTimingScopes = Set<String>()
+    private var successfulTimingScopes = Set<String>()
     @ObservationIgnored
     private let now: @MainActor () -> Date
     @ObservationIgnored
@@ -42,7 +42,9 @@ final class CoreAIRunLifecycleCoordinator {
     }
 
     var hasPendingPersistenceWrites: Bool {
-        persistenceRuns.values.contains { $0.completedSummary != nil }
+        persistenceRuns.values.contains {
+            $0.persistentRunID == nil || $0.completedSummary != nil
+        }
     }
 
     func configurePersistence(_ persistence: (any CoreAIRunPersisting)?) {
@@ -66,9 +68,29 @@ final class CoreAIRunLifecycleCoordinator {
         context: CoreAIRuntimeRunContext,
         modelIdentity: String
     ) {
-        seenTimingScopes.remove(
+        successfulTimingScopes.remove(
             "\(context.experienceID)|\(modelIdentity)"
         )
+    }
+
+    @discardableResult
+    func recoverInterruptedPersistence() -> Int {
+        guard !hasActiveRuns, let persistence else { return 0 }
+        do {
+            let recoveredCount = try persistence.recoverInterruptedRuns(
+                endedAt: now()
+            )
+            if recoveredCount > 0 {
+                let noun = recoveredCount == 1 ? "run" : "runs"
+                persistenceMessage = "Marked \(recoveredCount) interrupted project \(noun) as failed."
+            } else if !hasPendingPersistenceWrites {
+                persistenceMessage = nil
+            }
+            return recoveredCount
+        } catch {
+            persistenceMessage = "Interrupted run recovery failed: \(error.localizedDescription)"
+            return 0
+        }
     }
 
     @discardableResult
@@ -79,9 +101,9 @@ final class CoreAIRunLifecycleCoordinator {
         registerComparisonOption(context.comparisonIdentity)
         let startedAt = now()
         let scope = "\(context.experienceID)|\(modelIdentity)"
-        let timingClass: CoreAIRuntimeTimingClass = seenTimingScopes.insert(scope).inserted
-            ? .cold
-            : .warm
+        let timingClass: CoreAIRuntimeTimingClass = successfulTimingScopes.contains(scope)
+            ? .warm
+            : .cold
         let identifier = makeID()
         let selectedComparison = selectedComparisonIdentity
         let runStart = CoreAIRuntimeRunStart(
@@ -94,17 +116,13 @@ final class CoreAIRunLifecycleCoordinator {
         )
 
         if let persistence {
-            do {
-                let persistentID = try persistence.startRun(start: runStart)
-                persistenceRuns[identifier] = CoreAIRuntimePersistenceRun(
-                    persistence: persistence,
-                    persistentRunID: persistentID,
-                    completedSummary: nil
-                )
-                persistenceMessage = nil
-            } catch {
-                persistenceMessage = "Run recording could not start: \(error.localizedDescription)"
-            }
+            persistenceRuns[identifier] = CoreAIRuntimePersistenceRun(
+                persistence: persistence,
+                start: runStart,
+                persistentRunID: nil,
+                completedSummary: nil
+            )
+            persistRun(identifier: identifier)
         }
 
         // Project bookkeeping is intentionally excluded from runtime timing.
@@ -153,10 +171,12 @@ final class CoreAIRunLifecycleCoordinator {
 
     func retryPendingPersistence() {
         let identifiers = persistenceRuns.compactMap { identifier, run in
-            run.completedSummary == nil ? nil : identifier
+            run.persistentRunID == nil || run.completedSummary != nil
+                ? identifier
+                : nil
         }
         for identifier in identifiers {
-            persistCompletedRun(identifier: identifier)
+            persistRun(identifier: identifier)
         }
     }
 
@@ -187,31 +207,56 @@ final class CoreAIRunLifecycleCoordinator {
             summary: summary
         )
         history.insert(completed, at: 0)
+        if state == .succeeded {
+            successfulTimingScopes.insert(
+                "\(token.context.experienceID)|\(token.modelIdentity)"
+            )
+        }
 
         if var persistenceRun = persistenceRuns[token.id] {
             persistenceRun.completedSummary = completed
             persistenceRuns[token.id] = persistenceRun
-            persistCompletedRun(identifier: token.id)
+            persistRun(identifier: token.id)
         }
     }
 
-    private func persistCompletedRun(identifier: UUID) {
-        guard let persistenceRun = persistenceRuns[identifier],
+    private func persistRun(identifier: UUID) {
+        guard var persistenceRun = persistenceRuns[identifier] else { return }
+
+        if persistenceRun.persistentRunID == nil {
+            do {
+                persistenceRun.persistentRunID = try persistenceRun.persistence.startRun(
+                    start: persistenceRun.start
+                )
+                persistenceRuns[identifier] = persistenceRun
+            } catch {
+                persistenceMessage = "Run recording could not start: \(error.localizedDescription) Retry when project storage is available."
+                return
+            }
+        }
+
+        guard let persistentRunID = persistenceRun.persistentRunID,
               let completed = persistenceRun.completedSummary else {
+            persistenceMessage = pendingPersistenceMessage
             return
         }
+
         do {
             try persistenceRun.persistence.finishRun(
-                persistentRunID: persistenceRun.persistentRunID,
+                persistentRunID: persistentRunID,
                 summary: completed
             )
             persistenceRuns.removeValue(forKey: identifier)
-            persistenceMessage = hasPendingPersistenceWrites
-                ? "Some completed runs still need to be recorded."
-                : nil
+            persistenceMessage = pendingPersistenceMessage
         } catch {
             persistenceMessage = "Run recording could not finish: \(error.localizedDescription) Retry when project storage is available."
         }
+    }
+
+    private var pendingPersistenceMessage: String? {
+        hasPendingPersistenceWrites
+            ? "Some runs still need to be recorded."
+            : nil
     }
 
     private func registerComparisonOption(_ option: CoreAIRuntimeComparisonIdentity) {

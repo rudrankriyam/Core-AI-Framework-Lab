@@ -48,6 +48,10 @@ final class AppleLanguageWorkspaceModel {
         modelName != nil && !normalizedPrompt.isEmpty && !isBusy
     }
 
+    var canEditGenerationInputs: Bool {
+        !isBusy
+    }
+
     func loadModel(from url: URL) async {
         guard !isBusy else { return }
         isLoadingModel = true

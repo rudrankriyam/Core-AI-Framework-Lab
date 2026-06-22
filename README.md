@@ -104,8 +104,9 @@ Controller APIs keep recipe, target, run, and evidence ownership within one Lab
 Project. Runtime Studio can optionally record inference status and a successful
 run's measured duration as metric evidence. It does not invent output-artifact
 records: output persistence still needs a real stored file, digest, and media
-contract. Conversion jobs and generic benchmarks are not yet connected to this
-coordinator, and active runs are not recovered after relaunch.
+contract. Selecting a project for recording reconciles runs interrupted by a
+previous app session as failed. Conversion jobs and generic benchmarks are not
+yet connected to this coordinator.
 
 ## Visual Conversion Workbench
 
@@ -157,11 +158,11 @@ as well as all four diffusion presets, prove that a second model can reuse an
 existing destination without adding navigation SwiftUI.
 
 Qwen, YOLOS, both segmentation adapters, Wav2Vec2, and diffusion runs report one
-shared lifecycle: running, succeeded, failed, or canceled. The first attempt for
-the same experience and imported model identity in a Runtime Studio session is
-classified as cold; later attempts are warm. A selected comparison identity is
-captured with each run, but this slice does not claim numerical or semantic A/B
-comparison of outputs.
+shared lifecycle: running, succeeded, failed, or canceled. Attempts remain cold
+until one run succeeds for the same experience and imported model identity in a
+Runtime Studio session; later attempts are warm. A selected comparison identity
+is captured with each run, but this slice does not claim numerical or semantic
+A/B comparison of outputs.
 
 Choose a Lab Project under **Run Recording** to persist future runtime status.
 The importer checks that an artifact's identifiable model family matches the
@@ -174,7 +175,8 @@ Terminal run status and its metric are saved together; a
 failed or ambiguously reported save remains available through **Retry Run
 Recording**, and retries do not duplicate the metric. Evidence also records the
 experience, actual model identity, cold/warm class, duration, and optional
-comparison identity.
+comparison identity. Selecting a project also marks any running records left by
+an interrupted previous app session as failed.
 Imported model bookmarks, produced output files, cross-launch warm-state
 recovery, embeddings, and output-quality comparison remain follow-up work.
 No experience downloads model weights; each adapter still requires a locally
@@ -541,7 +543,8 @@ device; an empty or misrouted filtered run fails the harness.
   and evidence metadata persist across launches. Recipe-backed Runtime Studio
   adapters can record lifecycle and successful timing metrics, but output files,
   imported file bookmarks, conversion jobs, generic benchmark capture, and
-  restart-safe active-run recovery are not wired to those records yet.
+  resumable active execution are not wired to those records yet. Interrupted
+  runtime records are reconciled as failed when their project is selected.
 - The generic function workbench currently generates NDArray inputs only.
   Stateful execution, image-input adaptation, imported fixtures, persisted
   benchmark evidence, and raw-output export remain later Runtime Studio work.

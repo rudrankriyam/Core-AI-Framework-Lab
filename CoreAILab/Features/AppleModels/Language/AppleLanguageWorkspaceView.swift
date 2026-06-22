@@ -69,12 +69,14 @@ struct AppleLanguageWorkspaceView: View {
             Section("Prompt") {
                 TextField("Ask Qwen", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
+                    .disabled(!workspace.canEditGenerationInputs)
                 Stepper(
                     "Maximum response tokens: \(workspace.maximumResponseTokens)",
                     value: $workspace.maximumResponseTokens,
                     in: 1...512,
                     step: 16
                 )
+                .disabled(!workspace.canEditGenerationInputs)
 
                 HStack {
                     Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)

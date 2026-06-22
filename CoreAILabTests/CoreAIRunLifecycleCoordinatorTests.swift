@@ -43,6 +43,30 @@ struct CoreAIRunLifecycleCoordinatorTests {
     }
 
     @Test
+    func failedAndCanceledAttemptsDoNotMakeTheNextRunWarm() {
+        var dates = (1...8).map { Date(timeIntervalSince1970: Double($0)) }
+        var monotonicTimes = (1...8).map(Double.init)
+        let coordinator = CoreAIRunLifecycleCoordinator(
+            now: { dates.removeFirst() },
+            monotonicNow: { monotonicTimes.removeFirst() }
+        )
+        let context = makeContext()
+
+        let failed = coordinator.start(context: context, modelIdentity: "model.aimodel")
+        coordinator.fail(failed, error: RuntimePersistenceFixtureError.failed)
+        let canceled = coordinator.start(context: context, modelIdentity: "model.aimodel")
+        coordinator.cancel(canceled)
+        let firstSuccess = coordinator.start(context: context, modelIdentity: "model.aimodel")
+        coordinator.succeed(firstSuccess, summary: "Succeeded")
+        let warm = coordinator.start(context: context, modelIdentity: "model.aimodel")
+
+        #expect(failed.timingClass == .cold)
+        #expect(canceled.timingClass == .cold)
+        #expect(firstSuccess.timingClass == .cold)
+        #expect(warm.timingClass == .warm)
+    }
+
+    @Test
     func selectedComparisonIsCapturedWhenTheRunStarts() {
         let comparison = CoreAIRuntimeComparisonIdentity(
             experienceID: "baseline",
