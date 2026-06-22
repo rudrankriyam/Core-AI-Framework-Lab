@@ -7,9 +7,11 @@ import argparse
 import fnmatch
 import hashlib
 import json
+import os
 import plistlib
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import tempfile
@@ -28,6 +30,14 @@ REAL_FIXTURE_TEST = (
     "CoreAILabTests/CoreAIFunctionWorkbenchTests/"
     "realCoreAIFixtureRunsFloatAndIntegerFunctions()"
 )
+FIXTURE_ASSET = (
+    REPOSITORY_ROOT
+    / "CoreAILabTests"
+    / "Fixtures"
+    / "CoreAILabTensorFixture.aimodel"
+)
+DEVICE_EVIDENCE_SCHEMA_VERSION = 1
+DEVICE_CONFIGURATION_IDENTIFIER = "physical-ios-fixture-v1"
 TEAM_IDENTIFIER_PATTERN = re.compile(r"^[A-Z0-9]{10}$")
 IDENTITY_HASH_PATTERN = re.compile(r"\b[0-9A-Fa-f]{40}\b")
 
@@ -39,6 +49,7 @@ class DeviceTestHarnessError(RuntimeError):
 @dataclass(frozen=True)
 class Device:
     name: str
+    model_identifier: str
     identifier: str
     destination_identifier: str
     platform: str
@@ -74,6 +85,10 @@ class Device:
         )
         return cls(
             name=_first_string(device.get("name"), property_state.get("name")),
+            model_identifier=_first_string(
+                hardware.get("productType"),
+                property_hardware.get("productType"),
+            ),
             identifier=_first_string(document.get("identifier")),
             destination_identifier=destination_identifier,
             platform=_first_string(hardware.get("platform")),
@@ -260,6 +275,256 @@ def _major_version(version: str) -> int:
         return int(version.split(".", maxsplit=1)[0])
     except (TypeError, ValueError):
         return -1
+
+
+def directory_identity(path: Path) -> tuple[str, int]:
+    """Return a stable path-and-content SHA-256 and byte count for one asset."""
+    try:
+        root_status = path.lstat()
+    except FileNotFoundError as error:
+        raise DeviceTestHarnessError(f"Fixture asset is missing: {path}") from error
+    if stat.S_ISLNK(root_status.st_mode):
+        raise DeviceTestHarnessError(
+            f"Fixture asset root must not be a symbolic link: {path}"
+        )
+    if not stat.S_ISDIR(root_status.st_mode):
+        raise DeviceTestHarnessError(f"Fixture asset is missing: {path}")
+
+    directories: list[Path] = []
+    files: list[Path] = []
+
+    def fail_walk(error: OSError) -> None:
+        raise DeviceTestHarnessError(
+            f"Unable to inspect fixture asset: {error}"
+        ) from error
+
+    for root, directory_names, file_names in os.walk(
+        path,
+        topdown=True,
+        onerror=fail_walk,
+        followlinks=False,
+    ):
+        root_path = Path(root)
+        directory_names.sort()
+        file_names.sort()
+        for name in directory_names:
+            item = root_path / name
+            status = item.lstat()
+            if stat.S_ISLNK(status.st_mode):
+                raise DeviceTestHarnessError(
+                    f"Fixture asset identity refuses symbolic links: {item}"
+                )
+            if not stat.S_ISDIR(status.st_mode):
+                raise DeviceTestHarnessError(
+                    f"Fixture asset contains a non-directory entry: {item}"
+                )
+            directories.append(item)
+        for name in file_names:
+            item = root_path / name
+            status = item.lstat()
+            if stat.S_ISLNK(status.st_mode):
+                raise DeviceTestHarnessError(
+                    f"Fixture asset identity refuses symbolic links: {item}"
+                )
+            if not stat.S_ISREG(status.st_mode):
+                raise DeviceTestHarnessError(
+                    f"Fixture asset contains a non-regular file: {item}"
+                )
+            files.append(item)
+
+    digest = hashlib.sha256()
+    byte_count = 0
+    if not files:
+        raise DeviceTestHarnessError(f"Fixture asset contains no files: {path}")
+    for directory in sorted(directories):
+        relative_path = directory.relative_to(path).as_posix().encode()
+        digest.update(b"directory\0")
+        digest.update(relative_path)
+        digest.update(b"\0")
+    for file in sorted(files):
+        relative_path = file.relative_to(path).as_posix().encode()
+        digest.update(relative_path)
+        digest.update(b"\0")
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        try:
+            descriptor = os.open(file, flags)
+        except OSError as error:
+            raise DeviceTestHarnessError(
+                f"Unable to open fixture file without following links: {file}"
+            ) from error
+        with os.fdopen(descriptor, "rb") as stream:
+            opened_status = os.fstat(stream.fileno())
+            if not stat.S_ISREG(opened_status.st_mode):
+                raise DeviceTestHarnessError(
+                    f"Fixture asset contains a non-regular file: {file}"
+                )
+            while chunk := stream.read(1024 * 1024):
+                digest.update(chunk)
+                byte_count += len(chunk)
+        digest.update(b"\0")
+    return digest.hexdigest(), byte_count
+
+
+def built_fixture_asset(derived_data: Path) -> Path:
+    return (
+        derived_data
+        / "Build"
+        / "Products"
+        / "Debug-iphoneos"
+        / "CoreAILab.app"
+        / "PlugIns"
+        / "CoreAILabTests.xctest"
+        / "Fixtures"
+        / FIXTURE_ASSET.name
+    )
+
+
+def device_configuration_identity() -> dict[str, object]:
+    document: dict[str, object] = {
+        "identifier": DEVICE_CONFIGURATION_IDENTIFIER,
+        "preferredComputeUnit": "automatic",
+        "expectsFrequentReshapes": False,
+        "contextTokens": None,
+        "staticInputShapes": {
+            "tokens": [1, 4],
+            "values": [1, 4],
+        },
+    }
+    canonical = json.dumps(
+        document,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    return {
+        **document,
+        "sha256Digest": hashlib.sha256(canonical).hexdigest(),
+    }
+
+
+def device_trial_evidence(
+    *,
+    run_mode: str,
+    device: Device,
+    execution_succeeded: bool,
+    captured_at: datetime | None = None,
+    artifact_identity: tuple[str, int] | None = None,
+    configuration_identity: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    if run_mode not in {"dryRun", "physical"}:
+        raise DeviceTestHarnessError(f"Unsupported evidence run mode: {run_mode}")
+    if run_mode == "dryRun" and execution_succeeded:
+        raise DeviceTestHarnessError("A dry run cannot claim execution success")
+    timestamp = captured_at or datetime.now(UTC)
+    artifact_digest, artifact_byte_count = (
+        artifact_identity or directory_identity(FIXTURE_ASSET)
+    )
+    status = "succeeded" if execution_succeeded else "notRun"
+    if execution_succeeded:
+        specialization_detail = (
+            "The selected physical XCTest passed after specializing the exact "
+            "fixture artifact."
+        )
+        inference_detail = (
+            "The selected physical XCTest passed both deterministic fixture "
+            "inference assertions."
+        )
+    elif run_mode == "dryRun":
+        specialization_detail = "Dry run only; specialization was not executed."
+        inference_detail = "Dry run only; inference was not executed."
+    else:
+        specialization_detail = (
+            "The physical XCTest did not pass, so specialization was not proven."
+        )
+        inference_detail = (
+            "The physical XCTest did not pass, so inference was not proven."
+        )
+    checks = [
+        {
+            "category": category,
+            "result": "notEvaluated",
+            "detail": (
+                "The XCTest harness does not isolate this Neural Engine "
+                "compatibility dimension."
+            ),
+            "source": None,
+        }
+        for category in (
+            "precision",
+            "layout",
+            "projection",
+            "unsupportedOperation",
+        )
+    ]
+    return {
+        "schemaVersion": DEVICE_EVIDENCE_SCHEMA_VERSION,
+        "id": f"{run_mode}-{timestamp.strftime('%Y%m%dT%H%M%S.%fZ')}",
+        "runMode": run_mode,
+        "capturedAt": timestamp.isoformat(timespec="milliseconds").replace(
+            "+00:00", "Z"
+        ),
+        "device": {
+            "modelName": device.name,
+            "modelIdentifier": device.model_identifier,
+            "operatingSystemVersion": device.os_version,
+            "destinationIdentifier": device.destination_identifier,
+        },
+        "artifact": {
+            "identifier": FIXTURE_ASSET.name,
+            "sha256Digest": artifact_digest,
+            "byteCount": artifact_byte_count,
+        },
+        "configuration": dict(
+            configuration_identity or device_configuration_identity()
+        ),
+        "specialization": {
+            "status": status,
+            "durationMilliseconds": None,
+            "detail": specialization_detail,
+        },
+        "inference": {
+            "status": status,
+            "durationMilliseconds": None,
+            "detail": inference_detail,
+        },
+        "latency": {
+            "availability": "unavailable",
+            "samplesMilliseconds": [],
+            "minimumMilliseconds": None,
+            "medianMilliseconds": None,
+            "meanMilliseconds": None,
+            "p95Milliseconds": None,
+            "maximumMilliseconds": None,
+        },
+        "memory": {
+            "availability": "unavailable",
+            "peakResidentBytes": None,
+            "source": None,
+        },
+        "thermal": {"started": "unavailable", "ended": "unavailable"},
+        "energy": {
+            "availability": "unavailable",
+            "joules": None,
+            "source": None,
+        },
+        "placement": {
+            "availability": "unavailable",
+            "actualComputeUnits": [],
+            "source": None,
+        },
+        "neuralEngineCompatibilityChecks": checks,
+    }
+
+
+def write_evidence(document: Mapping[str, Any], output: Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with output.open("x", encoding="utf-8") as stream:
+            json.dump(document, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+    except FileExistsError as error:
+        raise DeviceTestHarnessError(
+            f"Evidence JSON already exists; choose a new path: {output}"
+        ) from error
 
 
 def _application_identifier_matches(
@@ -647,6 +912,14 @@ def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespac
         action="store_true",
         help="Validate discovery/signing and print the command without running it.",
     )
+    parser.add_argument(
+        "--evidence-json",
+        type=Path,
+        help=(
+            "Write a new versioned device-trial JSON file for a dry or physical "
+            "run. Existing files are never overwritten."
+        ),
+    )
     return parser.parse_args(arguments)
 
 
@@ -682,12 +955,55 @@ def main(arguments: Sequence[str] | None = None) -> int:
                 f"Result bundle already exists; choose a new path: {result_bundle}"
             )
 
+        evidence_output = options.evidence_json
+        if evidence_output is not None:
+            if not evidence_output.is_absolute():
+                evidence_output = REPOSITORY_ROOT / evidence_output
+            evidence_output = evidence_output.resolve()
+            if evidence_output.suffix.lower() != ".json":
+                raise DeviceTestHarnessError("--evidence-json must end in .json")
+            if evidence_output.exists():
+                raise DeviceTestHarnessError(
+                    "Evidence JSON already exists; choose a new path: "
+                    f"{evidence_output}"
+                )
+
+        derived_data = REPOSITORY_ROOT / "build/DeviceTests"
         command = xcodebuild_command(
             device=device,
             team_identifier=options.team,
             result_bundle=result_bundle,
-            derived_data=REPOSITORY_ROOT / "build/DeviceTests",
+            derived_data=derived_data,
         )
+        expected_artifact_identity = directory_identity(FIXTURE_ASSET)
+        expected_configuration_identity = device_configuration_identity()
+
+        def emit_evidence(
+            run_mode: str,
+            execution_succeeded: bool,
+            artifact_identity: tuple[str, int] | None = None,
+        ) -> None:
+            if evidence_output is None:
+                return
+            if directory_identity(FIXTURE_ASSET) != expected_artifact_identity:
+                raise DeviceTestHarnessError(
+                    "The fixture asset changed during the run; refusing to bind "
+                    "evidence to an uncertain artifact identity"
+                )
+            write_evidence(
+                device_trial_evidence(
+                    run_mode=run_mode,
+                    device=device,
+                    execution_succeeded=execution_succeeded,
+                    artifact_identity=(
+                        artifact_identity or expected_artifact_identity
+                    ),
+                    configuration_identity=expected_configuration_identity,
+                ),
+                evidence_output,
+            )
+            print(f"Evidence: {evidence_output}")
+
         print(
             f"Device: {device.name} ({device.destination_identifier}), "
             f"iOS {device.os_version}"
@@ -695,6 +1011,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
         print(f"Validated local profile: {profile.name} ({profile.uuid})")
         print(shlex.join(command))
         if options.dry_run:
+            emit_evidence("dryRun", False)
             return 0
 
         require_unlocked_device(device.destination_identifier)
@@ -702,7 +1019,9 @@ def main(arguments: Sequence[str] | None = None) -> int:
         completed = subprocess.run(command, cwd=REPOSITORY_ROOT, check=False)
         if not result_bundle.exists():
             if completed.returncode != 0:
+                emit_evidence("physical", False)
                 return completed.returncode
+            emit_evidence("physical", False)
             raise DeviceTestHarnessError(
                 "xcodebuild succeeded without an xcresult bundle"
             )
@@ -717,11 +1036,13 @@ def main(arguments: Sequence[str] | None = None) -> int:
         if summary.returncode != 0:
             detail = summary.stderr.strip() or summary.stdout.strip()
             if completed.returncode != 0:
+                emit_evidence("physical", False)
                 print(
                     "xcresulttool could not summarize the failed run: " + detail,
                     file=sys.stderr,
                 )
                 return completed.returncode
+            emit_evidence("physical", False)
             raise DeviceTestHarnessError(
                 "xcodebuild succeeded but xcresulttool could not summarize its result: "
                 + detail
@@ -730,18 +1051,38 @@ def main(arguments: Sequence[str] | None = None) -> int:
             document = json.loads(summary.stdout)
         except json.JSONDecodeError as error:
             if completed.returncode != 0:
+                emit_evidence("physical", False)
                 print(summary.stdout.rstrip())
                 return completed.returncode
+            emit_evidence("physical", False)
             raise DeviceTestHarnessError(
                 "xcodebuild succeeded but xcresulttool returned invalid JSON"
             ) from error
 
         print(json.dumps(document, indent=2, sort_keys=True))
         if completed.returncode != 0:
+            emit_evidence("physical", False)
             return completed.returncode
-        validate_xcresult_summary(
-            _mapping(document),
-            expected_device_identifier=device.destination_identifier,
+        try:
+            validate_xcresult_summary(
+                _mapping(document),
+                expected_device_identifier=device.destination_identifier,
+            )
+        except DeviceTestHarnessError:
+            emit_evidence("physical", False)
+            raise
+        executed_artifact_identity = directory_identity(
+            built_fixture_asset(derived_data)
+        )
+        if executed_artifact_identity != expected_artifact_identity:
+            raise DeviceTestHarnessError(
+                "The fixture copied into the physical XCTest bundle does not "
+                "match the pre-run source identity"
+            )
+        emit_evidence(
+            "physical",
+            True,
+            artifact_identity=executed_artifact_identity,
         )
         return 0
     except DeviceTestHarnessError as error:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sys
+import json
+import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
@@ -43,6 +45,7 @@ def device_document(
             "platform": platform,
             "reality": reality,
             "udid": udid,
+            "productType": "iPhone18,1",
         },
     }
 
@@ -96,6 +99,7 @@ class DeviceDiscoveryTests(unittest.TestCase):
 
         self.assertEqual(selected.identifier, "COREDEVICE-ID")
         self.assertEqual(selected.destination_identifier, "00008140-TEST")
+        self.assertEqual(selected.model_identifier, "iPhone18,1")
 
     def test_selector_accepts_name_coredevice_identifier_or_udid(self) -> None:
         devices = harness.devices_from_document(payload(device_document()))
@@ -382,6 +386,191 @@ class CommandConstructionTests(unittest.TestCase):
                         summary,
                         expected_device_identifier="00008140-TEST",
                     )
+
+
+class DeviceEvidenceTests(unittest.TestCase):
+    def test_directory_identity_rejects_a_symlinked_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            asset = root / "asset.aimodel"
+            asset.mkdir()
+            (asset / "model.bin").write_bytes(b"model")
+            linked_root = root / "linked.aimodel"
+            linked_root.symlink_to(asset, target_is_directory=True)
+
+            with self.assertRaisesRegex(
+                harness.DeviceTestHarnessError,
+                "root must not be a symbolic link",
+            ):
+                harness.directory_identity(linked_root)
+
+    def test_directory_identity_rejects_all_nested_symlink_forms(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outside = root / "outside"
+            outside.mkdir()
+            (outside / "target.bin").write_bytes(b"outside")
+
+            for name, target, is_directory in (
+                ("file-link", outside / "target.bin", False),
+                ("directory-link", outside, True),
+                ("broken-link", root / "missing", False),
+            ):
+                with self.subTest(name=name):
+                    asset = root / f"{name}.aimodel"
+                    asset.mkdir()
+                    (asset / "model.bin").write_bytes(b"model")
+                    (asset / name).symlink_to(
+                        target,
+                        target_is_directory=is_directory,
+                    )
+                    with self.assertRaisesRegex(
+                        harness.DeviceTestHarnessError,
+                        "refuses symbolic links",
+                    ):
+                        harness.directory_identity(asset)
+
+    def test_built_fixture_path_names_the_xctest_resource_tree(self) -> None:
+        self.assertEqual(
+            harness.built_fixture_asset(Path("/tmp/DerivedData")),
+            Path(
+                "/tmp/DerivedData/Build/Products/Debug-iphoneos/"
+                "CoreAILab.app/PlugIns/CoreAILabTests.xctest/Fixtures/"
+                "CoreAILabTensorFixture.aimodel"
+            ),
+        )
+
+    def test_dry_run_evidence_is_explicitly_non_executed_and_unmeasured(self) -> None:
+        evidence = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
+        )
+
+        self.assertEqual(evidence["schemaVersion"], 1)
+        self.assertEqual(evidence["runMode"], "dryRun")
+        self.assertEqual(evidence["specialization"]["status"], "notRun")
+        self.assertEqual(evidence["inference"]["status"], "notRun")
+        self.assertEqual(evidence["latency"]["availability"], "unavailable")
+        self.assertEqual(evidence["memory"]["availability"], "unavailable")
+        self.assertEqual(evidence["energy"]["availability"], "unavailable")
+        self.assertEqual(evidence["placement"]["availability"], "unavailable")
+        self.assertEqual(evidence["placement"]["actualComputeUnits"], [])
+        self.assertEqual(
+            {check["result"] for check in evidence["neuralEngineCompatibilityChecks"]},
+            {"notEvaluated"},
+        )
+
+    def test_physical_xctest_evidence_does_not_invent_metrics_or_placement(self) -> None:
+        evidence = harness.device_trial_evidence(
+            run_mode="physical",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=True,
+            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
+        )
+
+        self.assertEqual(evidence["specialization"]["status"], "succeeded")
+        self.assertEqual(evidence["inference"]["status"], "succeeded")
+        self.assertIsNone(evidence["specialization"]["durationMilliseconds"])
+        self.assertEqual(evidence["latency"]["samplesMilliseconds"], [])
+        self.assertEqual(evidence["thermal"]["started"], "unavailable")
+        self.assertEqual(evidence["energy"]["availability"], "unavailable")
+        self.assertEqual(evidence["placement"]["availability"], "unavailable")
+
+    def test_failed_physical_attempt_records_no_unproven_stage_success(self) -> None:
+        evidence = harness.device_trial_evidence(
+            run_mode="physical",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
+        )
+
+        self.assertEqual(evidence["specialization"]["status"], "notRun")
+        self.assertEqual(evidence["inference"]["status"], "notRun")
+        self.assertIn("not proven", evidence["specialization"]["detail"])
+        self.assertIn("not proven", evidence["inference"]["detail"])
+
+    def test_artifact_and_configuration_identities_are_stable_sha256(self) -> None:
+        first = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, tzinfo=UTC),
+        )
+        second = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 3, tzinfo=UTC),
+        )
+
+        self.assertEqual(first["artifact"], second["artifact"])
+        self.assertEqual(first["configuration"], second["configuration"])
+        self.assertRegex(first["artifact"]["sha256Digest"], r"^[0-9a-f]{64}$")
+        self.assertGreater(first["artifact"]["byteCount"], 0)
+        self.assertRegex(
+            first["configuration"]["sha256Digest"],
+            r"^[0-9a-f]{64}$",
+        )
+
+    def test_evidence_uses_the_identity_captured_for_the_run(self) -> None:
+        captured_artifact = ("c" * 64, 42)
+        captured_configuration = {
+            "identifier": "captured-config",
+            "preferredComputeUnit": "cpu",
+            "expectsFrequentReshapes": False,
+            "contextTokens": None,
+            "staticInputShapes": {},
+            "sha256Digest": "d" * 64,
+        }
+
+        evidence = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, tzinfo=UTC),
+            artifact_identity=captured_artifact,
+            configuration_identity=captured_configuration,
+        )
+
+        self.assertEqual(evidence["artifact"]["sha256Digest"], "c" * 64)
+        self.assertEqual(evidence["artifact"]["byteCount"], 42)
+        self.assertEqual(evidence["configuration"], captured_configuration)
+
+    def test_generated_dry_run_matches_the_cross_language_fixture(self) -> None:
+        evidence = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, 3, 4, 5, tzinfo=UTC),
+        )
+        fixture = (
+            harness.REPOSITORY_ROOT
+            / "CoreAILabTests"
+            / "Fixtures"
+            / "DeviceLabDryRunEvidence.json"
+        )
+
+        self.assertEqual(json.loads(fixture.read_text()), evidence)
+
+    def test_evidence_writer_is_machine_readable_and_never_overwrites(self) -> None:
+        evidence = harness.device_trial_evidence(
+            run_mode="dryRun",
+            device=harness.Device.from_document(device_document()),
+            execution_succeeded=False,
+            captured_at=datetime(2027, 1, 2, tzinfo=UTC),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "evidence.json"
+            harness.write_evidence(evidence, output)
+
+            self.assertEqual(json.loads(output.read_text()), evidence)
+            with self.assertRaisesRegex(
+                harness.DeviceTestHarnessError,
+                "already exists",
+            ):
+                harness.write_evidence(evidence, output)
 
 
 if __name__ == "__main__":

@@ -51,14 +51,14 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `CoreAILab/Features/AssetInspector/` - generic `.aimodel` metadata and function inspector
 - `CoreAILab/Features/FunctionWorkbench/` - specialization, generated inputs, inference, and output summaries
 - `CoreAILabCore/FunctionWorkbench/` - descriptor contracts, safe tensor allocation, and generic runtime execution
+- `CoreAILab/Features/DeviceLab/` - iPhone target authoring, storage slicing, compatibility diagnostics, and physical-evidence import
+- `CoreAILabCore/DeviceLab/` - versioned connected-target and device-trial contracts with bounded sizing and truthfulness validation
 - `CoreAILab/Features/RuntimeStudio/` - searchable recipe-backed experience routing, run status, and comparison selection
 - `CoreAILabCore/RuntimeStudio/` - versioned experience registry, shared lifecycle coordinator, and optional project timing evidence
 - `CoreAILab/Resources/AppleModels/` - generated snapshot of Apple's public model registry
 - `CoreAILab/Resources/RuntimeStudio/` - validated recipe-to-experience mappings for the built-in adapters
 - `Conversion/Chatterbox/` - weighted PyTorch-to-Core-AI exporters, parity tests, and a contract probe
 - `Conversion/Diarization/` - CAM++ conversion, license audit, semantic validation, and diarization test plan
-- `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
-- `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
 - `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
 
@@ -605,7 +605,8 @@ DEVELOPER_DIR=/path/to/Xcode-beta.app/Contents/Developer \
 python3 Scripts/run_device_tests.py \
   --team YOUR_TEAM_ID \
   --device YOUR_PHYSICAL_DEVICE_UDID \
-  --profile YOUR_INSTALLED_PROFILE_UUID
+  --profile YOUR_INSTALLED_PROFILE_UUID \
+  --evidence-json TestResults/iphone-fixture-evidence.json
 ```
 
 `--device` and `--profile` are optional when exactly one eligible local choice
@@ -615,6 +616,34 @@ Each real run writes a new ignored result bundle below `TestResults/` and prints
 the JSON test summary produced by `xcresulttool`. Success requires that summary
 to attribute exactly one passed, unskipped test to the selected physical iOS
 device; an empty or misrouted filtered run fails the harness.
+
+`--evidence-json` writes a new schema-versioned machine-readable record for both
+dry and physical runs. It records the device model and OS, a deterministic
+path-and-content digest of the exact fixture asset, the specialization
+configuration digest, and the specialization/inference result. A failed
+physical XCTest records both stages as not proven rather than guessing which
+stage ran. The current XCTest does not isolate inference latency, peak memory,
+thermal state, energy,
+Neural Engine compatibility dimensions, or execution placement, so those fields
+are explicitly `unavailable` or `notEvaluated`; the runner never derives them
+from a compute preference. Existing evidence files are never overwritten.
+The runner rejects symlinked asset roots and nested links, captures the source
+identity before execution, and re-hashes the fixture inside the built physical
+XCTest bundle before writing successful evidence. A changed or uncertain tree
+does not produce a success record.
+
+Open **Device Lab** to author a static iPhone context/shape profile, separate
+app-download and on-demand model slices, compare download and installed byte
+counts, check bounded storage requirements, and import a runner evidence JSON
+file. Precision, layout, projection, and
+unsupported-operation diagnostics are driven only by imported evidence and
+apply only when artifact SHA-256 and byte count, configuration identifier and
+SHA-256, compute preference, reshape policy, context, and static shapes exactly
+match the selected trial contract. The default `tokens` and `values` profile
+matches the generated fixture evidence. Evidence imports are limited to 1 MiB,
+read and decoded away from the main actor, and protected against stale import
+completion. Authoring validation bounds context, shape count, rank, dimensions,
+per-shape elements, and total elements before device planning.
 
 ## Current Limitations
 
@@ -656,6 +685,13 @@ device; an empty or misrouted filtered run fails the harness.
   audio.
 - The 600 MiB model bundle is included only in the macOS target.
 - Simulator and device support may differ during the Xcode 27 beta cycle.
+- Device Lab is a contract and authoring foundation, not a completed Milestone 7
+  deployment claim. A passing physical fixture XCTest can prove its own
+  specialization and inference assertions, but no physical evidence is checked
+  in and the harness does not yet provide separately authored language/vision and audio variants,
+  per-inference latency distributions, memory/thermal/energy trials, or measured
+  Neural Engine placement. Those require unlocked physical hardware plus
+  benchmark and Instruments evidence.
 - Core AI and its converter packages are beta APIs and may move between seeds.
 
 ## Current SDK Shape
