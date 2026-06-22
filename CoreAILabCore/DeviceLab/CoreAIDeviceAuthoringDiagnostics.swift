@@ -104,13 +104,19 @@ enum CoreAIDeviceAuthoringDiagnostics {
         var identifiers = Set<String>()
         var totalElements = 0
         var reportedTotalLimit = false
-        for shape in request.shapes.prefix(
+        for (shapeIndex, shape) in request.shapes.prefix(
             CoreAIDeviceShapeLimits.maximumShapeCount
-        ) {
-            if shape.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        ).enumerated() {
+            let trimmedIdentifier = shape.id.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
+            let diagnosticIdentifier = trimmedIdentifier.isEmpty
+                ? "unnamed-\(shapeIndex)"
+                : shape.id
+            if trimmedIdentifier.isEmpty {
                 diagnostics.append(
                     diagnostic(
-                        id: "shape.unnamed",
+                        id: "shape.\(diagnosticIdentifier).unnamed",
                         severity: .error,
                         category: .shape,
                         title: "Shape needs a name",
@@ -121,7 +127,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
             if !identifiers.insert(shape.id).inserted {
                 diagnostics.append(
                     diagnostic(
-                        id: "shape.\(shape.id).duplicate",
+                        id: "shape.\(diagnosticIdentifier).duplicate",
                         severity: .error,
                         category: .shape,
                         title: "Shape name is duplicated",
@@ -132,7 +138,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
             if shape.dimensions.isEmpty {
                 diagnostics.append(
                     diagnostic(
-                        id: "shape.\(shape.id).empty",
+                        id: "shape.\(diagnosticIdentifier).empty",
                         severity: .error,
                         category: .shape,
                         title: "Shape has no dimensions",
@@ -144,7 +150,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
             if shape.dimensions.count > CoreAIDeviceShapeLimits.maximumRank {
                 diagnostics.append(
                     diagnostic(
-                        id: "shape.\(shape.id).rank-limit",
+                        id: "shape.\(diagnosticIdentifier).rank-limit",
                         severity: .error,
                         category: .shape,
                         title: "Shape rank exceeds the safety ceiling",
@@ -156,7 +162,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
             if shape.dimensions.contains(where: { $0 == nil }) {
                 diagnostics.append(
                     diagnostic(
-                        id: "shape.\(shape.id).dynamic",
+                        id: "shape.\(diagnosticIdentifier).dynamic",
                         severity: .warning,
                         category: .shape,
                         title: "Dynamic dimension needs a device variant",
@@ -176,7 +182,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
                 if dimension <= 0 {
                     diagnostics.append(
                         diagnostic(
-                            id: "shape.\(shape.id).dimension.\(index).nonpositive",
+                            id: "shape.\(diagnosticIdentifier).dimension.\(index).nonpositive",
                             severity: .error,
                             category: .shape,
                             title: "Shape dimension must be positive",
@@ -189,7 +195,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
                 if dimension > CoreAIDeviceShapeLimits.maximumDimension {
                     diagnostics.append(
                         diagnostic(
-                            id: "shape.\(shape.id).dimension.\(index).limit",
+                            id: "shape.\(diagnosticIdentifier).dimension.\(index).limit",
                             severity: .error,
                             category: .shape,
                             title: "Shape dimension exceeds the safety ceiling",
@@ -203,7 +209,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
                 if product.overflow {
                     diagnostics.append(
                         diagnostic(
-                            id: "shape.\(shape.id).overflow",
+                            id: "shape.\(diagnosticIdentifier).overflow",
                             severity: .error,
                             category: .shape,
                             title: "Shape is too large to size safely",
@@ -217,7 +223,7 @@ enum CoreAIDeviceAuthoringDiagnostics {
                     > CoreAIDeviceShapeLimits.maximumElementsPerShape {
                     diagnostics.append(
                         diagnostic(
-                            id: "shape.\(shape.id).element-limit",
+                            id: "shape.\(diagnosticIdentifier).element-limit",
                             severity: .error,
                             category: .shape,
                             title: "Shape exceeds the element safety ceiling",

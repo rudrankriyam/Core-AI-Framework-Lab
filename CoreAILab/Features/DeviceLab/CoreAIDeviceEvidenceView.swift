@@ -11,7 +11,7 @@ struct CoreAIDeviceEvidenceView: View {
                 systemImage: "square.and.arrow.down",
                 action: beginImport
             )
-            .disabled(workspace.isImportingEvidence)
+            .disabled(isImportingEvidence || workspace.isImportingEvidence)
 
             if workspace.isImportingEvidence {
                 ProgressView("Reading and validating evidence")
@@ -20,7 +20,9 @@ struct CoreAIDeviceEvidenceView: View {
             if let error = workspace.importErrorMessage {
                 Label(error, systemImage: "xmark.octagon")
                     .foregroundStyle(.secondary)
-            } else if let evidence = workspace.importedEvidence {
+            }
+
+            if let evidence = workspace.importedEvidence {
                 LabeledContent("Device", value: evidence.device.modelName)
                 LabeledContent(
                     "Model identifier",

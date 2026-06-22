@@ -366,6 +366,32 @@ struct CoreAIDeviceLabTests {
     }
 
     @Test
+    func unnamedShapesProduceUniqueDiagnosticIdentifiers() {
+        let request = CoreAIDeviceShapeAuthoringRequest(
+            requestedContextTokens: nil,
+            maximumContextTokens: nil,
+            expectsFrequentReshapes: false,
+            shapes: [
+                CoreAIDeviceShapeDefinition(id: "", dimensions: []),
+                CoreAIDeviceShapeDefinition(id: "   ", dimensions: []),
+            ]
+        )
+
+        let diagnostics = CoreAIDeviceAuthoringDiagnostics.evaluate(
+            shapeRequest: request,
+            preferredComputeUnit: .automatic,
+            expectation: expectation,
+            evidence: nil
+        )
+        let unnamedDiagnostics = diagnostics.filter {
+            $0.id.hasSuffix(".unnamed")
+        }
+
+        #expect(unnamedDiagnostics.count == 2)
+        #expect(Set(unnamedDiagnostics.map(\.id)).count == 2)
+    }
+
+    @Test
     func neuralEnginePreferenceAndPassingTrialDoNotProvePlacement() throws {
         let evidence = trial(
             mode: .physical,
