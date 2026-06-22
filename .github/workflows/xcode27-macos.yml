@@ -1,0 +1,123 @@
+name: Xcode 27 macOS verification
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xcode27-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-contracts:
+    name: Apple silicon / Xcode 27
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    runs-on:
+      - self-hosted
+      - macOS
+      - ARM64
+      - coreai-xcode27
+      - coreai-macos-contracts
+    timeout-minutes: 75
+    env:
+      DEVELOPER_DIR: /Applications/Xcode-beta.app/Contents/Developer
+      DERIVED_DATA: build/CI/macOS-${{ github.run_id }}-${{ github.run_attempt }}
+      EVIDENCE_DIRECTORY: TestResults/CI/macOS
+      RESULT_BUNDLE: TestResults/CoreAILabMac-${{ github.run_id }}-${{ github.run_attempt }}.xcresult
+    steps:
+      - name: Check out source and repository LFS assets
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+
+      - name: Select the declared Python runtime
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate the versioned CI matrix
+        run: python3 Scripts/ci_matrix.py validate
+
+      - name: Record and verify the Xcode 27 environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIRECTORY"
+          {
+            echo "commit=$GITHUB_SHA"
+            echo "architecture=$(uname -m)"
+            sw_vers
+            python3 --version
+            xcodebuild -version
+            echo "macos_sdk=$(xcrun --sdk macosx --show-sdk-version)"
+          } | tee "$EVIDENCE_DIRECTORY/environment.txt"
+
+          [[ "$(uname -m)" == "arm64" ]]
+          [[ "$(xcodebuild -version | awk 'NR == 1 { print $2 }')" == 27* ]]
+          [[ "$(xcrun --sdk macosx --show-sdk-version)" == 27.* ]]
+
+      - name: Build and run macOS contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_log="$RUNNER_TEMP/coreai-macos-private.log"
+          if ! env \
+            -u CHATTERBOX_SMOKE_OUTPUT \
+            -u COREAI_DIFFUSION_BUNDLE_PATH \
+            -u COREAI_EFFICIENT_SAM_BUNDLE_PATH \
+            -u COREAI_QWEN_BUNDLE_PATH \
+            -u COREAI_SAM3_BUNDLE_PATH \
+            -u COREAI_SEGMENTATION_IMAGE_PATH \
+            -u COREAI_WAV2VEC2_AUDIO_PATH \
+            -u COREAI_WAV2VEC2_MODEL_PATH \
+            -u COREAI_YOLOS_IMAGE_PATH \
+            -u COREAI_YOLOS_MODEL_PATH \
+            -u RUN_CHATTERBOX_INTEGRATION \
+            xcodebuild \
+              -project CoreAIFrameworkLab.xcodeproj \
+              -scheme CoreAILabMac \
+              -destination 'platform=macOS,arch=arm64' \
+              -derivedDataPath "$DERIVED_DATA" \
+              -resultBundlePath "$RESULT_BUNDLE" \
+              -disableAutomaticPackageResolution \
+              -skipPackageUpdates \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              test >"$private_log" 2>&1
+          then
+            echo "::error::macOS contract tests failed; raw diagnostics are suppressed in public CI"
+            exit 1
+          fi
+
+      - name: Export identifier-free macOS evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -d "$RESULT_BUNDLE" ]]
+          python3 Scripts/xcresult_public_summary.py \
+            --result-bundle "$RESULT_BUNDLE" \
+            --output "$EVIDENCE_DIRECTORY/test-summary.json" \
+            --kind macos-contract-tests \
+            --expected-platform macOS
+
+      - name: Delete raw macOS evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf -- "$RESULT_BUNDLE" "$DERIVED_DATA"
+          rm -f -- "$RUNNER_TEMP/coreai-macos-private.log"
+
+      - name: Upload macOS verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: xcode27-macos-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIRECTORY }}
+          if-no-files-found: warn
+          retention-days: 14

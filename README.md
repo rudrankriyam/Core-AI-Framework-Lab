@@ -468,6 +468,22 @@ the JSON test summary produced by `xcresulttool`. Success requires that summary
 to attribute exactly one passed, unskipped test to the selected physical iOS
 device; an empty or misrouted filtered run fails the harness.
 
+## CI Verification Boundaries
+
+The checked-in CI matrix keeps software-only pull-request checks separate from
+Xcode 27 and physical-device evidence. Hosted Linux verifies the versioned
+matrix and Python harness tests without model weights, Xcode, signing, or
+secrets. Trusted `main` runs can use an explicitly labeled self-hosted Xcode 27
+Mac, while real iOS fixture execution is a manual, approval-gated workflow that
+uses only signing assets already installed on its dedicated runner.
+Because this repository is public, hardware workflows suppress and delete raw
+logs/xcresults and retain only identifier-free summaries. The checked-in lanes
+remain configuration until their separate runners, protected environment, and
+secret are provisioned and a real `main` run passes.
+
+See [`.github/ci/README.md`](.github/ci/README.md) for runner labels, the one
+required environment secret, safety boundaries, and retained evidence.
+
 ## Current Limitations
 
 - Apple's repository ships export code and runtime utilities, not converted

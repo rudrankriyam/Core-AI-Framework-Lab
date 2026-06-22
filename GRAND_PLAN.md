@@ -578,6 +578,13 @@ Done bar:
 
 ### Milestone 8 — Recipe ecosystem (ongoing)
 
+Initial CI slice: a versioned verification matrix now separates hosted
+software checks from trusted self-hosted Xcode 27 macOS evidence and manual,
+approval-gated physical iOS 27 fixture evidence. The workflows retain only
+identifier-free public summaries. Separate runners, the protected environment,
+its secret, and first passing hardware runs are still rollout prerequisites;
+recipe schema, indexing, trust, and bundle import remain future work.
+
 Deliverables:
 
 - Public recipe schema and authoring documentation.

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "lanes": [
+    {
+      "id": "hosted-software",
+      "kind": "hosted-software",
+      "workflow": ".github/workflows/hosted-software.yml",
+      "executionBoundary": "github-hosted",
+      "triggers": [
+        "pull_request",
+        "push-main",
+        "workflow_dispatch"
+      ],
+      "trustedRefs": [
+        "*"
+      ],
+      "signingPolicy": "disabled",
+      "provisioningUpdatesAllowed": false,
+      "externalModelAssets": "none",
+      "requiredSecrets": [],
+      "evidence": [
+        "CI matrix validation output",
+        "Python harness unit-test output"
+      ],
+      "entries": [
+        {
+          "id": "ubuntu-python312",
+          "runnerLabels": [
+            "ubuntu-latest"
+          ],
+          "platform": "Ubuntu",
+          "architecture": "x86_64",
+          "pythonVersion": "3.12"
+        }
+      ]
+    },
+    {
+      "id": "xcode27-macos",
+      "kind": "xcode-macos",
+      "workflow": ".github/workflows/xcode27-macos.yml",
+      "executionBoundary": "self-hosted",
+      "triggers": [
+        "push-main",
+        "workflow_dispatch"
+      ],
+      "trustedRefs": [
+        "refs/heads/main"
+      ],
+      "signingPolicy": "disabled",
+      "provisioningUpdatesAllowed": false,
+      "externalModelAssets": "repository-lfs",
+      "requiredSecrets": [],
+      "evidence": [
+        "Xcode, SDK, Python, OS, and architecture manifest",
+        "Identifier-free macOS Swift test summary"
+      ],
+      "entries": [
+        {
+          "id": "apple-silicon-xcode27",
+          "runnerLabels": [
+            "self-hosted",
+            "macOS",
+            "ARM64",
+            "coreai-xcode27",
+            "coreai-macos-contracts"
+          ],
+          "platform": "macOS",
+          "architecture": "arm64",
+          "pythonVersion": "3.12",
+          "xcodeMajor": 27
+        }
+      ]
+    },
+    {
+      "id": "physical-ios27",
+      "kind": "physical-ios",
+      "workflow": ".github/workflows/physical-ios.yml",
+      "executionBoundary": "self-hosted",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "trustedRefs": [
+        "refs/heads/main"
+      ],
+      "signingPolicy": "installed-assets-only",
+      "provisioningUpdatesAllowed": false,
+      "externalModelAssets": "fixture-only",
+      "requiredSecrets": [
+        "COREAI_APPLE_TEAM_ID"
+      ],
+      "evidence": [
+        "Xcode, SDK, Python, OS, and architecture manifest",
+        "Identifier-free physical-device fixture summary"
+      ],
+      "entries": [
+        {
+          "id": "physical-ios27-device",
+          "runnerLabels": [
+            "self-hosted",
+            "macOS",
+            "ARM64",
+            "coreai-xcode27",
+            "coreai-ios-device"
+          ],
+          "platform": "iOS",
+          "architecture": "arm64",
+          "pythonVersion": "3.12",
+          "xcodeMajor": 27,
+          "iosMinimum": 27
+        }
+      ]
+    }
+  ]
+}
