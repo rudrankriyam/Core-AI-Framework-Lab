@@ -55,7 +55,7 @@ It is not a replacement for `FoundationModels`. Foundation Models is still the h
 - `APPLE_CORE_AI_CAPABILITIES.md` - current official capability and tooling audit
 - `GRAND_PLAN.md` - product, architecture, and milestone plan reconstructed from the local Core AI work
 - `coreai.md` - notes from the local Xcode 27 SDK interfaces
-- `project.yml` - XcodeGen project definition
+- `CoreAIFrameworkLab.xcodeproj` - checked-in Xcode project for both app targets
 
 ## Apple Model Library
 
@@ -69,7 +69,6 @@ Refresh the checked-in snapshot from a local Apple repository clone:
 
 ```bash
 python3 Scripts/update_apple_model_catalog.py /path/to/coreai-models
-xcodegen generate
 ```
 
 Model weights are not bundled or redistributed by the app. When you start a
@@ -367,11 +366,11 @@ print(descriptor.outputNames)
 The complete native runtime is implemented in
 `CoreAILabCore/Chatterbox/ChatterboxCoreAIEngine.swift`.
 
-## Generate the Xcode Project
+## Open the Xcode Project
 
 ```bash
 cd Core-AI-Framework-Lab
-xcodegen generate
+open CoreAIFrameworkLab.xcodeproj
 ```
 
 ## Build and Run on macOS
