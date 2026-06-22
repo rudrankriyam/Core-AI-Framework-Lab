@@ -159,6 +159,42 @@ struct CoreAIRecipeStudioTests {
             Set(workspace.recipe.dynamicDimensions.map { "\($0.inputName):\($0.axis)" }).count
                 == completeAxisCount
         )
+        #expect(!workspace.canAddDynamicDimension)
+    }
+
+    @Test
+    func dynamicDimensionAdditionAdvancesAcrossTensorInputs() {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        workspace.recipe.exampleInputs.append(CoreAIRecipeExampleInput(
+            id: "attention_mask",
+            name: "attention_mask",
+            kind: .tensor,
+            scalarType: "int32",
+            shape: [1, 300],
+            fixturePath: "",
+            literalValue: ""
+        ))
+
+        workspace.addDynamicDimension()
+        workspace.addDynamicDimension()
+        workspace.addDynamicDimension()
+
+        #expect(workspace.recipe.dynamicDimensions.last?.inputName == "attention_mask")
+        #expect(workspace.recipe.dynamicDimensions.last?.axis == 0)
+        #expect(workspace.canAddDynamicDimension)
+
+        workspace.addDynamicDimension()
+
+        #expect(workspace.recipe.dynamicDimensions.last?.inputName == "attention_mask")
+        #expect(workspace.recipe.dynamicDimensions.last?.axis == 1)
+        #expect(!workspace.canAddDynamicDimension)
+    }
+
+    @Test
+    func outputNameAllocationStaysUniqueAfterRemoval() {
+        let values = ["output_1", "output_3"]
+
+        #expect(CoreAIRecipeOutputListEditorView.nextOutputName(in: values) == "output_4")
     }
 
     @Test

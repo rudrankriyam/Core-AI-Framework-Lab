@@ -28,6 +28,10 @@ final class CoreAIRecipeStudioWorkspaceModel {
             .sorted()
     }
 
+    var canAddDynamicDimension: Bool {
+        nextAvailableDynamicDimension != nil
+    }
+
     var sourceEndpoints: [CoreAIPipelineEndpoint] {
         recipe.pipeline.nodes.flatMap { node in
             node.outputs.map {
@@ -106,14 +110,7 @@ final class CoreAIRecipeStudioWorkspaceModel {
     }
 
     func addDynamicDimension() {
-        guard let input = recipe.exampleInputs.first(where: { $0.kind == .tensor }),
-              !input.shape.isEmpty else {
-            return
-        }
-        let usedAxes = Set(recipe.dynamicDimensions.filter {
-            $0.inputName == input.name
-        }.map(\.axis))
-        guard let axis = input.shape.indices.first(where: { !usedAxes.contains($0) }) else {
+        guard let (input, axis) = nextAvailableDynamicDimension else {
             return
         }
         recipe.dynamicDimensions.append(CoreAIRecipeDynamicDimension(
@@ -398,6 +395,21 @@ final class CoreAIRecipeStudioWorkspaceModel {
         recipe.pipeline.nodes.filter {
             [.assetFunction, .hostOperator, .boundedLoop].contains($0.kind)
         }.map(\.id)
+    }
+
+    private var nextAvailableDynamicDimension: (
+        input: CoreAIRecipeExampleInput,
+        axis: Int
+    )? {
+        for input in recipe.exampleInputs where input.kind == .tensor {
+            let usedAxes = Set(recipe.dynamicDimensions.lazy.filter {
+                $0.inputName == input.name
+            }.map(\.axis))
+            if let axis = input.shape.indices.first(where: { !usedAxes.contains($0) }) {
+                return (input, axis)
+            }
+        }
+        return nil
     }
 
     private func port(

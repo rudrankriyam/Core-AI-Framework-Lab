@@ -44,7 +44,7 @@ struct CoreAIRecipeDynamicDimensionsEditorView: View {
                     systemImage: "plus",
                     action: workspace.addDynamicDimension
                 )
-                .disabled(workspace.tensorInputNames.isEmpty)
+                .disabled(!workspace.canAddDynamicDimension)
             } footer: {
                 Text("Bounds are authoring constraints, not evidence that every shape specializes or runs on a preferred compute unit.")
             }
