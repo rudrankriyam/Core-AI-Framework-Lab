@@ -186,7 +186,9 @@ struct CoreAIPipelineNodeEditorView: View {
             return true
         }
         let name = node.inputs[index].name
-        return name == node.seedInputPort || name == node.stopConditionInputPort
+        let nameIsUnique = node.inputs.count(where: { $0.name == name }) == 1
+        return nameIsUnique
+            && (name == node.seedInputPort || name == node.stopConditionInputPort)
     }
 
     private func inputPortBinding(for id: UUID) -> Binding<CoreAIPipelinePort>? {

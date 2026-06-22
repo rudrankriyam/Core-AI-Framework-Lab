@@ -23,13 +23,13 @@ struct CoreAIRecipeFunctionEntrypointsEditorView: View {
                     CoreAIRecipeReferenceListEditorView(
                         title: "Inputs",
                         values: $function.inputNames,
-                        choices: workspace.recipe.exampleInputs.map(\.name)
+                        choices: workspace.unambiguousExampleInputNames
                     )
                     CoreAIRecipeOutputListEditorView(values: $function.outputNames)
                     CoreAIRecipeReferenceListEditorView(
                         title: "State",
                         values: $function.stateNames,
-                        choices: workspace.recipe.stateBindings.map(\.name)
+                        choices: workspace.unambiguousStateNames
                     )
 
                     Button(

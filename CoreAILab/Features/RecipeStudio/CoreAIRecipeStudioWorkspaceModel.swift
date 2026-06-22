@@ -28,22 +28,44 @@ final class CoreAIRecipeStudioWorkspaceModel {
             .sorted()
     }
 
+    var unambiguousExampleInputNames: [String] {
+        recipe.exampleInputs.compactMap { input in
+            recipe.exampleInputs.count(where: { $0.name == input.name }) == 1
+                ? input.name
+                : nil
+        }
+    }
+
+    var unambiguousStateNames: [String] {
+        recipe.stateBindings.compactMap { state in
+            recipe.stateBindings.count(where: { $0.name == state.name }) == 1
+                ? state.name
+                : nil
+        }
+    }
+
     var canAddDynamicDimension: Bool {
         nextAvailableDynamicDimension != nil
     }
 
     var sourceEndpoints: [CoreAIPipelineEndpoint] {
         uniqueValues(recipe.pipeline.nodes.flatMap { node in
-            node.outputs.map {
-                CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
+            node.outputs.compactMap { port in
+                guard node.outputs.count(where: { $0.name == port.name }) == 1 else {
+                    return nil
+                }
+                return CoreAIPipelineEndpoint(nodeID: node.id, portName: port.name)
             }
         })
     }
 
     var destinationEndpoints: [CoreAIPipelineEndpoint] {
         uniqueValues(recipe.pipeline.nodes.flatMap { node in
-            node.inputs.map {
-                CoreAIPipelineEndpoint(nodeID: node.id, portName: $0.name)
+            node.inputs.compactMap { port in
+                guard node.inputs.count(where: { $0.name == port.name }) == 1 else {
+                    return nil
+                }
+                return CoreAIPipelineEndpoint(nodeID: node.id, portName: port.name)
             }
         })
     }
@@ -89,10 +111,15 @@ final class CoreAIRecipeStudioWorkspaceModel {
         guard let input = recipe.exampleInputs.first(where: { $0.id == id }) else {
             return
         }
+        let nameIsUnique = recipe.exampleInputs.count(where: {
+            $0.name == input.name
+        }) == 1
         recipe.exampleInputs.removeAll { $0.id == id }
-        recipe.dynamicDimensions.removeAll { $0.inputName == input.name }
-        for index in recipe.functionEntrypoints.indices {
-            recipe.functionEntrypoints[index].inputNames.removeAll { $0 == input.name }
+        if nameIsUnique {
+            recipe.dynamicDimensions.removeAll { $0.inputName == input.name }
+            for index in recipe.functionEntrypoints.indices {
+                recipe.functionEntrypoints[index].inputNames.removeAll { $0 == input.name }
+            }
         }
     }
 
@@ -102,14 +129,19 @@ final class CoreAIRecipeStudioWorkspaceModel {
         }
         let previousName = recipe.exampleInputs[index].name
         guard previousName != name else { return }
+        let previousNameWasUnique = recipe.exampleInputs.count(where: {
+            $0.name == previousName
+        }) == 1
         recipe.exampleInputs[index].name = name
-        for index in recipe.dynamicDimensions.indices
-        where recipe.dynamicDimensions[index].inputName == previousName {
-            recipe.dynamicDimensions[index].inputName = name
-        }
-        for index in recipe.functionEntrypoints.indices {
-            recipe.functionEntrypoints[index].inputNames = recipe.functionEntrypoints[index]
-                .inputNames.map { $0 == previousName ? name : $0 }
+        if previousNameWasUnique {
+            for index in recipe.dynamicDimensions.indices
+            where recipe.dynamicDimensions[index].inputName == previousName {
+                recipe.dynamicDimensions[index].inputName = name
+            }
+            for index in recipe.functionEntrypoints.indices {
+                recipe.functionEntrypoints[index].inputNames = recipe.functionEntrypoints[index]
+                    .inputNames.map { $0 == previousName ? name : $0 }
+            }
         }
     }
 
@@ -150,9 +182,14 @@ final class CoreAIRecipeStudioWorkspaceModel {
         guard let state = recipe.stateBindings.first(where: { $0.id == id }) else {
             return
         }
+        let nameIsUnique = recipe.stateBindings.count(where: {
+            $0.name == state.name
+        }) == 1
         recipe.stateBindings.removeAll { $0.id == id }
-        for index in recipe.functionEntrypoints.indices {
-            recipe.functionEntrypoints[index].stateNames.removeAll { $0 == state.name }
+        if nameIsUnique {
+            for index in recipe.functionEntrypoints.indices {
+                recipe.functionEntrypoints[index].stateNames.removeAll { $0 == state.name }
+            }
         }
     }
 
@@ -162,10 +199,15 @@ final class CoreAIRecipeStudioWorkspaceModel {
         }
         let previousName = recipe.stateBindings[index].name
         guard previousName != name else { return }
+        let previousNameWasUnique = recipe.stateBindings.count(where: {
+            $0.name == previousName
+        }) == 1
         recipe.stateBindings[index].name = name
-        for index in recipe.functionEntrypoints.indices {
-            recipe.functionEntrypoints[index].stateNames = recipe.functionEntrypoints[index]
-                .stateNames.map { $0 == previousName ? name : $0 }
+        if previousNameWasUnique {
+            for index in recipe.functionEntrypoints.indices {
+                recipe.functionEntrypoints[index].stateNames = recipe.functionEntrypoints[index]
+                    .stateNames.map { $0 == previousName ? name : $0 }
+            }
         }
     }
 
@@ -321,45 +363,56 @@ final class CoreAIRecipeStudioWorkspaceModel {
             return
         }
         let previousName: String
+        let previousNameWasUnique: Bool
         if output {
             guard recipe.pipeline.nodes[nodeIndex].outputs.indices.contains(index) else { return }
             previousName = recipe.pipeline.nodes[nodeIndex].outputs[index].name
+            previousNameWasUnique = recipe.pipeline.nodes[nodeIndex].outputs.count(where: {
+                $0.name == previousName
+            }) == 1
             recipe.pipeline.nodes[nodeIndex].outputs[index].name = name
         } else {
             guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
             previousName = recipe.pipeline.nodes[nodeIndex].inputs[index].name
+            previousNameWasUnique = recipe.pipeline.nodes[nodeIndex].inputs.count(where: {
+                $0.name == previousName
+            }) == 1
             recipe.pipeline.nodes[nodeIndex].inputs[index].name = name
-            if recipe.pipeline.nodes[nodeIndex].seedInputPort == previousName {
+            if previousNameWasUnique,
+               recipe.pipeline.nodes[nodeIndex].seedInputPort == previousName {
                 recipe.pipeline.nodes[nodeIndex].seedInputPort = name
             }
-            if recipe.pipeline.nodes[nodeIndex].stopConditionInputPort == previousName {
+            if previousNameWasUnique,
+               recipe.pipeline.nodes[nodeIndex].stopConditionInputPort == previousName {
                 recipe.pipeline.nodes[nodeIndex].stopConditionInputPort = name
             }
         }
         guard previousName != name else { return }
-        for edgeIndex in recipe.pipeline.edges.indices {
+        if previousNameWasUnique {
+            for edgeIndex in recipe.pipeline.edges.indices {
+                if output,
+                   recipe.pipeline.edges[edgeIndex].source.nodeID == nodeID,
+                   recipe.pipeline.edges[edgeIndex].source.portName == previousName {
+                    recipe.pipeline.edges[edgeIndex].source.portName = name
+                }
+                if !output,
+                   recipe.pipeline.edges[edgeIndex].destination.nodeID == nodeID,
+                   recipe.pipeline.edges[edgeIndex].destination.portName == previousName {
+                    recipe.pipeline.edges[edgeIndex].destination.portName = name
+                }
+            }
             if output,
-               recipe.pipeline.edges[edgeIndex].source.nodeID == nodeID,
-               recipe.pipeline.edges[edgeIndex].source.portName == previousName {
-                recipe.pipeline.edges[edgeIndex].source.portName = name
+               selectedSourceEndpoint
+                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
+                selectedSourceEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
             }
             if !output,
-               recipe.pipeline.edges[edgeIndex].destination.nodeID == nodeID,
-               recipe.pipeline.edges[edgeIndex].destination.portName == previousName {
-                recipe.pipeline.edges[edgeIndex].destination.portName = name
+               selectedDestinationEndpoint
+                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
+                selectedDestinationEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
             }
+            deduplicatePipelineEdges()
         }
-        if output,
-           selectedSourceEndpoint
-            == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
-            selectedSourceEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
-        }
-        if !output,
-           selectedDestinationEndpoint
-            == CoreAIPipelineEndpoint(nodeID: nodeID, portName: previousName) {
-            selectedDestinationEndpoint = CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
-        }
-        deduplicatePipelineEdges()
     }
 
     func removePipelinePort(nodeID: String, output: Bool, index: Int) {
@@ -369,28 +422,41 @@ final class CoreAIRecipeStudioWorkspaceModel {
         let name: String
         if output {
             guard recipe.pipeline.nodes[nodeIndex].outputs.indices.contains(index) else { return }
-            name = recipe.pipeline.nodes[nodeIndex].outputs.remove(at: index).name
-            recipe.pipeline.edges.removeAll {
-                $0.source == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
-            }
-            if selectedSourceEndpoint
-                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
-                selectedSourceEndpoint = nil
+            name = recipe.pipeline.nodes[nodeIndex].outputs[index].name
+            let nameWasUnique = recipe.pipeline.nodes[nodeIndex].outputs.count(where: {
+                $0.name == name
+            }) == 1
+            recipe.pipeline.nodes[nodeIndex].outputs.remove(at: index)
+            if nameWasUnique {
+                recipe.pipeline.edges.removeAll {
+                    $0.source == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+                }
+                if selectedSourceEndpoint
+                    == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
+                    selectedSourceEndpoint = nil
+                }
             }
         } else {
             guard recipe.pipeline.nodes[nodeIndex].inputs.indices.contains(index) else { return }
             let inputName = recipe.pipeline.nodes[nodeIndex].inputs[index].name
-            if inputName == recipe.pipeline.nodes[nodeIndex].seedInputPort
+            let nameWasUnique = recipe.pipeline.nodes[nodeIndex].inputs.count(where: {
+                $0.name == inputName
+            }) == 1
+            if nameWasUnique,
+               inputName == recipe.pipeline.nodes[nodeIndex].seedInputPort
                 || inputName == recipe.pipeline.nodes[nodeIndex].stopConditionInputPort {
                 return
             }
-            name = recipe.pipeline.nodes[nodeIndex].inputs.remove(at: index).name
-            recipe.pipeline.edges.removeAll {
-                $0.destination == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
-            }
-            if selectedDestinationEndpoint
-                == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
-                selectedDestinationEndpoint = nil
+            name = inputName
+            recipe.pipeline.nodes[nodeIndex].inputs.remove(at: index)
+            if nameWasUnique {
+                recipe.pipeline.edges.removeAll {
+                    $0.destination == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name)
+                }
+                if selectedDestinationEndpoint
+                    == CoreAIPipelineEndpoint(nodeID: nodeID, portName: name) {
+                    selectedDestinationEndpoint = nil
+                }
             }
         }
     }
@@ -405,7 +471,9 @@ final class CoreAIRecipeStudioWorkspaceModel {
         input: CoreAIRecipeExampleInput,
         axis: Int
     )? {
-        for input in recipe.exampleInputs where input.kind == .tensor {
+        for input in recipe.exampleInputs
+        where input.kind == .tensor
+            && recipe.exampleInputs.count(where: { $0.name == input.name }) == 1 {
             let usedAxes = Set(recipe.dynamicDimensions.lazy.filter {
                 $0.inputName == input.name
             }.map(\.axis))
@@ -425,7 +493,11 @@ final class CoreAIRecipeStudioWorkspaceModel {
         }) else {
             return nil
         }
-        return (output ? node.outputs : node.inputs).first {
+        let ports = output ? node.outputs : node.inputs
+        guard ports.count(where: { $0.name == endpoint.portName }) == 1 else {
+            return nil
+        }
+        return ports.first {
             $0.name == endpoint.portName
         }
     }

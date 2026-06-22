@@ -191,6 +191,52 @@ struct CoreAIRecipeStudioTests {
     }
 
     @Test
+    func duplicateAuthoringNamesDoNotStealSharedReferences() throws {
+        let renameWorkspace = CoreAIRecipeStudioWorkspaceModel()
+        var duplicateInput = try #require(renameWorkspace.recipe.exampleInputs.first)
+        duplicateInput.id = "features_duplicate"
+        renameWorkspace.recipe.exampleInputs.append(duplicateInput)
+
+        #expect(!renameWorkspace.unambiguousExampleInputNames.contains("features"))
+        #expect(!renameWorkspace.canAddDynamicDimension)
+
+        renameWorkspace.renameExampleInput(id: duplicateInput.id, to: "renamed_features")
+
+        #expect(renameWorkspace.recipe.dynamicDimensions.first?.inputName == "features")
+        #expect(renameWorkspace.recipe.functionEntrypoints.first?.inputNames == ["features"])
+
+        renameWorkspace.addStateBinding()
+        var duplicateState = try #require(renameWorkspace.recipe.stateBindings.first)
+        duplicateState.id = "state_duplicate"
+        renameWorkspace.recipe.stateBindings.append(duplicateState)
+        renameWorkspace.recipe.functionEntrypoints[0].stateNames = [duplicateState.name]
+
+        #expect(!renameWorkspace.unambiguousStateNames.contains("state"))
+
+        renameWorkspace.renameStateBinding(id: duplicateState.id, to: "renamed_state")
+
+        #expect(renameWorkspace.recipe.functionEntrypoints[0].stateNames == ["state"])
+
+        let removalWorkspace = CoreAIRecipeStudioWorkspaceModel()
+        duplicateInput = try #require(removalWorkspace.recipe.exampleInputs.first)
+        duplicateInput.id = "features_duplicate"
+        removalWorkspace.recipe.exampleInputs.append(duplicateInput)
+        removalWorkspace.removeExampleInput(id: duplicateInput.id)
+
+        #expect(removalWorkspace.recipe.dynamicDimensions.first?.inputName == "features")
+        #expect(removalWorkspace.recipe.functionEntrypoints.first?.inputNames == ["features"])
+
+        removalWorkspace.addStateBinding()
+        duplicateState = try #require(removalWorkspace.recipe.stateBindings.first)
+        duplicateState.id = "state_duplicate"
+        removalWorkspace.recipe.stateBindings.append(duplicateState)
+        removalWorkspace.recipe.functionEntrypoints[0].stateNames = [duplicateState.name]
+        removalWorkspace.removeStateBinding(id: duplicateState.id)
+
+        #expect(removalWorkspace.recipe.functionEntrypoints[0].stateNames == ["state"])
+    }
+
+    @Test
     func outputNameAllocationStaysUniqueAfterRemoval() {
         let values = ["output_1", "output_3"]
 
@@ -442,11 +488,85 @@ struct CoreAIRecipeStudioTests {
             nodeID: "model_forward",
             portName: output.name
         )
-        #expect(workspace.sourceEndpoints.count(where: { $0 == endpoint }) == 1)
+        #expect(workspace.sourceEndpoints.count(where: { $0 == endpoint }) == 0)
         #expect(workspace.displayedPipelineEdges.count == workspace.recipe.pipeline.edges.count - 1)
         #expect(workspace.pipelineIssues.contains { $0.code == .duplicatePort })
         #expect(workspace.pipelineIssues.contains { $0.code == .duplicateEdge })
         #expect(Set(workspace.pipelineIssues.map(\.id)).count == workspace.pipelineIssues.count)
+    }
+
+    @Test
+    func duplicatePipelinePortEditsLeaveSharedEndpointsIntact() throws {
+        let workspace = CoreAIRecipeStudioWorkspaceModel()
+        let nodeIndex = try #require(workspace.recipe.pipeline.nodes.firstIndex {
+            $0.id == "model_forward"
+        })
+        let input = try #require(workspace.recipe.pipeline.nodes[nodeIndex].inputs.first)
+        let output = try #require(workspace.recipe.pipeline.nodes[nodeIndex].outputs.first)
+        let inputEndpoint = CoreAIPipelineEndpoint(
+            nodeID: "model_forward",
+            portName: input.name
+        )
+        let outputEndpoint = CoreAIPipelineEndpoint(
+            nodeID: "model_forward",
+            portName: output.name
+        )
+        workspace.recipe.pipeline.nodes[nodeIndex].inputs.append(input)
+        workspace.recipe.pipeline.nodes[nodeIndex].outputs.append(output)
+        workspace.selectedDestinationEndpoint = inputEndpoint
+        workspace.selectedSourceEndpoint = outputEndpoint
+
+        workspace.renamePipelinePort(
+            nodeID: "model_forward",
+            output: false,
+            index: 1,
+            to: "alternate_input"
+        )
+        workspace.renamePipelinePort(
+            nodeID: "model_forward",
+            output: true,
+            index: 1,
+            to: "alternate_output"
+        )
+
+        #expect(workspace.selectedDestinationEndpoint == inputEndpoint)
+        #expect(workspace.selectedSourceEndpoint == outputEndpoint)
+        #expect(workspace.recipe.pipeline.edges.contains { $0.destination == inputEndpoint })
+        #expect(workspace.recipe.pipeline.edges.contains { $0.source == outputEndpoint })
+
+        workspace.recipe.pipeline.nodes[nodeIndex].inputs.append(input)
+        workspace.recipe.pipeline.nodes[nodeIndex].outputs.append(output)
+        workspace.removePipelinePort(nodeID: "model_forward", output: false, index: 2)
+        workspace.removePipelinePort(nodeID: "model_forward", output: true, index: 2)
+
+        #expect(workspace.recipe.pipeline.edges.contains { $0.destination == inputEndpoint })
+        #expect(workspace.recipe.pipeline.edges.contains { $0.source == outputEndpoint })
+        #expect(workspace.selectedDestinationEndpoint == inputEndpoint)
+        #expect(workspace.selectedSourceEndpoint == outputEndpoint)
+
+        workspace.updatePipelineNodeKind(id: "model_forward", to: .boundedLoop)
+        let loop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == "model_forward"
+        })
+        let stop = try #require(loop.inputs.first {
+            $0.name == loop.stopConditionInputPort
+        })
+        let currentLoopIndex = try #require(workspace.recipe.pipeline.nodes.firstIndex {
+            $0.id == loop.id
+        })
+        workspace.recipe.pipeline.nodes[currentLoopIndex].inputs.append(stop)
+        let duplicateStopIndex = workspace.recipe.pipeline.nodes[currentLoopIndex].inputs.count - 1
+        workspace.removePipelinePort(
+            nodeID: loop.id,
+            output: false,
+            index: duplicateStopIndex
+        )
+        let updatedLoop = try #require(workspace.recipe.pipeline.nodes.first {
+            $0.id == loop.id
+        })
+
+        #expect(updatedLoop.stopConditionInputPort == stop.name)
+        #expect(updatedLoop.inputs.count(where: { $0.name == stop.name }) == 1)
     }
 
     private func finding() -> CoreAIUnsupportedOperationFinding {
