@@ -392,6 +392,32 @@ struct CoreAIDeviceLabTests {
     }
 
     @Test
+    func allDiagnosticsRemainUniqueForRepeatedAndCollidingShapeNames() {
+        let request = CoreAIDeviceShapeAuthoringRequest(
+            requestedContextTokens: nil,
+            maximumContextTokens: nil,
+            expectsFrequentReshapes: false,
+            shapes: [
+                CoreAIDeviceShapeDefinition(id: "", dimensions: []),
+                CoreAIDeviceShapeDefinition(id: "unnamed-0", dimensions: []),
+                CoreAIDeviceShapeDefinition(id: "tokens", dimensions: []),
+                CoreAIDeviceShapeDefinition(id: "tokens", dimensions: []),
+                CoreAIDeviceShapeDefinition(id: "tokens", dimensions: []),
+            ]
+        )
+
+        let diagnostics = CoreAIDeviceAuthoringDiagnostics.evaluate(
+            shapeRequest: request,
+            preferredComputeUnit: .automatic,
+            expectation: expectation,
+            evidence: nil
+        )
+
+        #expect(Set(diagnostics.map(\.id)).count == diagnostics.count)
+        #expect(diagnostics.contains { $0.id == "shape.tokens.empty" })
+    }
+
+    @Test
     func neuralEnginePreferenceAndPassingTrialDoNotProvePlacement() throws {
         let evidence = trial(
             mode: .physical,

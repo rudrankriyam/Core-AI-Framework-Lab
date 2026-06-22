@@ -7,13 +7,37 @@ enum CoreAIDeviceAuthoringDiagnostics {
         expectation: CoreAIDeviceEvidenceExpectation,
         evidence: CoreAIDeviceTrialEvidence?
     ) -> [CoreAIDeviceDiagnostic] {
-        shapeDiagnostics(for: shapeRequest)
+        uniquelyIdentified(
+            shapeDiagnostics(for: shapeRequest)
             + compatibilityDiagnostics(
                 shapeRequest: shapeRequest,
                 preferredComputeUnit: preferredComputeUnit,
                 expectation: expectation,
                 evidence: evidence
             )
+        )
+    }
+
+    private static func uniquelyIdentified(
+        _ diagnostics: [CoreAIDeviceDiagnostic]
+    ) -> [CoreAIDeviceDiagnostic] {
+        var usedIdentifiers = Set<String>()
+        return diagnostics.map { diagnostic in
+            var identifier = diagnostic.id
+            var occurrence = 2
+            while !usedIdentifiers.insert(identifier).inserted {
+                identifier = "\(diagnostic.id).occurrence-\(occurrence)"
+                occurrence += 1
+            }
+            guard identifier != diagnostic.id else { return diagnostic }
+            return CoreAIDeviceDiagnostic(
+                id: identifier,
+                severity: diagnostic.severity,
+                category: diagnostic.category,
+                title: diagnostic.title,
+                detail: diagnostic.detail
+            )
+        }
     }
 
     private static func shapeDiagnostics(
