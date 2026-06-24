@@ -31,9 +31,6 @@ struct AppleSegmentationWorkspaceView: View {
                 if workspace.isBusy {
                     ProgressView(workspace.statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
-                } else {
-                    Label(workspace.statusMessage, systemImage: statusSystemImage)
-                        .foregroundStyle(.secondary)
                 }
             } header: {
                 Label(workspace.example.title, systemImage: "square.stack.3d.up")
@@ -104,16 +101,6 @@ struct AppleSegmentationWorkspaceView: View {
 
     private func importModel() {
         isImportingModel = true
-    }
-
-    private var statusSystemImage: String {
-        if workspace.isShowingError {
-            return "exclamationmark.triangle"
-        }
-        if workspace.modelName != nil, workspace.sourceImage != nil {
-            return "checkmark.circle"
-        }
-        return "info.circle"
     }
 
     private func importImage() {

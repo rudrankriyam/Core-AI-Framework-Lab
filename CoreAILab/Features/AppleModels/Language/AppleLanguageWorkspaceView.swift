@@ -29,9 +29,6 @@ struct AppleLanguageWorkspaceView: View {
                 if workspace.isBusy {
                     ProgressView(workspace.statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
-                } else {
-                    Label(workspace.statusMessage, systemImage: "text.bubble")
-                        .foregroundStyle(.secondary)
                 }
             } header: {
                 Label(workspace.example.title, systemImage: "text.bubble.fill")

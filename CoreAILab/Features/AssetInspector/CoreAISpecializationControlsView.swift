@@ -18,10 +18,7 @@ struct CoreAISpecializationControlsView: View {
             .onChange(of: workspace.selectedProfile) {
                 refreshCacheStatus()
             }
-
-            Text(workspace.selectedProfile.detail)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            .help(workspace.selectedProfile.detail)
 
             Toggle(
                 "Expect frequent input reshapes",
@@ -31,12 +28,9 @@ struct CoreAISpecializationControlsView: View {
             .onChange(of: workspace.expectFrequentReshapes) {
                 refreshCacheStatus()
             }
-
-            Text(
-                "This Core AI specialization option is part of the cache identity. Measure both settings for dynamic-shape workloads instead of assuming one is faster."
+            .help(
+                "This setting is part of the cache identity. Measure both configurations for dynamic-shape workloads."
             )
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
 
             LabeledContent("Selected configuration") {
                 Label(
@@ -78,6 +72,11 @@ struct CoreAISpecializationControlsView: View {
                             action: prepareAssetRemoval
                         )
                     }
+                    .help(
+                        allowsCacheRemoval
+                            ? "Core AI exposes hit, miss, and deletion for this known asset."
+                            : "Remove project-owned cache configurations from the artifact detail screen."
+                    )
                     .confirmationDialog(
                         workspace.cacheRemovalTitle,
                         isPresented: $workspace.isConfirmingCacheRemoval,
@@ -98,18 +97,6 @@ struct CoreAISpecializationControlsView: View {
             if workspace.phase.isBusy {
                 ProgressView(operationTitle)
                     .accessibilityAddTraits(.updatesFrequently)
-            }
-
-            Text("Core AI exposes hit/miss and deletion for known assets, but not cache paths, entry sizes, or a complete inventory.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            if !allowsCacheRemoval {
-                Text(
-                    "Remove project-owned cache configurations from the artifact detail screen so configurations referenced by another project remain available."
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             }
         } header: {
             Label("Specialization & Cache", systemImage: "cpu")

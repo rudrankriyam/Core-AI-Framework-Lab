@@ -30,6 +30,9 @@ struct CoreAIIntegrationExportSection: View {
                     action: chooseDestination
                 )
                 .disabled(!workspace.canExportIntegration)
+                .help(
+                    "Create a Swift package with the asset, checksums, notices, typed metadata, invocation code, and an offline verifier."
+                )
             }
 
             if let status = workspace.exportStatusMessage {
@@ -38,10 +41,6 @@ struct CoreAIIntegrationExportSection: View {
             }
         } header: {
             Label("Integration Export", systemImage: "shippingbox.and.arrow.backward")
-        } footer: {
-            Text(
-                "Creates a standalone Swift package with the original asset, checksums, notices, typed metadata, generated invocation code, and an offline verifier. The optional AOT script never runs automatically. Stateful and image-input functions remain manifest-only."
-            )
         }
     }
 

@@ -72,8 +72,7 @@ struct CoreAIConversionSetupView: View {
                     "Overwrite matching artifacts",
                     isOn: $workspace.overwriteExistingArtifacts
                 )
-                Text("Source weights remain in the upstream cache. Core AI Lab does not redistribute or relicense them.")
-                    .foregroundStyle(.secondary)
+                .help("Source weights remain in the upstream cache and keep their upstream license.")
             } header: {
                 Label("Options", systemImage: "switch.2")
             }
@@ -84,9 +83,6 @@ struct CoreAIConversionSetupView: View {
                     ForEach(report.checks) { check in
                         CoreAIConversionEnvironmentCheckView(check: check)
                     }
-                } else {
-                    Text("Run the environment check before converting.")
-                        .foregroundStyle(.secondary)
                 }
 
                 Button(

@@ -40,8 +40,6 @@ struct SpeakerDiarizationWatcherSection: View {
                     Button("Restart", systemImage: "backward.end.fill", action: restart)
                 }
 
-                Text("The watcher synchronizes playback with the completed batch timeline. It does not claim streaming inference.")
-                    .foregroundStyle(.secondary)
             } else {
                 ContentUnavailableView(
                     "No Media to Watch",
@@ -50,6 +48,7 @@ struct SpeakerDiarizationWatcherSection: View {
                 )
             }
         }
+        .help("Playback follows the completed batch timeline; it is not streaming inference.")
     }
 
     private func positionText(for summary: SpeakerDiarizationMediaSummary) -> String {

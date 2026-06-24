@@ -6,10 +6,7 @@ struct ChatterboxModelSection: View {
     var body: some View {
         Section {
             Label(state.title, systemImage: state.systemImage)
-
-            Text(state.detail)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .help(state.detail)
 
             if case .ready(let inspection) = state {
                 LabeledContent("Model bundle", value: inspection.formattedTotalSize)

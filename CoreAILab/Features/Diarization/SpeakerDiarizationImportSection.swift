@@ -30,12 +30,11 @@ struct SpeakerDiarizationImportSection: View {
                     runAction: runAction
                 )
             }
-
-            Text("The bundled Apache-2.0 CAM++ model runs through Core AI after 16 kHz decode, energy segmentation, and six-second feature preparation; cosine clustering produces anonymous speaker turns.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         } header: {
             Label("Inputs", systemImage: "waveform.and.mic")
         }
+        .help(
+            "Core AI runs the bundled CAM++ model after 16 kHz decode, energy segmentation, and feature preparation."
+        )
     }
 }

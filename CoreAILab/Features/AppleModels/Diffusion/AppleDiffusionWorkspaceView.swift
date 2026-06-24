@@ -33,9 +33,6 @@ struct AppleDiffusionWorkspaceView: View {
                 if workspace.isBusy {
                     ProgressView(workspace.statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
-                } else {
-                    Label(workspace.statusMessage, systemImage: "wand.and.sparkles")
-                        .foregroundStyle(.secondary)
                 }
             } header: {
                 Label(workspace.example.title, systemImage: "wand.and.sparkles")
@@ -52,8 +49,7 @@ struct AppleDiffusionWorkspaceView: View {
                     systemImage: "shippingbox",
                     action: importPipeline
                 )
-                Text("Choose the folder produced by `coreai.diffusion.export`. Core AI Lab reads its metadata and selects Apple's Stable Diffusion, SD3, or FLUX.2 runtime.")
-                    .foregroundStyle(.secondary)
+                .help("Choose a folder produced by coreai.diffusion.export.")
             } header: {
                 Label("Pipeline Bundle", systemImage: "shippingbox")
             }
@@ -63,8 +59,7 @@ struct AppleDiffusionWorkspaceView: View {
                     .lineLimit(3...8)
                     .disabled(!workspace.canEditGenerationInputs)
                 if workspace.modelInfo?.supportsNegativePrompt == false {
-                    Text("FLUX.2 does not consume a negative prompt.")
-                        .foregroundStyle(.secondary)
+                    LabeledContent("Negative prompt", value: "Not supported")
                 } else {
                     TextField("Negative prompt", text: $workspace.negativePrompt, axis: .vertical)
                         .lineLimit(2...5)

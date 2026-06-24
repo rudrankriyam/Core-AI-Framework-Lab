@@ -18,6 +18,9 @@ struct CoreAIFunctionBenchmarkActionsView: View {
             )
             .buttonStyle(.borderedProminent)
             .disabled(!workspace.canBenchmark)
+            .help(
+                "Warmups are excluded. Measured runs reuse one deterministic input set and execute sequentially."
+            )
 
             if workspace.phase == .benchmarking {
                 Button(

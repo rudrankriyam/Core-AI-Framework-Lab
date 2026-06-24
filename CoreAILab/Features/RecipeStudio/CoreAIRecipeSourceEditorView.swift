@@ -23,10 +23,9 @@ struct CoreAIRecipeSourceEditorView: View {
                     .coreAIRecipeIdentifierInput()
                 TextField("Pinned revision", text: $workspace.recipe.source.revision)
                     .coreAIRecipeIdentifierInput()
+                    .help("Pin a revision before executing a reproducible conversion.")
             } header: {
                 Label("PyTorch Source", systemImage: "shippingbox")
-            } footer: {
-                Text("A blank revision is allowed while drafting, but a reproducible conversion should pin one before execution.")
             }
 
             Section {

@@ -7,17 +7,6 @@ struct CoreAIDeviceLabView: View {
 
     var body: some View {
         Form {
-            Section {
-                VStack(alignment: .leading) {
-                    Label("Physical Device Planning", systemImage: "iphone.gen3")
-                        .font(.headline)
-                    Text(
-                        "Author an iPhone target, plan asset delivery, and import evidence from the physical runner. Preferences remain separate from measured execution placement."
-                    )
-                    .foregroundStyle(.secondary)
-                }
-            }
-
             CoreAIDeviceTargetAuthoringView(workspace: workspace)
             CoreAIDeviceStoragePlanView(workspace: workspace)
             CoreAIDeviceDiagnosticsView(diagnostics: workspace.diagnostics)
@@ -27,6 +16,9 @@ struct CoreAIDeviceLabView: View {
             )
         }
         .formStyle(.grouped)
+        .help(
+            "Author an iPhone target, plan asset delivery, and import physical-runner evidence."
+        )
         .navigationTitle("Device Lab")
         .fileImporter(
             isPresented: $isImportingEvidence,

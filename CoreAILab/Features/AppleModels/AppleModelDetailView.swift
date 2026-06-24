@@ -31,12 +31,12 @@ struct AppleModelDetailView: View {
             }
 
             Section {
-                Text("Clone Apple's coreai-models repository, run this command from its root, then import the exported model or resource folder.")
-                    .foregroundStyle(.secondary)
-
                 Text(model.labRecommendedExportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+                    .help(
+                        "Run from the root of a local apple/coreai-models checkout, then import the exported asset."
+                    )
 
                 if let recipeURL = model.recipeURL(sourceRevision: sourceRevision) {
                     Link("Read the pinned Apple recipe", destination: recipeURL)
@@ -52,16 +52,10 @@ struct AppleModelDetailView: View {
 
             Section {
                 Label(model.runtimeSupport.title, systemImage: "shippingbox")
-                Text(model.runtimeSupport.detail)
-                    .foregroundStyle(.secondary)
+                    .help(model.runtimeSupport.detail)
 
                 if let productName = model.runtimeSupport.productName {
                     LabeledContent("Swift product", value: productName)
-                }
-
-                if model.isRunnableInLab {
-                    Text("Core AI Lab includes the runtime adapter, not model weights. Export the model locally under its upstream license, then import the result.")
-                        .foregroundStyle(.secondary)
                 }
 
                 if model.runtimeSupport == .objectDetection, model.isRunnableInLab {
@@ -73,8 +67,11 @@ struct AppleModelDetailView: View {
 
                 if let segmentationExample = model.segmentationExample {
                     if segmentationExample == .sam3 {
-                        Text("SAM 3 requires accepting Meta's gated Hugging Face license and authenticating with the `hf` command-line tool before export. Core AI Lab never reads or stores those credentials.")
-                            .foregroundStyle(.secondary)
+                        Label("Upstream license required", systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                            .help(
+                                "Accept Meta's gated Hugging Face license and authenticate with the hf tool before export. Core AI Lab never reads or stores those credentials."
+                            )
                     }
                     NavigationLink(
                         segmentationExample.playgroundButtonTitle,
@@ -91,8 +88,11 @@ struct AppleModelDetailView: View {
 
                 if let diffusionExample = model.diffusionExample {
                     if diffusionExample == .stableDiffusion35 {
-                        Text("Stable Diffusion 3.5 weights require accepting Stability AI's gated Hugging Face terms and authenticating with the `hf` command-line tool before export. Core AI Lab never reads or stores those credentials.")
-                            .foregroundStyle(.secondary)
+                        Label("Upstream license required", systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                            .help(
+                                "Accept Stability AI's gated Hugging Face terms and authenticate with the hf tool before export. Core AI Lab never reads or stores those credentials."
+                            )
                     }
                     NavigationLink(
                         diffusionExample.playgroundButtonTitle,
@@ -116,8 +116,8 @@ struct AppleModelDetailView: View {
                         .font(.callout.monospaced())
                         .textSelection(.enabled)
                 }
-                Text("The export recipe and Swift utilities use Apple's BSD-3-Clause repository. Downloaded model weights retain their original authors' licenses and are not redistributed by Core AI Lab.")
-                    .foregroundStyle(.secondary)
+                LabeledContent("Recipe code", value: "Apple BSD-3-Clause")
+                LabeledContent("Model weights", value: "Upstream license")
             } header: {
                 Label("Provenance", systemImage: "checkmark.seal")
             }

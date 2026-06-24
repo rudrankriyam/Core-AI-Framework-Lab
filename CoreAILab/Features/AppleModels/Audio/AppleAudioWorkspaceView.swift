@@ -35,9 +35,6 @@ struct AppleAudioWorkspaceView: View {
                 if workspace.isBusy {
                     ProgressView(workspace.statusMessage)
                         .accessibilityAddTraits(.updatesFrequently)
-                } else {
-                    Label(workspace.statusMessage, systemImage: "waveform")
-                        .foregroundStyle(.secondary)
                 }
             } header: {
                 Label(workspace.example.title, systemImage: "waveform.badge.mic")
@@ -54,11 +51,10 @@ struct AppleAudioWorkspaceView: View {
                     inputActions(axis: .vertical)
                 }
 
-                Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
-                    .foregroundStyle(.secondary)
             } header: {
                 Label("Model & Audio", systemImage: "waveform.badge.mic")
             }
+            .help("Audio is limited to five seconds and prepared as 16 kHz mono before inference.")
 
             Section {
                 Text(workspace.example.exportCommand)

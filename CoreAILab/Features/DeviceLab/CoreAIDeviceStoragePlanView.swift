@@ -43,7 +43,7 @@ struct CoreAIDeviceStoragePlanView: View {
 
             if let error = workspace.storagePlanErrorMessage {
                 Label(error, systemImage: "xmark.octagon")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.red)
             } else if let plan = workspace.storagePlan {
                 LabeledContent("App download") {
                     Text(

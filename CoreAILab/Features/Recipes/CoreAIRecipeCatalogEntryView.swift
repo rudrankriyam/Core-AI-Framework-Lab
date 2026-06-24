@@ -7,8 +7,6 @@ struct CoreAIRecipeCatalogEntryView: View {
         VStack(alignment: .leading) {
             Label(entry.displayName, systemImage: "waveform.badge.microphone")
                 .font(.headline)
-            Text(entry.summary)
-                .foregroundStyle(.secondary)
 
             Divider()
 
@@ -29,9 +27,6 @@ struct CoreAIRecipeCatalogEntryView: View {
                     .textSelection(.enabled)
             }
 
-            Text(entry.verificationNotes)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
             if let evidenceReference = entry.evidenceReference {
                 LabeledContent("Evidence") {
                     Text(evidenceReference)
@@ -51,6 +46,7 @@ struct CoreAIRecipeCatalogEntryView: View {
                 }
             }
         }
+        .help("\(entry.summary) \(entry.verificationNotes)")
     }
 
     private var trustSystemImage: String {

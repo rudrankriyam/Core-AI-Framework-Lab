@@ -20,12 +20,8 @@ struct ChatterboxPipelineSection: View {
                         .foregroundStyle(isReady(asset.stage) ? .green : .secondary)
                         .accessibilityHidden(true)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(asset.displayName)
-                        Text(asset.detail)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(asset.displayName)
+                        .help(asset.detail)
 
                     Spacer()
 
@@ -49,9 +45,6 @@ struct ChatterboxPipelineSection: View {
                 EmptyView()
             }
 
-            Text(detail)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         } header: {
             Label("Native Pipeline", systemImage: "point.3.connected.trianglepath.dotted")
         }
@@ -61,18 +54,4 @@ struct ChatterboxPipelineSection: View {
         inspection?.contractValidation.presentStages.contains(stage) == true
     }
 
-    private var detail: String {
-        switch state {
-        case .notLoaded:
-            "The app has not started validating the bundled recipe."
-        case .preparing:
-            "The app is verifying every bundled asset and function before enabling generation."
-        case .ready(let inspection):
-            inspection.contractValidation.isComplete
-                ? "Text tokenization, autoregressive T3 decoding, S3Gen, and waveform synthesis all run locally."
-                : "The recipe is incomplete; generation remains disabled."
-        case .failed:
-            "Model preparation failed, so the pipeline contract could not be verified."
-        }
-    }
 }

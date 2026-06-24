@@ -13,7 +13,7 @@ struct CoreAIProjectArtifactRowView: View {
             Spacer()
 
             if let artifact = link.artifact {
-                VStack(alignment: .trailing) {
+                HStack {
                     Text(artifact.byteCount, format: .byteCount(style: .file))
                     Text(artifact.shortDigest)
                         .monospaced()

@@ -45,8 +45,9 @@ struct CoreAIRecipeDynamicDimensionsEditorView: View {
                     action: workspace.addDynamicDimension
                 )
                 .disabled(!workspace.canAddDynamicDimension)
-            } footer: {
-                Text("Bounds are authoring constraints, not evidence that every shape specializes or runs on a preferred compute unit.")
+                .help(
+                    "Bounds are authoring constraints; they do not prove specialization or execution placement."
+                )
             }
         }
         .formStyle(.grouped)

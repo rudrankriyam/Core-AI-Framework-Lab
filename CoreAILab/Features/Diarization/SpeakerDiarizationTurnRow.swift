@@ -6,7 +6,7 @@ struct SpeakerDiarizationTurnRow: View {
 
     var body: some View {
         LabeledContent {
-            VStack(alignment: .trailing) {
+            HStack {
                 Text(timeRange)
                     .monospacedDigit()
                 Text(clusterEvidence)

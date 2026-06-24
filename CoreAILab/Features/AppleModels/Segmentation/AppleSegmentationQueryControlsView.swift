@@ -12,8 +12,7 @@ struct AppleSegmentationQueryControlsView: View {
                     axis: .vertical
                 )
                 .lineLimit(2...4)
-                Text("SAM 3 uses the tokenizer bundled with Apple's exported resource folder.")
-                    .foregroundStyle(.secondary)
+                .help("SAM 3 uses the tokenizer bundled with the exported resource folder.")
             } else if workspace.sourceImage != nil {
                 LabeledContent("Horizontal position") {
                     Text(workspace.pointX, format: .number.precision(.fractionLength(0)))
@@ -27,8 +26,7 @@ struct AppleSegmentationQueryControlsView: View {
                 }
                 Slider(value: $workspace.pointY, in: 0...workspace.imageHeight)
 
-                Text("Coordinates are measured in pixels from the image's top-left corner.")
-                    .foregroundStyle(.secondary)
+                .help("Coordinates use pixels from the image's top-left corner.")
             } else {
                 ContentUnavailableView(
                     "Choose an Image",

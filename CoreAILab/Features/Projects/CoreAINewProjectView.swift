@@ -17,10 +17,9 @@ struct CoreAINewProjectView: View {
                 Section {
                     TextField("Project Name", text: $name)
                         .textContentType(.name)
+                        .help("Projects keep related assets, provenance, runs, and evidence together.")
                 } header: {
                     Label("Project", systemImage: "folder")
-                } footer: {
-                    Text("Projects keep related assets, provenance, runs, and evidence together.")
                 }
             }
             .formStyle(.grouped)

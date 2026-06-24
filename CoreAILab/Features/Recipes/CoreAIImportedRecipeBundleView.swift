@@ -27,15 +27,11 @@ struct CoreAIImportedRecipeBundleView: View {
                     value: "\(summary.manifest.codeReferences.count)"
                 )
                 ForEach(summary.manifest.codeReferences) { reference in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(reference.id)
-                            .font(.callout)
-                            .bold()
-                        Text("\(reference.language.rawValue.capitalized) · \(reference.relativePath) · \(reference.entryPoint)")
-                            .font(.footnote.monospaced())
-                            .foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                    }
+                    LabeledContent(
+                        reference.id,
+                        value: "\(reference.language.rawValue.capitalized) · \(reference.entryPoint)"
+                    )
+                    .help(reference.relativePath)
                 }
             }
 
@@ -57,10 +53,6 @@ struct CoreAIImportedRecipeBundleView: View {
                 ProgressView()
                 Text(statusMessage)
             }
-        } else if summary != nil {
-            Text(statusMessage)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         }
     }
 

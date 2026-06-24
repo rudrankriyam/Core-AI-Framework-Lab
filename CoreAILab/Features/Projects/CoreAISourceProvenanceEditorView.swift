@@ -41,14 +41,13 @@ struct CoreAISourceProvenanceEditorView: View {
 
                     TextField("Source location", text: $sourceLocation, axis: .vertical)
                         .lineLimit(2...5)
+                        .help("Record enough detail to trace the artifact to its source and license.")
                     TextField("Provider", text: $providerName)
                     TextField("License", text: $licenseName)
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...8)
                 } header: {
                     Label("Source", systemImage: "link")
-                } footer: {
-                    Text("Record enough information to trace this artifact to its original source and license.")
                 }
             }
             .formStyle(.grouped)

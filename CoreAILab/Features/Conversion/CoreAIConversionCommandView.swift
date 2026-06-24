@@ -16,10 +16,9 @@ struct CoreAIConversionCommandView: View {
                     .padding(.vertical, 4)
             }
             .scrollIndicators(.visible)
-
-            Text("Displayed for evidence only. Core AI Lab passes these arguments directly without invoking a shell.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            .help(
+                "Displayed for evidence only. Core AI Lab passes these arguments directly without invoking a shell."
+            )
         }
     }
 }

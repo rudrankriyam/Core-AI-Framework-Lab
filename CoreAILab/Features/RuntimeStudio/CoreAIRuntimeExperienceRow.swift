@@ -4,21 +4,14 @@ struct CoreAIRuntimeExperienceRow: View {
     let mapping: CoreAIRecipeExperienceMapping
 
     var body: some View {
-        VStack(alignment: .leading) {
+        HStack(alignment: .firstTextBaseline) {
             Label(
                 mapping.experience.title,
                 systemImage: mapping.experience.systemImage
             )
             .font(.headline)
 
-            Text(mapping.experience.summary)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-
-            Label(capabilitySummary, systemImage: "checklist")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
+            Spacer()
 
             Label(platformSummary, systemImage: platformSystemImage)
                 .font(.callout)
@@ -27,6 +20,7 @@ struct CoreAIRuntimeExperienceRow: View {
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens the local runtime experience")
+        .help("\(mapping.experience.summary) \(capabilitySummary)")
     }
 
     private var capabilitySummary: String {

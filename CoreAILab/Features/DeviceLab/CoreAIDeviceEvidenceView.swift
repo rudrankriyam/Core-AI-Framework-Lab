@@ -59,11 +59,6 @@ struct CoreAIDeviceEvidenceView: View {
                     "Execution placement",
                     value: displayName(evidence.placement.availability.rawValue)
                 )
-                Text(
-                    "Artifact and configuration SHA-256 identities are retained in the imported JSON."
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             } else {
                 ContentUnavailableView(
                     "No Device Evidence",
@@ -76,6 +71,7 @@ struct CoreAIDeviceEvidenceView: View {
         } header: {
             Label("Physical Evidence", systemImage: "doc.text.magnifyingglass")
         }
+        .help("Imported JSON retains artifact and configuration SHA-256 identities.")
     }
 
     private func beginImport() {

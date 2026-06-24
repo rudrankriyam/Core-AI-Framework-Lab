@@ -12,15 +12,6 @@ struct CoreAIRecipeCatalogView: View {
         NavigationStack {
             Form {
                 Section {
-                    VStack(alignment: .leading) {
-                        Label("Trust & Verification", systemImage: "checkmark.shield")
-                            .font(.headline)
-                        Text("Trust describes a recipe's source. Verification names the checks backed by evidence. Neither state grants imported code permission to run.")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Section {
                     if let catalogError = model.catalogError {
                         ContentUnavailableView(
                             "Catalog Unavailable",
@@ -40,6 +31,9 @@ struct CoreAIRecipeCatalogView: View {
                 } header: {
                     Label("Curated Recipes", systemImage: "checkmark.seal")
                 }
+                .help(
+                    "Trust identifies source. Verification names evidence-backed checks; neither grants code permission."
+                )
 
                 Section {
                     CoreAIImportedRecipeBundleView(

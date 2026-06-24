@@ -70,8 +70,7 @@ struct ChatterboxGenerationSection: View {
             }
         } header: {
             Label("Generate & Playback", systemImage: "speaker.wave.3")
-        } footer: {
-            Text("The first launch specializes the bundled graphs. Later runs reuse Core AI's persistent cache.")
         }
+        .help("The first launch specializes the bundled graphs; later runs may reuse Core AI's cache.")
     }
 }

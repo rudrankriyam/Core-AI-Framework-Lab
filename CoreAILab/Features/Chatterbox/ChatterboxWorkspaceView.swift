@@ -8,8 +8,6 @@ struct ChatterboxWorkspaceView: View {
 
         NavigationStack {
             Form {
-                ChatterboxHeroView(manifest: model.recipeManifest)
-
                 ChatterboxModelSection(state: model.modelState)
 
                 ChatterboxPromptSection(prompt: $model.prompt)

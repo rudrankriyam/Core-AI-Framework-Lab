@@ -49,10 +49,6 @@ struct CoreAIFunctionBenchmarkControlsView: View {
             }
         } header: {
             Label("Benchmark", systemImage: "gauge.with.dots.needle.67percent")
-        } footer: {
-            Text(
-                "Warmups are excluded. Measured runs reuse one function and one deterministic input set, execute sequentially, and remain visible individually. Stopping takes effect between Core AI inference calls."
-            )
         }
     }
 }
