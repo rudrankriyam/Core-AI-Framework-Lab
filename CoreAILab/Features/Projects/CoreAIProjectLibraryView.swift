@@ -20,10 +20,6 @@ struct CoreAIProjectLibraryView: View {
                 if projects.isEmpty {
                     ContentUnavailableView {
                         Label("Create Your First Project", systemImage: "folder.badge.plus")
-                    } description: {
-                        Text(
-                            "Keep models, resource bundles, provenance, runs, and evidence together in checksummed storage."
-                        )
                     } actions: {
                         Button(
                             "New Project",

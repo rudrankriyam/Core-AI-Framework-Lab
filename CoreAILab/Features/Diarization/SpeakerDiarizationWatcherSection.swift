@@ -21,8 +21,7 @@ struct SpeakerDiarizationWatcherSection: View {
                 } else {
                     ContentUnavailableView(
                         "Audio Watcher",
-                        systemImage: "waveform.circle",
-                        description: Text("Playback still drives the same live playhead and active speaker state.")
+                        systemImage: "waveform.circle"
                     )
                 }
 
@@ -43,8 +42,7 @@ struct SpeakerDiarizationWatcherSection: View {
             } else {
                 ContentUnavailableView(
                     "No Media to Watch",
-                    systemImage: "play.rectangle",
-                    description: Text("Import audio or video to enable synchronized playback.")
+                    systemImage: "play.rectangle"
                 )
             }
         }

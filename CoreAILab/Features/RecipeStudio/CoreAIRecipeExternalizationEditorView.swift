@@ -8,9 +8,9 @@ struct CoreAIRecipeExternalizationEditorView: View {
             if workspace.recipe.externalizationRules.isEmpty {
                 ContentUnavailableView(
                     "No Externalization Rules",
-                    systemImage: "externaldrive",
-                    description: Text("Weights remain under the converter's default policy until a module rule is added.")
+                    systemImage: "externaldrive"
                 )
+                .help("Weights use the converter's default policy until a module rule is added.")
             }
 
             ForEach($workspace.recipe.externalizationRules) { $rule in

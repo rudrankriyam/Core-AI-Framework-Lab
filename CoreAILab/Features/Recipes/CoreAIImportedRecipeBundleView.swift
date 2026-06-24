@@ -43,9 +43,9 @@ struct CoreAIImportedRecipeBundleView: View {
         } else {
             ContentUnavailableView(
                 "No Imported Bundle",
-                systemImage: "shippingbox",
-                description: Text(statusMessage)
+                systemImage: "shippingbox"
             )
+            .help(statusMessage)
         }
 
         if isImporting {

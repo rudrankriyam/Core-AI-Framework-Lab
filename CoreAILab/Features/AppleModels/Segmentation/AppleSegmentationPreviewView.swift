@@ -26,8 +26,7 @@ struct AppleSegmentationPreviewView: View {
             } else {
                 ContentUnavailableView(
                     "No Image",
-                    systemImage: "photo",
-                    description: Text("Choose an image to preview segmentation results.")
+                    systemImage: "photo"
                 )
             }
         } header: {

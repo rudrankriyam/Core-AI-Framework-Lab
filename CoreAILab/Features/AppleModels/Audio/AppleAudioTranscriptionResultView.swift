@@ -28,8 +28,7 @@ struct AppleAudioTranscriptionResultView: View {
             } else {
                 ContentUnavailableView(
                     "No Transcript Yet",
-                    systemImage: "captions.bubble",
-                    description: Text("Choose a short speech recording and transcribe it locally.")
+                    systemImage: "captions.bubble"
                 )
             }
         } header: {

@@ -8,9 +8,9 @@ struct CoreAIRecipeDynamicDimensionsEditorView: View {
             if workspace.recipe.dynamicDimensions.isEmpty {
                 ContentUnavailableView(
                     "No Dynamic Dimensions",
-                    systemImage: "arrow.left.and.right",
-                    description: Text("Static example shapes remain unchanged until a bounded dynamic axis is added.")
+                    systemImage: "arrow.left.and.right"
                 )
+                .help("Static example shapes remain unchanged until a bounded dynamic axis is added.")
             }
 
             ForEach($workspace.recipe.dynamicDimensions) { $dimension in

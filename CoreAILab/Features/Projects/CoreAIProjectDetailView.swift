@@ -36,10 +36,6 @@ struct CoreAIProjectDetailView: View {
                 if project.artifactLinks.isEmpty {
                     ContentUnavailableView {
                         Label("No Stored Artifacts", systemImage: "shippingbox")
-                    } description: {
-                        Text(
-                            "Import a .aimodel package, an Apple resource folder, or a supporting model file."
-                        )
                     } actions: {
                         Button(
                             "Import Artifact",

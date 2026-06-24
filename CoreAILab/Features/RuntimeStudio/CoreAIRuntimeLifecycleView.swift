@@ -34,10 +34,7 @@ struct CoreAIRuntimeLifecycleView: View {
             } else {
                 ContentUnavailableView(
                     "No Runtime Run Yet",
-                    systemImage: "clock",
-                    description: Text(
-                        "Import the required model and inputs, then run this experience."
-                    )
+                    systemImage: "clock"
                 )
             }
         }

@@ -18,8 +18,7 @@ struct AppleDiffusionResultView: View {
             } else {
                 ContentUnavailableView(
                     "No Image Yet",
-                    systemImage: "photo.badge.plus",
-                    description: Text("Import a diffusion bundle, enter a prompt, and generate locally.")
+                    systemImage: "photo.badge.plus"
                 )
             }
         } header: {

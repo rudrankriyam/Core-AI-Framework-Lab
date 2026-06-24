@@ -8,9 +8,9 @@ struct CoreAIRecipeFunctionEntrypointsEditorView: View {
             if workspace.recipe.functionEntrypoints.isEmpty {
                 ContentUnavailableView(
                     "No Function Entrypoints",
-                    systemImage: "function",
-                    description: Text("Define at least one exported module method and its named contract.")
+                    systemImage: "function"
                 )
+                .help("Define at least one exported module method and its named contract.")
             }
 
             ForEach($workspace.recipe.functionEntrypoints) { $function in

@@ -20,8 +20,7 @@ struct AppleObjectDetectionPreviewView: View {
             if detections.isEmpty {
                 ContentUnavailableView(
                     "No Detections Yet",
-                    systemImage: "viewfinder",
-                    description: Text("Run detection to identify objects in this image.")
+                    systemImage: "viewfinder"
                 )
             } else {
                 Table(detections) {

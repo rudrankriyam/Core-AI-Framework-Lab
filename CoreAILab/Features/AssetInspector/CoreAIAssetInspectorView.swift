@@ -30,16 +30,12 @@ struct CoreAIAssetInspectorView: View {
             } else if workspace.isInspecting {
                 ContentUnavailableView {
                     Label("Inspecting Model", systemImage: "doc.text.magnifyingglass")
-                } description: {
-                    Text("Reading metadata, functions, and compute types from the Core AI asset.")
                 } actions: {
                     ProgressView()
                 }
             } else {
                 ContentUnavailableView {
                     Label("Inspect a Core AI Model", systemImage: "doc.text.magnifyingglass")
-                } description: {
-                    Text("Open any exported .aimodel package, including assets produced by Apple's coreai-models recipes.")
                 } actions: {
                     Button("Open Model", systemImage: "folder", action: openModelPicker)
                         .buttonStyle(.borderedProminent)

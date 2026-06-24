@@ -11,10 +11,7 @@ struct CoreAIConversionLogView: View {
                     if entries.isEmpty {
                         ContentUnavailableView(
                             "No Converter Output",
-                            systemImage: "text.alignleft",
-                            description: Text(
-                                "Start a conversion to stream the original process output here."
-                            )
+                            systemImage: "text.alignleft"
                         )
                         .frame(maxWidth: .infinity, minHeight: 200)
                     } else {

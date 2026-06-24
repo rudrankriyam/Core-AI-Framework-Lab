@@ -8,9 +8,9 @@ struct CoreAIRecipeStateEditorView: View {
             if workspace.recipe.stateBindings.isEmpty {
                 ContentUnavailableView(
                     "No Explicit State",
-                    systemImage: "memorychip",
-                    description: Text("Add state only when the exported functions expose named input and output bindings.")
+                    systemImage: "memorychip"
                 )
+                .help("Add state only when exported functions expose named input and output bindings.")
             }
 
             ForEach($workspace.recipe.stateBindings) { $state in

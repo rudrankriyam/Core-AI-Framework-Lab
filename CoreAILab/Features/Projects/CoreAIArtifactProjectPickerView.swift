@@ -18,8 +18,6 @@ struct CoreAIArtifactProjectPickerView: View {
                 if projects.isEmpty {
                     ContentUnavailableView {
                         Label("No Projects", systemImage: "folder.badge.plus")
-                    } description: {
-                        Text("Create a project before storing this conversion output.")
                     } actions: {
                         Button(
                             "New Project",

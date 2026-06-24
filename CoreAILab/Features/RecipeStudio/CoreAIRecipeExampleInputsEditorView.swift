@@ -8,9 +8,9 @@ struct CoreAIRecipeExampleInputsEditorView: View {
             if workspace.recipe.exampleInputs.isEmpty {
                 ContentUnavailableView(
                     "No Example Inputs",
-                    systemImage: "square.and.pencil",
-                    description: Text("Add the concrete arguments used to export and validate this recipe.")
+                    systemImage: "square.and.pencil"
                 )
+                .help("Add the concrete arguments used to export and validate this recipe.")
             }
 
             ForEach($workspace.recipe.exampleInputs) { $input in

@@ -70,11 +70,9 @@ struct CoreAIFunctionWorkbenchView: View {
                         Section {
                             ContentUnavailableView(
                                 "Specialize the Asset",
-                                systemImage: "cpu",
-                                description: Text(
-                                    "Choose a compute profile above, then specialize or load its cached model to inspect runtime contracts."
-                                )
+                                systemImage: "cpu"
                             )
+                            .help("Choose a compute profile, then specialize or load its cached model.")
                         } header: {
                             Label("Function Workbench", systemImage: "function")
                         }
@@ -82,8 +80,6 @@ struct CoreAIFunctionWorkbenchView: View {
                         Section {
                             ContentUnavailableView {
                                 Label("Reading Function Contracts", systemImage: "list.bullet.rectangle")
-                            } description: {
-                                Text("Loading input, state, and output descriptors from the specialized model.")
                             } actions: {
                                 ProgressView()
                             }
@@ -174,35 +170,23 @@ struct CoreAIFunctionWorkbenchView: View {
                         || workspace.assetWorkspace.isInspecting {
                 ContentUnavailableView {
                     Label("Opening Model", systemImage: "shippingbox")
-                } description: {
-                    Text("Inspecting the asset before specialization.")
                 } actions: {
                     ProgressView()
                 }
             } else {
                 ContentUnavailableView {
                     Label("Function Workbench", systemImage: "function")
-                } description: {
-                    Text(
-                        "Open a Core AI asset to inspect every function and run supported stateless tensor contracts with generated inputs."
-                    )
                 } actions: {
                     Button("Open Model", systemImage: "folder", action: openModelPicker)
                         .buttonStyle(.borderedProminent)
                 }
+                .help("Open a Core AI asset to inspect its functions and supported tensor contracts.")
             }
         }
         .navigationTitle("Function Workbench")
         .toolbar {
 #if os(macOS)
-            ToolbarItem(placement: .primaryAction) {
-                Button("Run Function", systemImage: "play.fill", action: runFunction)
-                    .disabled(!workspace.canRun)
-                    .help(
-                        "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
-                    )
-            }
-            ToolbarItem(placement: .secondaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
                     .disabled(
                         workspace.phase.isBusy
@@ -210,6 +194,12 @@ struct CoreAIFunctionWorkbenchView: View {
                             || workspace.isExportingIntegration
                     )
                     .keyboardShortcut("o", modifiers: .command)
+
+                Button("Run Function", systemImage: "play.fill", action: runFunction)
+                    .disabled(!workspace.canRun)
+                    .help(
+                        "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
+                    )
             }
 #else
             ToolbarItem(placement: .primaryAction) {

@@ -62,11 +62,9 @@ struct CoreAIDeviceEvidenceView: View {
             } else {
                 ContentUnavailableView(
                     "No Device Evidence",
-                    systemImage: "iphone.slash",
-                    description: Text(
-                        "Run the physical harness or its dry run with --evidence-json, then import that file."
-                    )
+                    systemImage: "iphone.slash"
                 )
+                .help("Run the physical harness with --evidence-json, then import that file.")
             }
         } header: {
             Label("Physical Evidence", systemImage: "doc.text.magnifyingglass")

@@ -61,8 +61,7 @@ struct AppleObjectDetectionWorkspaceView: View {
                 } else {
                     ContentUnavailableView(
                         "Choose an Image",
-                        systemImage: "photo",
-                        description: Text("The result will show Apple's COCO labels, confidence, and bounding boxes.")
+                        systemImage: "photo"
                     )
                 }
             } header: {

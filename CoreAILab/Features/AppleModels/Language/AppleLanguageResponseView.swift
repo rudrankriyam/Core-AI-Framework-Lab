@@ -8,8 +8,7 @@ struct AppleLanguageResponseView: View {
             if response.isEmpty {
                 ContentUnavailableView(
                     "No Response Yet",
-                    systemImage: "text.bubble",
-                    description: Text("Import Qwen, enter a prompt, and generate locally.")
+                    systemImage: "text.bubble"
                 )
             } else {
                 Text(response)

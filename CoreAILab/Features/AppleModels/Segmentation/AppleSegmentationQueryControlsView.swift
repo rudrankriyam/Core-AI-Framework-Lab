@@ -30,8 +30,7 @@ struct AppleSegmentationQueryControlsView: View {
             } else {
                 ContentUnavailableView(
                     "Choose an Image",
-                    systemImage: "point.bottomleft.forward.to.point.topright.scurvepath",
-                    description: Text("Point controls appear after an image is loaded.")
+                    systemImage: "point.bottomleft.forward.to.point.topright.scurvepath"
                 )
             }
         } header: {
