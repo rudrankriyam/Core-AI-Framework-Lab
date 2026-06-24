@@ -3,7 +3,7 @@ import SwiftUI
 struct CoreAIRecipeStudioView: View {
     @State private var workspace: CoreAIRecipeStudioWorkspaceModel
     @SceneStorage("CoreAILab.recipeStudio.selectedPanel")
-    private var selection: CoreAIRecipeStudioPanel?
+    private var selectedPanelRawValue = CoreAIRecipeStudioPanel.source.rawValue
 
     init(recipe: CoreAIRecipeAuthoringManifest = .starter) {
         _workspace = State(initialValue: CoreAIRecipeStudioWorkspaceModel(recipe: recipe))
@@ -11,7 +11,7 @@ struct CoreAIRecipeStudioView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
+            List(selection: selectedPanelBinding) {
                 Section {
                     Text(workspace.recipe.displayName)
                         .font(.headline)
@@ -46,7 +46,7 @@ struct CoreAIRecipeStudioView: View {
             .navigationTitle("Recipe Studio")
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 260)
         } detail: {
-            switch selection ?? .source {
+            switch selectedPanel {
             case .source:
                 CoreAIRecipeSourceEditorView(workspace: workspace)
             case .exampleInputs:
@@ -70,6 +70,17 @@ struct CoreAIRecipeStudioView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+    }
+
+    private var selectedPanel: CoreAIRecipeStudioPanel {
+        CoreAIRecipeStudioPanel(rawValue: selectedPanelRawValue) ?? .source
+    }
+
+    private var selectedPanelBinding: Binding<CoreAIRecipeStudioPanel?> {
+        Binding(
+            get: { selectedPanel },
+            set: { selectedPanelRawValue = ($0 ?? .source).rawValue }
+        )
     }
 
     private var validationTitle: String {

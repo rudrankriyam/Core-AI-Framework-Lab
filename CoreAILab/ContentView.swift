@@ -3,7 +3,7 @@ import SwiftUI
 
 struct ContentView: View {
     @SceneStorage("CoreAILab.selectedSection")
-    private var selection: CoreAILabSection?
+    private var selectedSectionRawValue = CoreAILabSection.projects.rawValue
 
     @SceneStorage("CoreAILab.isWorkspaceInspectorPresented")
     private var isWorkspaceInspectorPresented = false
@@ -11,10 +11,8 @@ struct ContentView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        let selectedSection = selection ?? .projects
-
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(selection: $selection) {
+            List(selection: selectedSectionBinding) {
                 Section("Library") {
                     ForEach(CoreAILabSection.library) { section in
                         NavigationLink(value: section) {
@@ -126,6 +124,17 @@ struct ContentView: View {
 
     private func toggleWorkspaceInspector() {
         isWorkspaceInspectorPresented.toggle()
+    }
+
+    private var selectedSection: CoreAILabSection {
+        CoreAILabSection(rawValue: selectedSectionRawValue) ?? .projects
+    }
+
+    private var selectedSectionBinding: Binding<CoreAILabSection?> {
+        Binding(
+            get: { selectedSection },
+            set: { selectedSectionRawValue = ($0 ?? .projects).rawValue }
+        )
     }
 
     private func toggleSidebar() {
