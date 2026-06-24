@@ -6,7 +6,7 @@
 
 [![Xcode 27 beta](https://img.shields.io/badge/Xcode-27%20beta-147EFB?logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
 [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
-[![Platforms](https://img.shields.io/badge/platforms-iOS%2027%20%7C%20macOS%2027-lightgrey)](https://developer.apple.com/)
+[![Platform](https://img.shields.io/badge/platform-macOS%2027-lightgrey)](https://developer.apple.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A native SwiftUI workbench for discovering, converting, inspecting, running,
@@ -50,16 +50,13 @@ benchmarking, and packaging models with Apple's `CoreAI.framework`.
    open CoreAIFrameworkLab.xcodeproj
    ```
 
-3. Choose a shared scheme:
-
-   - `CoreAILabMac` for macOS.
-   - `CoreAILab` for a physical iPhone or iPad.
+3. Choose the shared `CoreAILab` scheme. The app has a single macOS target.
 
 4. Build the macOS app from Terminal:
 
    ```bash
    xcodebuild -project CoreAIFrameworkLab.xcodeproj \
-     -scheme CoreAILabMac \
+     -scheme CoreAILab \
      -destination 'platform=macOS,arch=arm64' \
      -derivedDataPath ./build/Xcode27 \
      build
@@ -167,7 +164,7 @@ Detailed conversion and evidence commands live in:
 
 ## For Contributors and Agents
 
-- Target: iOS 27 and macOS 27 with Xcode 27 and Swift 6.4.
+- App target: macOS 27 with Xcode 27 and Swift 6.4.
 - Read [`AGENTS.md`](AGENTS.md) before changing code.
 - Verify unfamiliar Core AI APIs against the selected Xcode 27 SDK before use.
 
