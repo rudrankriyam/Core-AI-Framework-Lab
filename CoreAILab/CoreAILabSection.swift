@@ -12,8 +12,10 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
     case runtime
     case deviceLab
 
-    static let tools: [Self] = [.assetInspector, .runtime, .deviceLab]
-    static let workspaces = allCases.filter { !tools.contains($0) }
+    static let library: [Self] = [.projects, .appleModels, .recipes]
+    static let build: [Self] = [.conversion, .recipeStudio]
+    static let run: [Self] = [.chatterbox, .diarization, .runtime]
+    static let validate: [Self] = [.assetInspector, .deviceLab]
 
     var id: Self { self }
 
@@ -64,6 +66,31 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "play.square.stack"
         case .deviceLab:
             "iphone.gen3"
+        }
+    }
+
+    var summary: String {
+        switch self {
+        case .projects:
+            "Organize imported artifacts, provenance, runs, and evidence."
+        case .appleModels:
+            "Browse Apple's pinned Core AI export recipes."
+        case .recipes:
+            "Review curated recipes and inspect imported bundles."
+        case .conversion:
+            "Export a Core AI model from an Apple recipe."
+        case .recipeStudio:
+            "Author and validate recipe and pipeline contracts."
+        case .chatterbox:
+            "Generate speech with the bundled Core AI pipeline."
+        case .diarization:
+            "Build an anonymous speaker timeline from local media."
+        case .assetInspector:
+            "Inspect functions, compute types, and specialization caches."
+        case .runtime:
+            "Run task adapters and record evidence-backed timing."
+        case .deviceLab:
+            "Plan iPhone delivery and import physical-device evidence."
         }
     }
 }

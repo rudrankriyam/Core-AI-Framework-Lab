@@ -2,29 +2,54 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: CoreAILabSection? = .projects
+    @SceneStorage("CoreAILab.selectedSection")
+    private var selection: CoreAILabSection?
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
-                Section("Workspaces") {
-                    ForEach(CoreAILabSection.workspaces) { section in
+                Section("Library") {
+                    ForEach(CoreAILabSection.library) { section in
                         NavigationLink(value: section) {
                             Label(section.title, systemImage: section.systemImage)
                         }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
                     }
                 }
 
-                Section("Tools") {
-                    ForEach(CoreAILabSection.tools) { section in
+                Section("Build") {
+                    ForEach(CoreAILabSection.build) { section in
                         NavigationLink(value: section) {
                             Label(section.title, systemImage: section.systemImage)
                         }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
+                    }
+                }
+
+                Section("Run") {
+                    ForEach(CoreAILabSection.run) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
+                    }
+                }
+
+                Section("Validate") {
+                    ForEach(CoreAILabSection.validate) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
                     }
                 }
             }
-            .navigationTitle("Core AI Lab")
-            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
         } detail: {
             switch selection ?? .projects {
             case .projects:
@@ -54,6 +79,11 @@ struct ContentView: View {
             }
         }
         .navigationSplitViewStyle(.prominentDetail)
+        .formStyle(.grouped)
+        .tint(.blue)
+#if os(macOS)
+        .frame(minWidth: 1_000, minHeight: 680)
+#endif
     }
 }
 
