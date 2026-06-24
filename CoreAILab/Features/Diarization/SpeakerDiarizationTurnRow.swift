@@ -20,11 +20,10 @@ struct SpeakerDiarizationTurnRow: View {
                     systemImage: isActive ? "speaker.wave.3.fill" : "person.wave.2"
                 )
                 if isActive {
-                    Text("Now")
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(.orange.opacity(0.18), in: .capsule)
+                    Label("Now", systemImage: "play.fill")
+                        .font(.footnote)
+                        .bold()
+                        .foregroundStyle(.orange)
                 }
             }
         }

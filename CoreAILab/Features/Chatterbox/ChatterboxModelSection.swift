@@ -4,7 +4,7 @@ struct ChatterboxModelSection: View {
     let state: ChatterboxModelState
 
     var body: some View {
-        Section("Bundled Core AI Model") {
+        Section {
             Label(state.title, systemImage: state.systemImage)
 
             Text(state.detail)
@@ -21,6 +21,8 @@ struct ChatterboxModelSection: View {
                     LabeledContent("Author", value: inspection.author)
                 }
             }
+        } header: {
+            Label("Bundled Core AI Model", systemImage: "shippingbox")
         }
     }
 }

@@ -6,7 +6,7 @@ struct CoreAIRuntimeRecordingControlsView: View {
     @Bindable var coordinator: CoreAIRunLifecycleCoordinator
 
     var body: some View {
-        Section("Run Recording") {
+        Section {
             Picker("Record in project", selection: $selectedProjectID) {
                 Text("Off")
                     .tag(nil as UUID?)
@@ -29,17 +29,32 @@ struct CoreAIRuntimeRecordingControlsView: View {
                 ForEach(coordinator.comparisonOptions) { identity in
                     Text(identity.displayName)
                         .tag(identity as CoreAIRuntimeComparisonIdentity?)
-                }
+                    }
             }
 
-            Text("Attempts remain cold until one run succeeds for the imported model in this Runtime Studio session; later runs with the same experience and model identity are warm.")
-                .foregroundStyle(.secondary)
+            DisclosureGroup {
+                VStack(alignment: .leading) {
+                    Label("Cold and Warm Timing", systemImage: "thermometer.variable")
+                        .bold()
+                    Text("Attempts remain cold until one run succeeds for the imported model in this Runtime Studio session. Later runs with the same experience and model identity are warm.")
 
-            Text("A comparison identity records the intended comparator only; this slice does not claim that outputs were compared.")
-                .foregroundStyle(.secondary)
+                    Divider()
 
-            Text("A registry recipe is an import intent. Runtime Studio checks the imported model family, but records unverified_intent and does not link a project recipe revision without artifact-bound provenance proof.")
+                    Label("Comparison Identity", systemImage: "arrow.left.arrow.right")
+                        .bold()
+                    Text("A comparison identity records the intended comparator only. It does not claim that outputs were compared.")
+
+                    Divider()
+
+                    Label("Recipe Provenance", systemImage: "checkmark.seal")
+                        .bold()
+                    Text("A registry recipe is an import intent. Runtime Studio records unverified_intent until artifact-bound provenance proves the project recipe revision.")
+                }
+                .font(.footnote)
                 .foregroundStyle(.secondary)
+            } label: {
+                Label("How Run Evidence Works", systemImage: "info.circle")
+            }
 
             if let persistenceMessage = coordinator.persistenceMessage {
                 Label(persistenceMessage, systemImage: "exclamationmark.triangle")
@@ -53,6 +68,8 @@ struct CoreAIRuntimeRecordingControlsView: View {
                     action: coordinator.retryPendingPersistence
                 )
             }
+        } header: {
+            Label("Run Recording", systemImage: "record.circle")
         }
     }
 }

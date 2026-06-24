@@ -11,16 +11,25 @@ struct ChatterboxGenerationSection: View {
 
     var body: some View {
         Section {
-            Button(
-                "Generate speech",
-                systemImage: "play.circle.fill",
-                action: generateAction
-            )
+            Button(action: generateAction) {
+                Label {
+                    Text(isWorking ? "Generating Speech…" : "Generate Speech")
+                } icon: {
+                    if isWorking {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "play.circle.fill")
+                    }
+                }
+            }
             .buttonStyle(.borderedProminent)
             .disabled(!canGenerate)
 
             if isWorking {
-                ProgressView(statusMessage)
+                Text(statusMessage)
+                    .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
 
             if let result {
@@ -55,9 +64,11 @@ struct ChatterboxGenerationSection: View {
                     item: result.audioURL,
                     preview: SharePreview("Chatterbox Core AI audio")
                 ) {
-                    Label("Share generated audio", systemImage: "square.and.arrow.up")
+                    Label("Share Generated Audio", systemImage: "square.and.arrow.up")
                 }
             }
+        } header: {
+            Label("Generate & Playback", systemImage: "speaker.wave.3")
         } footer: {
             Text("The first launch specializes the bundled graphs. Later runs reuse Core AI's persistent cache.")
         }

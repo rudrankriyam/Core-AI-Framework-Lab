@@ -11,7 +11,7 @@ struct ChatterboxPipelineSection: View {
     }
 
     var body: some View {
-        Section("Native Pipeline") {
+        Section {
             ForEach(inspection?.assets ?? []) { asset in
                 HStack(alignment: .firstTextBaseline) {
                     Image(systemName: isReady(asset.stage)
@@ -23,14 +23,14 @@ struct ChatterboxPipelineSection: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(asset.displayName)
                         Text(asset.detail)
-                            .font(.caption)
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
                     Text(asset.formattedSize)
-                        .font(.caption.monospacedDigit())
+                        .font(.callout.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
                 .accessibilityElement(children: .combine)
@@ -50,8 +50,10 @@ struct ChatterboxPipelineSection: View {
             }
 
             Text(detail)
-                .font(.caption)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
+        } header: {
+            Label("Native Pipeline", systemImage: "point.3.connected.trianglepath.dotted")
         }
     }
 

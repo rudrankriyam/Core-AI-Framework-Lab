@@ -11,43 +11,43 @@ struct SpeakerDiarizationWorkspaceView: View {
         let activeTurn = workspace.result?.turn(at: watcher.currentTime)
 
         NavigationStack {
-            GeometryReader { geometry in
-                Form {
-                    SpeakerDiarizationStatusSection(
-                        modelInfo: workspace.modelInfo,
-                        summary: workspace.mediaSummary,
-                        statusMessage: workspace.statusMessage,
-                        isBusy: workspace.isBusy
-                    )
+            Form {
+                SpeakerDiarizationStatusSection(
+                    modelInfo: workspace.modelInfo,
+                    summary: workspace.mediaSummary,
+                    statusMessage: workspace.statusMessage,
+                    isBusy: workspace.isBusy
+                )
 
-                    SpeakerDiarizationImportSection(
-                        canRunDiarization: workspace.canRunDiarization,
-                        isBusy: workspace.isBusy,
-                        importModelAction: importModel,
-                        importMediaAction: importMedia,
-                        runAction: workspace.startDiarization
-                    )
+                SpeakerDiarizationImportSection(
+                    canRunDiarization: workspace.canRunDiarization,
+                    canImportModel: !workspace.isLoadingModel
+                        && !workspace.isRunningDiarization,
+                    canImportMedia: !workspace.isAnalyzingMedia
+                        && !workspace.isRunningDiarization,
+                    importModelAction: importModel,
+                    importMediaAction: importMedia,
+                    runAction: workspace.startDiarization
+                )
 
-                    SpeakerDiarizationWatcherSection(
-                        summary: workspace.mediaSummary,
-                        player: watcher.player,
-                        currentTime: watcher.currentTime,
-                        activeTurn: activeTurn,
-                        isPlaying: watcher.isPlaying,
-                        togglePlayback: watcher.togglePlayback,
-                        restart: watcher.restart
-                    )
+                SpeakerDiarizationWatcherSection(
+                    summary: workspace.mediaSummary,
+                    player: watcher.player,
+                    currentTime: watcher.currentTime,
+                    activeTurn: activeTurn,
+                    isPlaying: watcher.isPlaying,
+                    togglePlayback: watcher.togglePlayback,
+                    restart: watcher.restart
+                )
 
-                    SpeakerDiarizationAnalysisSection(
-                        availableWidth: geometry.size.width,
-                        waveform: workspace.waveform,
-                        result: workspace.result,
-                        playheadTime: watcher.currentTime,
-                        activeTurnID: activeTurn?.id
-                    )
-                }
-                .formStyle(.grouped)
+                SpeakerDiarizationAnalysisSection(
+                    waveform: workspace.waveform,
+                    result: workspace.result,
+                    playheadTime: watcher.currentTime,
+                    activeTurnID: activeTurn?.id
+                )
             }
+            .formStyle(.grouped)
             .navigationTitle("Diarization")
             .task {
                 await workspace.prepareBundledModel()

@@ -31,8 +31,20 @@ struct SpeakerDiarizationStatusSection: View {
                     )
                 }
             }
-            Label(statusMessage, systemImage: isBusy ? "hourglass" : "waveform.badge.mic")
-                .foregroundStyle(isBusy ? .primary : .secondary)
+            HStack {
+                if isBusy {
+                    ProgressView()
+                        .controlSize(.small)
+                        .accessibilityHidden(true)
+                } else {
+                    Image(systemName: "waveform.badge.mic")
+                        .accessibilityHidden(true)
+                }
+                Text(statusMessage)
+                    .foregroundStyle(isBusy ? .primary : .secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.updatesFrequently)
         } header: {
             Label("Speaker Diarization Lab", systemImage: "person.wave.2")
         } footer: {

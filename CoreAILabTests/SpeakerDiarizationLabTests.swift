@@ -67,18 +67,6 @@ struct SpeakerDiarizationLabTests {
     }
 
     @Test
-    func analysisLayoutUsesAContentDrivenBreakpoint() {
-        let breakpoint = SpeakerDiarizationAnalysisLayout.minimumSideBySideWidth
-
-        #expect(
-            SpeakerDiarizationAnalysisLayout(contentWidth: breakpoint - 1) == .stacked
-        )
-        #expect(
-            SpeakerDiarizationAnalysisLayout(contentWidth: breakpoint) == .sideBySide
-        )
-    }
-
-    @Test
     func energySegmentationFindsSeparatedSpeechAndRejectsSilence() {
         let sampleRate = 1_000
         var samples = Array(repeating: Float.zero, count: 5 * sampleRate)
