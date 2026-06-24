@@ -30,12 +30,9 @@ struct AppleObjectDetectionWorkspaceView: View {
             }
 
             Section {
-                HStack(spacing: 12) {
-                    Button("Import YOLOS Model", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Image", systemImage: "photo", action: importImage)
-                    Button("Run Detection", systemImage: "play.fill", action: runDetection)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canRun)
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
                 .disabled(workspace.isBusy)
             } header: {
@@ -113,7 +110,7 @@ struct AppleObjectDetectionWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -122,6 +119,26 @@ struct AppleObjectDetectionWorkspaceView: View {
         case .success(let url):
             workspace.loadImage(from: url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout(spacing: 12))
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import YOLOS Model", systemImage: "shippingbox", action: importModel)
+            Button("Choose Image", systemImage: "photo", action: importImage)
+            Button("Run Detection", systemImage: "play.fill", action: runDetection)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canRun)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

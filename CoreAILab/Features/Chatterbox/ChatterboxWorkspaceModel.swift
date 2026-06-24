@@ -52,6 +52,14 @@ final class ChatterboxWorkspaceModel {
             && !isWorking
     }
 
+    var workingActionTitle: String {
+        if case .preparing = modelState {
+            "Preparing Models…"
+        } else {
+            "Generating Speech…"
+        }
+    }
+
     func prepare() async {
         guard !hasPrepared else {
             return

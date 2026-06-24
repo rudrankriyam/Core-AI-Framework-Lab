@@ -49,20 +49,9 @@ struct AppleAudioWorkspaceView: View {
             )
 
             Section {
-                HStack {
-                    Button("Import Wav2Vec2 Model", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Audio", systemImage: "waveform", action: importAudio)
-                    Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canTranscribe)
-                    if workspace.isTranscribing {
-                        Button(
-                            "Cancel",
-                            systemImage: "stop.fill",
-                            role: .destructive,
-                            action: workspace.cancelTranscription
-                        )
-                    }
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
 
                 Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
@@ -122,7 +111,7 @@ struct AppleAudioWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -131,6 +120,34 @@ struct AppleAudioWorkspaceView: View {
         case .success(let url):
             workspace.selectAudio(url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import Wav2Vec2 Model", systemImage: "shippingbox", action: importModel)
+            Button("Choose Audio", systemImage: "waveform", action: importAudio)
+            Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canTranscribe)
+            if workspace.isTranscribing {
+                Button(
+                    "Cancel",
+                    systemImage: "stop.fill",
+                    role: .cancel,
+                    action: workspace.cancelTranscription
+                )
+            }
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

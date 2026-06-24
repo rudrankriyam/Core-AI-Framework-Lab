@@ -19,6 +19,7 @@ struct ChatterboxWorkspaceView: View {
                 ChatterboxGenerationSection(
                     canGenerate: model.canGenerate,
                     isWorking: model.isWorking,
+                    workingActionTitle: model.workingActionTitle,
                     statusMessage: model.statusMessage,
                     result: model.generatedResult,
                     isPlaying: model.isPlaying,

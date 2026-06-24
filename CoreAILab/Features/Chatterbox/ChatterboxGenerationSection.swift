@@ -3,6 +3,7 @@ import SwiftUI
 struct ChatterboxGenerationSection: View {
     let canGenerate: Bool
     let isWorking: Bool
+    let workingActionTitle: String
     let statusMessage: String
     let result: ChatterboxGenerationResult?
     let isPlaying: Bool
@@ -13,7 +14,7 @@ struct ChatterboxGenerationSection: View {
         Section {
             Button(action: generateAction) {
                 Label {
-                    Text(isWorking ? "Generating Speech…" : "Generate Speech")
+                    Text(isWorking ? workingActionTitle : "Generate Speech")
                 } icon: {
                     if isWorking {
                         ProgressView()
@@ -34,20 +35,18 @@ struct ChatterboxGenerationSection: View {
 
             if let result {
                 Button(
-                    isPlaying ? "Stop playback" : "Play generated speech",
+                    isPlaying ? "Stop Playback" : "Play Generated Speech",
                     systemImage: isPlaying ? "stop.fill" : "speaker.wave.3.fill",
                     action: playbackAction
                 )
 
                 LabeledContent(
-                    "Generation",
-                    value: result.elapsedTime,
-                    format: .number.precision(.fractionLength(2))
+                    "Generation time",
+                    value: "\(result.elapsedTime.formatted(.number.precision(.fractionLength(2)))) seconds"
                 )
                 LabeledContent(
-                    "Audio",
-                    value: result.audioDuration,
-                    format: .number.precision(.fractionLength(2))
+                    "Audio duration",
+                    value: "\(result.audioDuration.formatted(.number.precision(.fractionLength(2)))) seconds"
                 )
                 LabeledContent(
                     "Real-time factor",

@@ -8,6 +8,23 @@ enum CoreAIExperienceAdapter: String, Codable, Hashable, Sendable {
     case appleSegmentation
     case genericFunctionWorkbench
 
+    var title: String {
+        switch self {
+        case .appleAudioTranscription:
+            "Apple Audio Transcription"
+        case .appleDiffusion:
+            "Apple Diffusion"
+        case .appleLanguage:
+            "Apple Language"
+        case .appleObjectDetection:
+            "Apple Object Detection"
+        case .appleSegmentation:
+            "Apple Segmentation"
+        case .genericFunctionWorkbench:
+            "Function Workbench"
+        }
+    }
+
     func supports(_ workload: CoreAIExperienceWorkload) -> Bool {
         switch self {
         case .appleAudioTranscription:

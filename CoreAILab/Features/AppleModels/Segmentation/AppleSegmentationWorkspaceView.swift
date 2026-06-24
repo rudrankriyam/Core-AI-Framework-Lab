@@ -45,12 +45,9 @@ struct AppleSegmentationWorkspaceView: View {
             )
 
             Section {
-                HStack {
-                    Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Image", systemImage: "photo", action: importImage)
-                    Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canRun)
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
                 .disabled(workspace.isBusy)
             } header: {
@@ -127,7 +124,7 @@ struct AppleSegmentationWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -136,6 +133,26 @@ struct AppleSegmentationWorkspaceView: View {
         case .success(let url):
             workspace.loadImage(from: url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
+            Button("Choose Image", systemImage: "photo", action: importImage)
+            Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canRun)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

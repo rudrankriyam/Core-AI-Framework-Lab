@@ -42,7 +42,9 @@ struct CoreAIDeviceLabView: View {
             guard let url = urls.first else { return }
             workspace.importEvidence(from: url)
         case .failure(let error):
-            workspace.reportImportFailure(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.reportImportFailure(error)
+            }
         }
     }
 }

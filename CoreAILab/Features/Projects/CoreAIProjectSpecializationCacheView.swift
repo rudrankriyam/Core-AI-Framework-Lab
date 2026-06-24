@@ -8,7 +8,7 @@ struct CoreAIProjectSpecializationCacheView: View {
     let removeAll: () -> Void
 
     var body: some View {
-        Section("Specialization Cache") {
+        Section {
             if link.specializationCaches.isEmpty {
                 Text("Specialize this project artifact to register a cache entry.")
                     .foregroundStyle(.secondary)
@@ -31,9 +31,11 @@ struct CoreAIProjectSpecializationCacheView: View {
             }
 
             if isUpdatingCache {
-                Label("Updating Core AI cache…", systemImage: "hourglass")
-                    .foregroundStyle(.secondary)
+                ProgressView("Updating Core AI cache…")
+                    .accessibilityAddTraits(.updatesFrequently)
             }
+        } header: {
+            Label("Specialization Cache", systemImage: "cpu")
         }
     }
 }

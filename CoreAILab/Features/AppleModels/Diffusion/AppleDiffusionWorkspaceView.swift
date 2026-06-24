@@ -81,18 +81,9 @@ struct AppleDiffusionWorkspaceView: View {
                         .disabled(!workspace.canEditGenerationInputs)
                 }
 
-                HStack {
-                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canGenerate)
-                    if workspace.isGenerating {
-                        Button(
-                            "Cancel",
-                            systemImage: "stop.fill",
-                            role: .destructive,
-                            action: workspace.cancelGeneration
-                        )
-                    }
+                ViewThatFits(in: .horizontal) {
+                    generationActions(axis: .horizontal)
+                    generationActions(axis: .vertical)
                 }
             } header: {
                 Label("Prompt", systemImage: "text.bubble")
@@ -131,7 +122,29 @@ struct AppleDiffusionWorkspaceView: View {
                 await workspace.loadPipeline(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.presentImportError(error)
+            }
+        }
+    }
+
+    private func generationActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canGenerate)
+            if workspace.isGenerating {
+                Button(
+                    "Cancel",
+                    systemImage: "stop.fill",
+                    role: .cancel,
+                    action: workspace.cancelGeneration
+                )
+            }
         }
     }
 }

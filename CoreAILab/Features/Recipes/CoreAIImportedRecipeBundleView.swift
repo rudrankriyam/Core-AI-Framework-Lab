@@ -31,7 +31,7 @@ struct CoreAIImportedRecipeBundleView: View {
                         Text(reference.id)
                             .font(.callout)
                             .bold()
-                        Text("\(reference.language.rawValue) · \(reference.relativePath) · \(reference.entryPoint)")
+                        Text("\(reference.language.rawValue.capitalized) · \(reference.relativePath) · \(reference.entryPoint)")
                             .font(.footnote.monospaced())
                             .foregroundStyle(.secondary)
                             .textSelection(.enabled)

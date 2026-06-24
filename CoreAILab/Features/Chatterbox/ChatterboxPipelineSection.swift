@@ -38,7 +38,7 @@ struct ChatterboxPipelineSection: View {
 
             switch state {
             case .preparing:
-                ProgressView("Loading the recipe contract")
+                ProgressView("Loading the recipe contract…")
             case .failed:
                 Label("Pipeline details are unavailable", systemImage: "xmark.octagon")
                     .foregroundStyle(.red)

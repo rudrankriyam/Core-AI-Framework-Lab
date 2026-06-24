@@ -43,10 +43,9 @@ struct AppleLanguageWorkspaceView: View {
             )
 
             Section {
-                HStack {
-                    Button("Import Qwen Bundle", systemImage: "shippingbox", action: importModel)
-                    Button("New Session", systemImage: "arrow.counterclockwise", action: resetSession)
-                        .disabled(workspace.modelName == nil || workspace.isBusy)
+                ViewThatFits(in: .horizontal) {
+                    modelActions(axis: .horizontal)
+                    modelActions(axis: .vertical)
                 }
 
                 LabeledContent("macOS export") {
@@ -75,13 +74,9 @@ struct AppleLanguageWorkspaceView: View {
                 )
                 .disabled(!workspace.canEditGenerationInputs)
 
-                HStack {
-                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canGenerate)
-                    if workspace.isGenerating {
-                        Button("Cancel", systemImage: "stop.fill", role: .destructive, action: workspace.cancelGeneration)
-                    }
+                ViewThatFits(in: .horizontal) {
+                    generationActions(axis: .horizontal)
+                    generationActions(axis: .vertical)
                 }
             } header: {
                 Label("Prompt", systemImage: "text.bubble")
@@ -126,7 +121,45 @@ struct AppleLanguageWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.presentImportError(error)
+            }
+        }
+    }
+
+    private func modelActions(axis: Axis) -> some View {
+        adaptiveLayout(axis: axis) {
+            Button("Import Qwen Bundle", systemImage: "shippingbox", action: importModel)
+            Button("New Session", systemImage: "arrow.counterclockwise", action: resetSession)
+                .disabled(workspace.modelName == nil || workspace.isBusy)
+        }
+    }
+
+    private func generationActions(axis: Axis) -> some View {
+        adaptiveLayout(axis: axis) {
+            Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canGenerate)
+            if workspace.isGenerating {
+                Button(
+                    "Cancel",
+                    systemImage: "stop.fill",
+                    role: .cancel,
+                    action: workspace.cancelGeneration
+                )
+            }
+        }
+    }
+
+    private func adaptiveLayout<Content: View>(
+        axis: Axis,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+        return layout {
+            content()
         }
     }
 }
