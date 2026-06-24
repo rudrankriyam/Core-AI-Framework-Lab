@@ -5,7 +5,12 @@ struct ContentView: View {
     @SceneStorage("CoreAILab.selectedSection")
     private var selection: CoreAILabSection?
 
+    @SceneStorage("CoreAILab.isWorkspaceInspectorPresented")
+    private var isWorkspaceInspectorPresented = false
+
     var body: some View {
+        let selectedSection = selection ?? .projects
+
         NavigationSplitView {
             List(selection: $selection) {
                 Section("Library") {
@@ -51,7 +56,7 @@ struct ContentView: View {
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
         } detail: {
-            switch selection ?? .projects {
+            switch selectedSection {
             case .projects:
                 CoreAIProjectLibraryView()
             case .appleModels:
@@ -81,9 +86,29 @@ struct ContentView: View {
         .navigationSplitViewStyle(.prominentDetail)
         .formStyle(.grouped)
         .tint(.blue)
+        .inspector(isPresented: $isWorkspaceInspectorPresented) {
+            CoreAIWorkspaceInspectorView(section: selectedSection)
+        }
+        .toolbar {
+            ToolbarItem(placement: .secondaryAction) {
+                Button(
+                    "Workspace Inspector",
+                    systemImage: "sidebar.trailing",
+                    action: toggleWorkspaceInspector
+                )
+                .help("Show the selected workspace's workflow and evidence boundary")
+#if os(macOS)
+                .keyboardShortcut("0", modifiers: [.command, .option])
+#endif
+            }
+        }
 #if os(macOS)
         .frame(minWidth: 1_000, minHeight: 680)
 #endif
+    }
+
+    private func toggleWorkspaceInspector() {
+        isWorkspaceInspectorPresented.toggle()
     }
 }
 

@@ -93,4 +93,107 @@ enum CoreAILabSection: String, CaseIterable, Hashable, Identifiable {
             "Plan iPhone delivery and import physical-device evidence."
         }
     }
+
+    var areaTitle: String {
+        switch self {
+        case .projects, .appleModels, .recipes:
+            "Library"
+        case .conversion, .recipeStudio:
+            "Build"
+        case .chatterbox, .diarization, .runtime:
+            "Run"
+        case .assetInspector, .deviceLab:
+            "Validate"
+        }
+    }
+
+    var workflowSteps: [String] {
+        switch self {
+        case .projects:
+            [
+                "Create or open a project",
+                "Import checked artifacts",
+                "Review runs and evidence"
+            ]
+        case .appleModels:
+            [
+                "Choose an Apple recipe",
+                "Review its requirements and provenance",
+                "Convert it or open its runtime"
+            ]
+        case .recipes:
+            [
+                "Choose a curated recipe",
+                "Review its code and provenance",
+                "Import the approved bundle"
+            ]
+        case .conversion:
+            [
+                "Configure the recipe",
+                "Validate the local environment",
+                "Convert and verify the artifacts"
+            ]
+        case .recipeStudio:
+            [
+                "Define the source and contracts",
+                "Resolve unsupported operations",
+                "Compose and validate the pipeline"
+            ]
+        case .chatterbox:
+            [
+                "Prepare the bundled models",
+                "Write expressive speech",
+                "Generate and review local audio"
+            ]
+        case .diarization:
+            [
+                "Import local media",
+                "Analyze anonymous speakers",
+                "Review the speaker timeline"
+            ]
+        case .assetInspector:
+            [
+                "Open an .aimodel package",
+                "Inspect descriptors and compute types",
+                "Specialize and verify cache state"
+            ]
+        case .runtime:
+            [
+                "Choose an experience",
+                "Provide its assets and inputs",
+                "Run and record measured evidence"
+            ]
+        case .deviceLab:
+            [
+                "Define the physical target",
+                "Plan asset delivery",
+                "Import device-run evidence"
+            ]
+        }
+    }
+
+    var evidenceBoundary: String {
+        switch self {
+        case .projects:
+            "Checksummed storage preserves artifacts and provenance. A stored artifact is not a runtime measurement."
+        case .appleModels:
+            "Catalog entries describe pinned Apple recipes. Core AI Lab does not bundle the source model weights."
+        case .recipes:
+            "A recipe documents a conversion path. Review its code and upstream license before approving an import."
+        case .conversion:
+            "The command, process log, checksums, and validation findings are evidence. A planned command is not a completed conversion."
+        case .recipeStudio:
+            "Structural validation checks the authored contract. It does not prove that conversion or runtime execution will succeed."
+        case .chatterbox:
+            "Generated audio comes from the bundled local pipeline. Cache reuse does not prove a speed or memory improvement."
+        case .diarization:
+            "Speaker labels are anonymous clusters inferred from local media, not verified identities."
+        case .assetInspector:
+            "Descriptors and cache state come from Core AI. A preferred compute unit does not prove hardware placement."
+        case .runtime:
+            "Only completed runs produce measured timing. Setup choices and comparison identities remain contextual metadata."
+        case .deviceLab:
+            "Target preferences and storage plans are proposals. Imported runner output is the physical-device evidence."
+        }
+    }
 }
