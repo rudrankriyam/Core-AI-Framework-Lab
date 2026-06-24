@@ -9,12 +9,14 @@ struct CoreAIConversionLogView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 3) {
                     if entries.isEmpty {
-                        Label(
-                            "Converter output will appear here",
-                            systemImage: "text.alignleft"
+                        ContentUnavailableView(
+                            "No Converter Output",
+                            systemImage: "text.alignleft",
+                            description: Text(
+                                "Start a conversion to stream the original process output here."
+                            )
                         )
-                        .foregroundStyle(.secondary)
-                        .padding()
+                        .frame(maxWidth: .infinity, minHeight: 200)
                     } else {
                         ForEach(entries) { entry in
                             Text(entry.message)
@@ -27,7 +29,7 @@ struct CoreAIConversionLogView: View {
                 .padding()
                 .textSelection(.enabled)
             }
-            .background(.black.opacity(0.04))
+            .background(.secondary.opacity(0.08))
             .onChange(of: entries.count) {
                 guard let lastID = entries.last?.id else { return }
                 proxy.scrollTo(lastID, anchor: .bottom)

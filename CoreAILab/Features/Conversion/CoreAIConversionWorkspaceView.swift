@@ -65,7 +65,6 @@ struct CoreAIConversionWorkspaceView: View {
             handleUVSelection(result)
         }
         .alert("Conversion Error", isPresented: $workspace.isShowingError) {
-            Button("OK", role: .cancel) {}
         } message: {
             Text(workspace.errorMessage ?? "The conversion could not be completed.")
         }

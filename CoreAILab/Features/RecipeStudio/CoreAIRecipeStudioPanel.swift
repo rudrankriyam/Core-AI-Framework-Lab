@@ -63,6 +63,31 @@ enum CoreAIRecipeStudioPanel: String, CaseIterable, Hashable, Identifiable {
             "point.3.connected.trianglepath.dotted"
         }
     }
+
+    var summary: String {
+        switch self {
+        case .source:
+            "Define the recipe identity, source revision, and Python module."
+        case .exampleInputs:
+            "Describe deterministic inputs for conversion and validation."
+        case .dynamicDimensions:
+            "Name the dimensions that may vary at runtime."
+        case .state:
+            "Describe mutable tensors carried between function calls."
+        case .externalization:
+            "Choose resources that live outside the compiled model asset."
+        case .functions:
+            "Define callable entry points and their typed inputs and outputs."
+        case .diagnostics:
+            "Review source operators the Core AI converter cannot lower."
+        case .rewrites:
+            "Inspect the built-in catalog of supported graph rewrites."
+        case .generatedArtifacts:
+            "Review generated stubs without executing authored code."
+        case .pipeline:
+            "Connect typed assets into a validated pipeline contract."
+        }
+    }
 }
 
 extension View {

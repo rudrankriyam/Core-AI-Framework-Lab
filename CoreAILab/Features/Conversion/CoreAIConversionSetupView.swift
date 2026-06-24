@@ -9,7 +9,7 @@ struct CoreAIConversionSetupView: View {
 
     var body: some View {
         Form {
-            Section("Recipe") {
+            Section {
                 Picker("Model", selection: $workspace.selectedModelID) {
                     ForEach(workspace.groups) { group in
                         Section(group.category.rawValue) {
@@ -33,10 +33,12 @@ struct CoreAIConversionSetupView: View {
                         }
                     }
                 }
+            } header: {
+                Label("Recipe", systemImage: "shippingbox")
             }
             .disabled(configurationIsLocked)
 
-            Section("Workspace") {
+            Section {
                 CoreAIConversionPathRow(
                     title: "Apple repository",
                     url: workspace.repositoryURL,
@@ -60,20 +62,24 @@ struct CoreAIConversionSetupView: View {
                     actionTitle: "Choose uv Executable",
                     action: chooseUVExecutable
                 )
+            } header: {
+                Label("Workspace", systemImage: "folder")
             }
             .disabled(configurationIsLocked)
 
-            Section("Options") {
+            Section {
                 Toggle(
                     "Overwrite matching artifacts",
                     isOn: $workspace.overwriteExistingArtifacts
                 )
                 Text("Source weights remain in the upstream cache. Core AI Lab does not redistribute or relicense them.")
                     .foregroundStyle(.secondary)
+            } header: {
+                Label("Options", systemImage: "switch.2")
             }
             .disabled(configurationIsLocked)
 
-            Section("Environment") {
+            Section {
                 if let report = workspace.environmentReport {
                     ForEach(report.checks) { check in
                         CoreAIConversionEnvironmentCheckView(check: check)
@@ -89,6 +95,8 @@ struct CoreAIConversionSetupView: View {
                     action: checkEnvironment
                 )
                 .disabled(workspace.phase.isBusy)
+            } header: {
+                Label("Environment", systemImage: "checkmark.shield")
             }
 
             Section {

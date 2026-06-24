@@ -5,10 +5,12 @@ struct CoreAIRecipeSourceEditorView: View {
 
     var body: some View {
         Form {
-            Section("Recipe") {
+            Section {
                 TextField("Display name", text: $workspace.recipe.displayName)
                 TextField("Recipe ID", text: $workspace.recipe.id)
                     .coreAIRecipeIdentifierInput()
+            } header: {
+                Label("Recipe", systemImage: "doc.text")
             }
 
             Section {
@@ -22,12 +24,12 @@ struct CoreAIRecipeSourceEditorView: View {
                 TextField("Pinned revision", text: $workspace.recipe.source.revision)
                     .coreAIRecipeIdentifierInput()
             } header: {
-                Text("PyTorch Source")
+                Label("PyTorch Source", systemImage: "shippingbox")
             } footer: {
                 Text("A blank revision is allowed while drafting, but a reproducible conversion should pin one before execution.")
             }
 
-            Section("Module") {
+            Section {
                 TextField("Python module path", text: $workspace.recipe.module.modulePath)
                     .coreAIRecipeIdentifierInput()
                 TextField("Module type", text: $workspace.recipe.module.typeName)
@@ -36,10 +38,14 @@ struct CoreAIRecipeSourceEditorView: View {
                     .coreAIRecipeIdentifierInput()
                 TextField("Checkpoint path", text: $workspace.recipe.module.checkpointPath)
                     .coreAIRecipeIdentifierInput()
+            } header: {
+                Label("Module", systemImage: "cube")
             }
 
-            Section("Validation") {
+            Section {
                 CoreAIRecipeValidationIssuesView(issues: workspace.validationIssues)
+            } header: {
+                Label("Validation", systemImage: "checkmark.shield")
             }
         }
         .formStyle(.grouped)
