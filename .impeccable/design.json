@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-24T04:56:51Z",
+  "title": "Design System: Core AI Lab",
+  "extensions": {
+    "colorMeta": {
+      "system-blue": {
+        "role": "primary",
+        "displayName": "System Blue",
+        "tonalRamp": ["#EAF3FF", "#8FC2FF", "#007AFF", "#0057B8", "#003A7A"]
+      },
+      "system-green": {
+        "role": "success",
+        "displayName": "System Green",
+        "tonalRamp": ["#EAF9EE", "#91E3A5", "#34C759", "#248A3D", "#176128"]
+      },
+      "system-orange": {
+        "role": "warning",
+        "displayName": "System Orange",
+        "tonalRamp": ["#FFF4E5", "#FFD08A", "#FF9500", "#B56900", "#7A4700"]
+      },
+      "system-red": {
+        "role": "destructive",
+        "displayName": "System Red",
+        "tonalRamp": ["#FFECEC", "#FF9C99", "#FF3B30", "#C5221F", "#7F1715"]
+      },
+      "on-accent": {
+        "role": "on-primary",
+        "displayName": "On Accent"
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "System Title",
+        "purpose": "Navigation and workspace identity; use SwiftUI semantic title styles at runtime."
+      },
+      "body": {
+        "displayName": "System Body",
+        "purpose": "Controls, instructions, results, and user-authored content."
+      },
+      "technical": {
+        "displayName": "Technical Mono",
+        "purpose": "Commands, hashes, paths, identifiers, shapes, and numeric evidence."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "system-state-change",
+        "value": "platform-default",
+        "purpose": "Use SwiftUI's restrained state transitions and honor Reduce Motion."
+      }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single prominent action in a workflow, mirroring SwiftUI borderedProminent styling.",
+      "html": "<button class=\"ds-primary-action\">Run Function</button>",
+      "css": ".ds-primary-action { appearance: none; border: 0; border-radius: 8px; padding: 8px 14px; background: #007AFF; color: #FFFFFF; font: 600 14px/1.25 -apple-system, BlinkMacSystemFont, sans-serif; transition: filter 140ms ease, transform 140ms ease; } .ds-primary-action:hover { filter: brightness(1.06); } .ds-primary-action:active { transform: scale(0.98); } .ds-primary-action:focus-visible { outline: 3px solid rgba(0,122,255,0.35); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Action",
+      "kind": "button",
+      "description": "A supporting action with standard system prominence.",
+      "html": "<button class=\"ds-secondary-action\">Choose Model</button>",
+      "css": ".ds-secondary-action { appearance: none; border: 1px solid rgba(60,60,67,0.24); border-radius: 8px; padding: 7px 13px; background: rgba(118,118,128,0.12); color: #1D1D1F; font: 500 14px/1.25 -apple-system, BlinkMacSystemFont, sans-serif; transition: background 140ms ease, transform 140ms ease; } .ds-secondary-action:hover { background: rgba(118,118,128,0.18); } .ds-secondary-action:active { transform: scale(0.98); } .ds-secondary-action:focus-visible { outline: 3px solid rgba(0,122,255,0.35); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "description": "Native-feeling search for libraries and registries.",
+      "html": "<label class=\"ds-search\"><span aria-hidden=\"true\">⌕</span><input type=\"search\" placeholder=\"Search models\"></label>",
+      "css": ".ds-search { display: inline-flex; align-items: center; gap: 7px; width: 280px; border-radius: 8px; padding: 7px 10px; background: rgba(118,118,128,0.12); color: rgba(60,60,67,0.65); font: 400 14px/1.25 -apple-system, BlinkMacSystemFont, sans-serif; } .ds-search input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; color: #1D1D1F; font: inherit; } .ds-search:focus-within { box-shadow: 0 0 0 3px rgba(0,122,255,0.28); }"
+    },
+    {
+      "name": "Sidebar Destination",
+      "kind": "nav",
+      "description": "A concise system-symbol destination row with a selected state.",
+      "html": "<nav class=\"ds-sidebar\"><button class=\"ds-sidebar-row ds-selected\"><span aria-hidden=\"true\">◇</span><span>Apple Models</span></button><button class=\"ds-sidebar-row\"><span aria-hidden=\"true\">ƒ</span><span>Function Workbench</span></button></nav>",
+      "css": ".ds-sidebar { display: grid; gap: 2px; width: 240px; font: 500 14px/1.25 -apple-system, BlinkMacSystemFont, sans-serif; } .ds-sidebar-row { display: flex; align-items: center; gap: 8px; border: 0; border-radius: 7px; padding: 7px 9px; background: transparent; color: #1D1D1F; text-align: left; } .ds-sidebar-row:hover { background: rgba(118,118,128,0.10); } .ds-sidebar-row.ds-selected { background: #007AFF; color: #FFFFFF; } .ds-sidebar-row:focus-visible { outline: 3px solid rgba(0,122,255,0.35); outline-offset: 1px; }"
+    },
+    {
+      "name": "Evidence Section",
+      "kind": "custom",
+      "description": "A grouped, flat evidence surface using labels and selectable technical values.",
+      "html": "<section class=\"ds-evidence\"><h3>Integrity</h3><dl><div><dt>SHA-256</dt><dd>0f4e…a819</dd></div><div><dt>Stored size</dt><dd>428 MB</dd></div></dl></section>",
+      "css": ".ds-evidence { width: 360px; color: #1D1D1F; font: 400 14px/1.35 -apple-system, BlinkMacSystemFont, sans-serif; } .ds-evidence h3 { margin: 0 0 7px; color: rgba(60,60,67,0.72); font-size: 12px; font-weight: 600; text-transform: uppercase; } .ds-evidence dl { margin: 0; overflow: hidden; border: 1px solid rgba(60,60,67,0.16); border-radius: 10px; background: rgba(255,255,255,0.9); } .ds-evidence dl div { display: flex; justify-content: space-between; gap: 20px; padding: 10px 12px; } .ds-evidence dl div + div { border-top: 1px solid rgba(60,60,67,0.12); } .ds-evidence dt { color: rgba(60,60,67,0.72); } .ds-evidence dd { margin: 0; font-family: ui-monospace, SFMono-Regular, monospace; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Native Instrument",
+    "overview": "Core AI Lab is calm at rest, exact when interrogated, and candid about what it knows. It uses standard platform structure so technical evidence—not ornamental interface chrome—holds attention. Every workspace moves from orientation through preparation and action to observable, verifiable results.",
+    "keyCharacteristics": [
+      "Native and platform-adaptive",
+      "Evidence-led rather than decorative",
+      "Progressive disclosure for technical density",
+      "Explicit prerequisites, progress, cancellation, and failure",
+      "Keyboard and VoiceOver accessible"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Use one prominent blue action per workflow; supporting actions retain standard prominence.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Type Rule",
+        "body": "Use SwiftUI semantic styles and let Dynamic Type determine runtime size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Platform Depth Rule",
+        "body": "If SwiftUI already communicates the layer, do not add another shadow, blur, stroke, or floating container.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do start each workspace with purpose, current state, and the next meaningful action.",
+      "Do keep evidence precise, selectable, and visually subordinate to the current task.",
+      "Do pair status color with text and a familiar symbol."
+    ],
+    "donts": [
+      "Don't build generic card grids or prompt-first chat surfaces.",
+      "Don't add ornamental glass, neon gradients, or unexplained status lights.",
+      "Don't claim execution placement, performance, or cache benefit without evidence."
+    ]
+  }
+}
