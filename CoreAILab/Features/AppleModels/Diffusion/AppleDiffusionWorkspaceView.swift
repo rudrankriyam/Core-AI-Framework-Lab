@@ -81,10 +81,12 @@ struct AppleDiffusionWorkspaceView: View {
                         .disabled(!workspace.canEditGenerationInputs)
                 }
 
+#if !os(macOS)
                 ViewThatFits(in: .horizontal) {
                     generationActions(axis: .horizontal)
                     generationActions(axis: .vertical)
                 }
+#endif
             } header: {
                 Label("Prompt", systemImage: "text.bubble")
             }
@@ -93,6 +95,24 @@ struct AppleDiffusionWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Diffusion Playground")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.isGenerating {
+                    Button(
+                        "Cancel Generation",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelGeneration
+                    )
+                } else {
+                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                        .disabled(!workspace.canGenerate)
+                        .help(workspace.statusMessage)
+                }
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingPipeline,
             allowedContentTypes: [.folder]
@@ -128,6 +148,7 @@ struct AppleDiffusionWorkspaceView: View {
         }
     }
 
+#if !os(macOS)
     private func generationActions(axis: Axis) -> some View {
         let layout = axis == .horizontal
             ? AnyLayout(HStackLayout())
@@ -147,4 +168,5 @@ struct AppleDiffusionWorkspaceView: View {
             }
         }
     }
+#endif
 }

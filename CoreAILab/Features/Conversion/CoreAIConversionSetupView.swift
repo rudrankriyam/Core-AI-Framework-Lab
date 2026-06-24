@@ -99,28 +99,6 @@ struct CoreAIConversionSetupView: View {
                 Label("Environment", systemImage: "checkmark.shield")
             }
 
-            Section {
-                if workspace.canCancelConversion {
-                    Button(
-                        "Cancel Conversion",
-                        systemImage: "stop.fill",
-                        role: .destructive,
-                        action: workspace.cancelConversion
-                    )
-                    .keyboardShortcut(.cancelAction)
-                } else {
-                    Button(
-                        "Start Conversion",
-                        systemImage: "play.fill",
-                        action: workspace.startConversion
-                    )
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.return, modifiers: .command)
-                    .disabled(!workspace.canStartConversion)
-                }
-            } footer: {
-                Text("The first run can create a Python environment and download many gigabytes. The evidence pane keeps the original converter output visible.")
-            }
         }
         .formStyle(.grouped)
     }

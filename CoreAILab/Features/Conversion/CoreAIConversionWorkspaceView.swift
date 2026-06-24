@@ -43,6 +43,28 @@ struct CoreAIConversionWorkspaceView: View {
             }
         }
         .navigationTitle("Convert")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.canCancelConversion {
+                    Button(
+                        "Cancel Conversion",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelConversion
+                    )
+                    .keyboardShortcut(.cancelAction)
+                } else {
+                    Button(
+                        "Start Conversion",
+                        systemImage: "play.fill",
+                        action: workspace.startConversion
+                    )
+                    .disabled(!workspace.canStartConversion)
+                    .help(workspace.statusMessage)
+                    .keyboardShortcut(.return, modifiers: .command)
+                }
+            }
+        }
         .navigationDestination(for: CoreAIConversionArtifact.self) { artifact in
             CoreAIConversionArtifactDestinationView(artifact: artifact)
         }

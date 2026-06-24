@@ -71,6 +71,15 @@ struct AppleObjectDetectionWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Object Detection")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button("Run Detection", systemImage: "play.fill", action: runDetection)
+                    .disabled(!workspace.canRun)
+                    .help(workspace.statusMessage)
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.coreAIModelAsset, .folder]
@@ -131,9 +140,11 @@ struct AppleObjectDetectionWorkspaceView: View {
         return layout {
             Button("Import YOLOS Model", systemImage: "shippingbox", action: importModel)
             Button("Choose Image", systemImage: "photo", action: importImage)
+#if !os(macOS)
             Button("Run Detection", systemImage: "play.fill", action: runDetection)
                 .buttonStyle(.borderedProminent)
                 .disabled(!workspace.canRun)
+#endif
         }
     }
 

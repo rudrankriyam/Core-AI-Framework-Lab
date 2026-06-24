@@ -12,6 +12,7 @@ struct ChatterboxGenerationSection: View {
 
     var body: some View {
         Section {
+#if !os(macOS)
             Button(action: generateAction) {
                 Label {
                     Text(isWorking ? workingActionTitle : "Generate Speech")
@@ -26,6 +27,7 @@ struct ChatterboxGenerationSection: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(!canGenerate)
+#endif
 
             if isWorking {
                 Text(statusMessage)

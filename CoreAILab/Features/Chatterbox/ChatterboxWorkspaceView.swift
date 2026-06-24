@@ -29,6 +29,19 @@ struct ChatterboxWorkspaceView: View {
             }
             .formStyle(.grouped)
             .navigationTitle(model.recipeManifest?.displayName ?? "Text to Speech")
+            .toolbar {
+#if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Button(
+                        "Generate Speech",
+                        systemImage: "play.circle.fill",
+                        action: model.generate
+                    )
+                    .disabled(!model.canGenerate)
+                    .help(model.statusMessage)
+                }
+#endif
+            }
             .task {
                 await model.prepare()
             }

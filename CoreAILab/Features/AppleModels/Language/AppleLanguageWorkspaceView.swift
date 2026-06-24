@@ -74,10 +74,12 @@ struct AppleLanguageWorkspaceView: View {
                 )
                 .disabled(!workspace.canEditGenerationInputs)
 
+#if !os(macOS)
                 ViewThatFits(in: .horizontal) {
                     generationActions(axis: .horizontal)
                     generationActions(axis: .vertical)
                 }
+#endif
             } header: {
                 Label("Prompt", systemImage: "text.bubble")
             }
@@ -86,6 +88,24 @@ struct AppleLanguageWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("\(workspace.example.title) Language Model")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.isGenerating {
+                    Button(
+                        "Cancel Generation",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelGeneration
+                    )
+                } else {
+                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                        .disabled(!workspace.canGenerate)
+                        .help(workspace.statusMessage)
+                }
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.folder]
@@ -135,6 +155,7 @@ struct AppleLanguageWorkspaceView: View {
         }
     }
 
+#if !os(macOS)
     private func generationActions(axis: Axis) -> some View {
         adaptiveLayout(axis: axis) {
             Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
@@ -150,6 +171,7 @@ struct AppleLanguageWorkspaceView: View {
             }
         }
     }
+#endif
 
     private func adaptiveLayout<Content: View>(
         axis: Axis,

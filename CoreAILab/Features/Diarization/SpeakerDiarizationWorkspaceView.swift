@@ -49,6 +49,19 @@ struct SpeakerDiarizationWorkspaceView: View {
             }
             .formStyle(.grouped)
             .navigationTitle("Diarization")
+            .toolbar {
+#if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Button(
+                        "Run Diarization",
+                        systemImage: "person.2.wave.2",
+                        action: workspace.startDiarization
+                    )
+                    .disabled(!workspace.canRunDiarization)
+                    .help(workspace.statusMessage)
+                }
+#endif
+            }
             .task {
                 await workspace.prepareBundledModel()
             }

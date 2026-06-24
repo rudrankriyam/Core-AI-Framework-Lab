@@ -72,6 +72,28 @@ struct AppleAudioWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Audio Transcription")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.isTranscribing {
+                    Button(
+                        "Cancel Transcription",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelTranscription
+                    )
+                } else {
+                    Button(
+                        "Transcribe",
+                        systemImage: "captions.bubble",
+                        action: workspace.startTranscription
+                    )
+                    .disabled(!workspace.canTranscribe)
+                    .help(workspace.statusMessage)
+                }
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.coreAIModelAsset, .folder]
@@ -132,6 +154,7 @@ struct AppleAudioWorkspaceView: View {
         return layout {
             Button("Import Wav2Vec2 Model", systemImage: "shippingbox", action: importModel)
             Button("Choose Audio", systemImage: "waveform", action: importAudio)
+#if !os(macOS)
             Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
                 .buttonStyle(.borderedProminent)
                 .disabled(!workspace.canTranscribe)
@@ -143,6 +166,7 @@ struct AppleAudioWorkspaceView: View {
                     action: workspace.cancelTranscription
                 )
             }
+#endif
         }
     }
 

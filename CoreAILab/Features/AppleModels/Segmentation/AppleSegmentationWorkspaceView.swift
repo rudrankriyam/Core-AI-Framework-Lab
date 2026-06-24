@@ -70,6 +70,15 @@ struct AppleSegmentationWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("\(workspace.example.title) Segmentation")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
+                    .disabled(!workspace.canRun)
+                    .help(workspace.statusMessage)
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.folder]
@@ -145,9 +154,11 @@ struct AppleSegmentationWorkspaceView: View {
         return layout {
             Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
             Button("Choose Image", systemImage: "photo", action: importImage)
+#if !os(macOS)
             Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
                 .buttonStyle(.borderedProminent)
                 .disabled(!workspace.canRun)
+#endif
         }
     }
 

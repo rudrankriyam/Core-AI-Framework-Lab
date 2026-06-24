@@ -125,6 +125,18 @@ struct CoreAIFunctionWorkbenchView: View {
                             isDisabled: workspace.phase.isBusy
                         )
 
+                        if workspace.phase == .running {
+                            Section {
+                                ProgressView(
+                                    "Running \(workspace.selectedFunctionName ?? "function")…"
+                                )
+                                .accessibilityAddTraits(.updatesFrequently)
+                            } header: {
+                                Label("Run", systemImage: "play.fill")
+                            }
+                        }
+
+#if !os(macOS)
                         Section {
                             Button(
                                 "Run Function",
@@ -133,20 +145,10 @@ struct CoreAIFunctionWorkbenchView: View {
                             )
                             .buttonStyle(.borderedProminent)
                             .disabled(!workspace.canRun)
-
-                            if workspace.phase == .running {
-                                ProgressView(
-                                    "Running \(workspace.selectedFunctionName ?? "function")…"
-                                )
-                                .accessibilityAddTraits(.updatesFrequently)
-                            }
                         } header: {
                             Label("Run", systemImage: "play.fill")
-                        } footer: {
-                            Text(
-                                "Generated inputs are synthetic contract probes, not semantically correct task data. Core AI inference itself cannot be canceled once started."
-                            )
                         }
+#endif
 
                         CoreAIFunctionBenchmarkControlsView(workspace: workspace)
 
@@ -192,6 +194,24 @@ struct CoreAIFunctionWorkbenchView: View {
         }
         .navigationTitle("Function Workbench")
         .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button("Run Function", systemImage: "play.fill", action: runFunction)
+                    .disabled(!workspace.canRun)
+                    .help(
+                        "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
+                    )
+            }
+            ToolbarItem(placement: .secondaryAction) {
+                Button("Open Model", systemImage: "folder", action: openModelPicker)
+                    .disabled(
+                        workspace.phase.isBusy
+                            || workspace.assetWorkspace.phase.isBusy
+                            || workspace.isExportingIntegration
+                    )
+                    .keyboardShortcut("o", modifiers: .command)
+            }
+#else
             ToolbarItem(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
                     .disabled(
@@ -201,6 +221,7 @@ struct CoreAIFunctionWorkbenchView: View {
                     )
                     .keyboardShortcut("o", modifiers: .command)
             }
+#endif
         }
         .fileImporter(
             isPresented: $isImportingModel,

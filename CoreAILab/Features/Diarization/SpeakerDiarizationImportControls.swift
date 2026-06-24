@@ -15,9 +15,11 @@ struct SpeakerDiarizationImportControls<ControlsLayout: Layout>: View {
                 .disabled(!canImportModel)
             Button("Choose Audio or Video", systemImage: "waveform", action: importMediaAction)
                 .disabled(!canImportMedia)
+#if !os(macOS)
             Button("Run Diarization", systemImage: "person.2.wave.2", action: runAction)
                 .buttonStyle(.borderedProminent)
                 .disabled(!canRunDiarization)
+#endif
         }
     }
 }
