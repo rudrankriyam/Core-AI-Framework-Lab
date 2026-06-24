@@ -32,11 +32,13 @@ struct AppleAudioWorkspaceView: View {
                     LabeledContent("Input", value: "1 × \(info.sampleCount) \(info.scalarTypeName)")
                     LabeledContent("Sample rate", value: "\(Int(info.sampleRate).formatted()) Hz mono")
                 }
-                Label(
-                    workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "waveform"
-                )
-                .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else {
+                    Label(workspace.statusMessage, systemImage: "waveform")
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "waveform.badge.mic")
             }
@@ -46,9 +48,9 @@ struct AppleAudioWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Inputs") {
+            Section {
                 HStack {
-                    Button("Import Wav2Vec2", systemImage: "shippingbox", action: importModel)
+                    Button("Import Wav2Vec2 Model", systemImage: "shippingbox", action: importModel)
                     Button("Choose Audio", systemImage: "waveform", action: importAudio)
                     Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
                         .buttonStyle(.borderedProminent)
@@ -65,12 +67,16 @@ struct AppleAudioWorkspaceView: View {
 
                 Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
                     .foregroundStyle(.secondary)
+            } header: {
+                Label("Model & Audio", systemImage: "waveform.badge.mic")
             }
 
-            Section("Apple Export Command") {
+            Section {
                 Text(workspace.example.exportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Apple Export Command", systemImage: "terminal")
             }
 
             AppleAudioTranscriptionResultView(result: workspace.result)
@@ -89,9 +95,9 @@ struct AppleAudioWorkspaceView: View {
         ) { result in
             handleAudioImport(result)
         }
-        .alert("Audio Transcription Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Transcribe Audio", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model and audio files, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {

@@ -26,11 +26,13 @@ struct AppleLanguageWorkspaceView: View {
         Form {
             Section {
                 LabeledContent("Model", value: workspace.modelName ?? "Not loaded")
-                Label(
-                    workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "text.bubble"
-                )
-                .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else {
+                    Label(workspace.statusMessage, systemImage: "text.bubble")
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "text.bubble.fill")
             }
@@ -40,7 +42,7 @@ struct AppleLanguageWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Model Bundle") {
+            Section {
                 HStack {
                     Button("Import Qwen Bundle", systemImage: "shippingbox", action: importModel)
                     Button("New Session", systemImage: "arrow.counterclockwise", action: resetSession)
@@ -57,9 +59,11 @@ struct AppleLanguageWorkspaceView: View {
                         .font(.body.monospaced())
                         .textSelection(.enabled)
                 }
+            } header: {
+                Label("Model Bundle", systemImage: "shippingbox")
             }
 
-            Section("Prompt") {
+            Section {
                 TextField("Ask Qwen", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
                     .disabled(!workspace.canEditGenerationInputs)
@@ -79,6 +83,8 @@ struct AppleLanguageWorkspaceView: View {
                         Button("Cancel", systemImage: "stop.fill", role: .destructive, action: workspace.cancelGeneration)
                     }
                 }
+            } header: {
+                Label("Prompt", systemImage: "text.bubble")
             }
 
             AppleLanguageResponseView(response: workspace.response)
@@ -91,9 +97,9 @@ struct AppleLanguageWorkspaceView: View {
         ) { result in
             handleModelImport(result)
         }
-        .alert("Language Model Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Generate a Response", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model bundle and prompt, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {

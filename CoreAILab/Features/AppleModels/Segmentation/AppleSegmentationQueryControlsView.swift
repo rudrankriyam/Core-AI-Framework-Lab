@@ -4,7 +4,7 @@ struct AppleSegmentationQueryControlsView: View {
     @Bindable var workspace: AppleSegmentationWorkspaceModel
 
     var body: some View {
-        Section(workspace.example.usesTextPrompt ? "Text Prompt" : "Point Prompt") {
+        Section {
             if workspace.example.usesTextPrompt {
                 TextField(
                     "Object to segment",
@@ -36,6 +36,11 @@ struct AppleSegmentationQueryControlsView: View {
                     description: Text("Point controls appear after an image is loaded.")
                 )
             }
+        } header: {
+            Label(
+                workspace.example.usesTextPrompt ? "Text Prompt" : "Point Prompt",
+                systemImage: workspace.example.usesTextPrompt ? "text.cursor" : "scope"
+            )
         }
         .disabled(workspace.isBusy)
     }

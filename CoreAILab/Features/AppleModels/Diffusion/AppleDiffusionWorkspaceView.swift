@@ -30,11 +30,13 @@ struct AppleDiffusionWorkspaceView: View {
                     LabeledContent("Pipeline", value: info.pipelineName)
                     LabeledContent("Output", value: "\(info.width) × \(info.height)")
                 }
-                Label(
-                    workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "wand.and.sparkles"
-                )
-                .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else {
+                    Label(workspace.statusMessage, systemImage: "wand.and.sparkles")
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "wand.and.sparkles")
             }
@@ -44,17 +46,19 @@ struct AppleDiffusionWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Pipeline Bundle") {
+            Section {
                 Button(
                     "Import Diffusion Bundle",
                     systemImage: "shippingbox",
                     action: importPipeline
                 )
-                Text("Import the entire folder produced by `coreai.diffusion.export`. The Lab reads its metadata and selects Apple's Stable Diffusion, SD3, or FLUX.2 runtime automatically.")
+                Text("Choose the folder produced by `coreai.diffusion.export`. Core AI Lab reads its metadata and selects Apple's Stable Diffusion, SD3, or FLUX.2 runtime.")
                     .foregroundStyle(.secondary)
+            } header: {
+                Label("Pipeline Bundle", systemImage: "shippingbox")
             }
 
-            Section("Prompt") {
+            Section {
                 TextField("Describe an image", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
                     .disabled(!workspace.canEditGenerationInputs)
@@ -90,6 +94,8 @@ struct AppleDiffusionWorkspaceView: View {
                         )
                     }
                 }
+            } header: {
+                Label("Prompt", systemImage: "text.bubble")
             }
 
             AppleDiffusionResultView(result: workspace.result)
@@ -102,9 +108,9 @@ struct AppleDiffusionWorkspaceView: View {
         ) { result in
             handlePipelineImport(result)
         }
-        .alert("Diffusion Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Generate the Image", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the pipeline bundle and prompt, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {

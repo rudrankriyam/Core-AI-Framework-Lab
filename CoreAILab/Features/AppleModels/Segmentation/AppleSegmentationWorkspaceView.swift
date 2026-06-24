@@ -28,11 +28,13 @@ struct AppleSegmentationWorkspaceView: View {
             Section {
                 LabeledContent("Model", value: workspace.modelName ?? "Not loaded")
                 LabeledContent("Image", value: workspace.imageName ?? "Not loaded")
-                Label(
-                    workspace.statusMessage,
-                    systemImage: statusSystemImage
-                )
-                    .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else {
+                    Label(workspace.statusMessage, systemImage: statusSystemImage)
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "square.stack.3d.up")
             }
@@ -42,7 +44,7 @@ struct AppleSegmentationWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Run Apple's Export") {
+            Section {
                 HStack {
                     Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
                     Button("Choose Image", systemImage: "photo", action: importImage)
@@ -51,10 +53,16 @@ struct AppleSegmentationWorkspaceView: View {
                         .disabled(!workspace.canRun)
                 }
                 .disabled(workspace.isBusy)
+            } header: {
+                Label("Model & Image", systemImage: "square.stack.3d.up")
+            }
 
+            Section {
                 Text(workspace.example.exportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Apple Export Command", systemImage: "terminal")
             }
 
             AppleSegmentationQueryControlsView(workspace: workspace)
@@ -77,9 +85,9 @@ struct AppleSegmentationWorkspaceView: View {
         ) { result in
             handleImageImport(result)
         }
-        .alert("Segmentation Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Segment the Image", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model bundle and image, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {
@@ -93,9 +101,6 @@ struct AppleSegmentationWorkspaceView: View {
     }
 
     private var statusSystemImage: String {
-        if workspace.isBusy {
-            return "hourglass"
-        }
         if workspace.isShowingError {
             return "exclamationmark.triangle"
         }

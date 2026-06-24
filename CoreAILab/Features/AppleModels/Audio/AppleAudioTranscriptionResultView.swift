@@ -4,7 +4,7 @@ struct AppleAudioTranscriptionResultView: View {
     let result: AppleAudioTranscriptionResult?
 
     var body: some View {
-        Section("Transcript") {
+        Section {
             if let result {
                 if result.transcript.isEmpty {
                     ContentUnavailableView(
@@ -32,6 +32,8 @@ struct AppleAudioTranscriptionResultView: View {
                     description: Text("Choose a short speech recording and transcribe it locally.")
                 )
             }
+        } header: {
+            Label("Transcript", systemImage: "captions.bubble")
         }
     }
 }

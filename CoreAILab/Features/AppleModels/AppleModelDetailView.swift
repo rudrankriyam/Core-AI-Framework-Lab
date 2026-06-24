@@ -7,7 +7,12 @@ struct AppleModelDetailView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Model", value: model.huggingFaceID)
+                LabeledContent("Model") {
+                    Text(model.huggingFaceID)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled)
+                }
                 LabeledContent(
                     "Platforms",
                     value: model.supportedPlatforms.map(\.rawValue).joined(separator: ", ")
@@ -25,8 +30,8 @@ struct AppleModelDetailView: View {
                 Label(model.category.rawValue, systemImage: model.category.systemImage)
             }
 
-            Section("Export with Apple's recipe") {
-                Text("Clone apple/coreai-models, run this command from its root, then import the resulting .aimodel or resource folder into the Lab.")
+            Section {
+                Text("Clone Apple's coreai-models repository, run this command from its root, then import the exported model or resource folder.")
                     .foregroundStyle(.secondary)
 
                 Text(model.labRecommendedExportCommand)
@@ -41,9 +46,11 @@ struct AppleModelDetailView: View {
                     "Convert This Recipe",
                     value: AppleModelLibraryRoute.conversion(modelID: model.id)
                 )
+            } header: {
+                Label("Export Recipe", systemImage: "terminal")
             }
 
-            Section("Runtime integration") {
+            Section {
                 Label(model.runtimeSupport.title, systemImage: "shippingbox")
                 Text(model.runtimeSupport.detail)
                     .foregroundStyle(.secondary)
@@ -53,7 +60,7 @@ struct AppleModelDetailView: View {
                 }
 
                 if model.isRunnableInLab {
-                    Text("The Lab includes this runtime adapter, not converted model weights. Export the model locally under its upstream license, then import the result.")
+                    Text("Core AI Lab includes the runtime adapter, not model weights. Export the model locally under its upstream license, then import the result.")
                         .foregroundStyle(.secondary)
                 }
 
@@ -99,9 +106,11 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.audio(audioExample)
                     )
                 }
+            } header: {
+                Label("Runtime Integration", systemImage: "play.rectangle")
             }
 
-            Section("Provenance") {
+            Section {
                 LabeledContent("Registry revision") {
                     Text(sourceRevision)
                         .font(.callout.monospaced())
@@ -109,6 +118,8 @@ struct AppleModelDetailView: View {
                 }
                 Text("The export recipe and Swift utilities use Apple's BSD-3-Clause repository. Downloaded model weights retain their original authors' licenses and are not redistributed by Core AI Lab.")
                     .foregroundStyle(.secondary)
+            } header: {
+                Label("Provenance", systemImage: "checkmark.seal")
             }
         }
         .formStyle(.grouped)

@@ -17,12 +17,11 @@ struct AppleObjectDetectionHeaderView: View {
             LabeledContent("Model", value: modelName ?? "Not imported")
             LabeledContent("Image", value: imageName ?? "Not selected")
 
-            HStack(spacing: 8) {
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Text(statusMessage)
+            if isBusy {
+                ProgressView(statusMessage)
+                    .accessibilityAddTraits(.updatesFrequently)
+            } else {
+                Label(statusMessage, systemImage: "viewfinder")
                     .foregroundStyle(.secondary)
             }
         }
