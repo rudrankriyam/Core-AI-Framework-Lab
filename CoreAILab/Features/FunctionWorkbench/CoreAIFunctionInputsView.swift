@@ -5,7 +5,7 @@ struct CoreAIFunctionInputsView: View {
     let isDisabled: Bool
 
     var body: some View {
-        Section("Generated Inputs") {
+        Section {
             if drafts.isEmpty {
                 Text("This function has no generated tensor inputs.")
                     .foregroundStyle(.secondary)
@@ -17,6 +17,8 @@ struct CoreAIFunctionInputsView: View {
                     )
                 }
             }
+        } header: {
+            Label("Generated Inputs", systemImage: "slider.horizontal.3")
         }
     }
 }

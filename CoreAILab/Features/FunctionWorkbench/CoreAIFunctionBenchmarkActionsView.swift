@@ -23,6 +23,7 @@ struct CoreAIFunctionBenchmarkActionsView: View {
                 Button(
                     "Stop After Current Inference",
                     systemImage: "stop.fill",
+                    role: .cancel,
                     action: workspace.stopBenchmarkAfterCurrentInference
                 )
             }

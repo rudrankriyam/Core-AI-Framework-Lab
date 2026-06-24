@@ -5,13 +5,15 @@ struct CoreAIFunctionBenchmarkResultsView: View {
     let exportEvidence: (CoreAIFunctionBenchmarkReport) -> Void
 
     var body: some View {
-        Section("Benchmark History") {
+        Section {
             ForEach(reports) { report in
                 CoreAIFunctionBenchmarkReportView(
                     report: report,
                     exportEvidence: exportEvidence
                 )
             }
+        } header: {
+            Label("Benchmark History", systemImage: "clock.arrow.circlepath")
         }
     }
 }

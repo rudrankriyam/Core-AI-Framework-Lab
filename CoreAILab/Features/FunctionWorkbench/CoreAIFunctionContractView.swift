@@ -4,7 +4,7 @@ struct CoreAIFunctionContractView: View {
     @Bindable var workspace: CoreAIFunctionWorkbenchWorkspaceModel
 
     var body: some View {
-        Section("Function") {
+        Section {
             Picker("Entry point", selection: $workspace.selectedFunctionName) {
                 ForEach(workspace.contracts) { contract in
                     Text(contract.name)
@@ -23,6 +23,8 @@ struct CoreAIFunctionContractView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        } header: {
+            Label("Function", systemImage: "function")
         }
     }
 }

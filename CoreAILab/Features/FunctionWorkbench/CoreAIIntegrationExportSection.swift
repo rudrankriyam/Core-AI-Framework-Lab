@@ -37,10 +37,10 @@ struct CoreAIIntegrationExportSection: View {
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("Integration Export")
+            Label("Integration Export", systemImage: "shippingbox.and.arrow.backward")
         } footer: {
             Text(
-                "Exports a standalone Swift package with the original asset, checksums, notices, typed metadata, generated invocation code, and an offline verifier. The optional AOT script is never run automatically. Stateful and image-input functions remain manifest-only."
+                "Creates a standalone Swift package with the original asset, checksums, notices, typed metadata, generated invocation code, and an offline verifier. The optional AOT script never runs automatically. Stateful and image-input functions remain manifest-only."
             )
         }
     }
