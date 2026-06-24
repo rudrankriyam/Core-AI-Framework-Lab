@@ -85,10 +85,6 @@ final class SpeakerDiarizationWorkspaceModel {
         diarizationTask = nil
         analysisGeneration += 1
         let generation = analysisGeneration
-        mediaURL = nil
-        mediaSummary = nil
-        waveform = nil
-        result = nil
         isRunningDiarization = false
         isAnalyzingMedia = true
         clearError()
@@ -137,6 +133,7 @@ final class SpeakerDiarizationWorkspaceModel {
             mediaURL = url
             mediaSummary = analysis.summary
             waveform = analysis.waveform
+            result = nil
             clearError()
             statusMessage = modelInfo == nil
                 ? "Media is ready. Choose a compatible CAM++ model to diarize it."

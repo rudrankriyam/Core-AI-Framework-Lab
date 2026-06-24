@@ -32,6 +32,43 @@ struct SpeakerDiarizationLabTests {
     }
 
     @Test
+    @MainActor
+    func replacementKeepsCurrentMediaVisibleWhileCandidateIsAnalyzed() async throws {
+        let currentURL = FileManager.default.temporaryDirectory.appending(
+            path: "diarization-current-\(UUID().uuidString).wav"
+        )
+        let missingURL = FileManager.default.temporaryDirectory.appending(
+            path: "diarization-missing-\(UUID().uuidString).wav"
+        )
+        defer { try? FileManager.default.removeItem(at: currentURL) }
+        try writeSineWave(to: currentURL)
+
+        let workspace = SpeakerDiarizationWorkspaceModel(
+            engine: SpeakerDiarizationServiceFake()
+        )
+        workspace.selectMedia(currentURL)
+        while workspace.isAnalyzingMedia {
+            await Task.yield()
+        }
+        let currentSummary = try #require(workspace.mediaSummary)
+        let currentWaveform = try #require(workspace.waveform)
+
+        workspace.selectMedia(missingURL)
+
+        #expect(workspace.isAnalyzingMedia)
+        #expect(workspace.mediaURL == currentURL)
+        #expect(workspace.mediaSummary == currentSummary)
+        #expect(workspace.waveform == currentWaveform)
+
+        while workspace.isAnalyzingMedia {
+            await Task.yield()
+        }
+        #expect(workspace.mediaURL == currentURL)
+        #expect(workspace.mediaSummary == currentSummary)
+        #expect(workspace.waveform == currentWaveform)
+    }
+
+    @Test
     func bundledCAMPlusHasPinnedLicenseProvenanceAndContract() async throws {
         let modelURL = try SpeakerDiarizationBundledModel.url()
         let asset = try AIModelAsset(contentsOf: modelURL)
