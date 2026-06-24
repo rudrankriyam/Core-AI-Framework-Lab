@@ -74,7 +74,7 @@ struct CoreAIRecipeCatalogView: View {
                 handleImportResult(result)
             }
             .alert(
-                "Recipe Bundle Import Failed",
+                "Couldn't Import the Recipe Bundle",
                 isPresented: $model.isShowingError,
                 presenting: model.errorMessage
             ) { _ in
@@ -94,7 +94,9 @@ struct CoreAIRecipeCatalogView: View {
             guard let url = urls.first else { return }
             Task { await model.importBundle(at: url) }
         case .failure(let error):
-            model.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                model.presentImportError(error)
+            }
         }
     }
 

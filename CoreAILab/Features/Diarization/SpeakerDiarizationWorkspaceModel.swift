@@ -73,7 +73,7 @@ final class SpeakerDiarizationWorkspaceModel {
                 ? "CAM++ is ready. Choose media or run diarization."
                 : "Media and CAM++ are ready for batch diarization."
         } catch is CancellationError {
-            statusMessage = "Model import cancelled."
+            statusMessage = "Model import canceled."
         } catch {
             present(error)
         }

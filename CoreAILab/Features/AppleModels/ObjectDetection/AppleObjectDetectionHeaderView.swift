@@ -11,7 +11,7 @@ struct AppleObjectDetectionHeaderView: View {
             Label("YOLOS Tiny", systemImage: "viewfinder")
                 .font(.title2.bold())
 
-            Text("The first runnable Apple gallery model uses Apple's export recipe and CoreAIObjectDetection Swift package.")
+            Text("Uses Apple's YOLOS export recipe and the CoreAIObjectDetection Swift package.")
                 .foregroundStyle(.secondary)
 
             LabeledContent("Model", value: modelName ?? "Not imported")

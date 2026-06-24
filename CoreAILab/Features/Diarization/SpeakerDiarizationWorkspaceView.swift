@@ -71,9 +71,9 @@ struct SpeakerDiarizationWorkspaceView: View {
             ) { result in
                 handleMediaImport(result)
             }
-            .alert("Diarization Lab Failed", isPresented: $workspace.isShowingError) {
+            .alert("Couldn't Separate the Speakers", isPresented: $workspace.isShowingError) {
             } message: {
-                Text(workspace.errorMessage ?? "The request could not be completed.")
+                Text(workspace.errorMessage ?? "Check the model and media file, then try again.")
             }
         }
     }
@@ -91,7 +91,7 @@ struct SpeakerDiarizationWorkspaceView: View {
         case .success(let url):
             workspace.selectMedia(url)
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -102,6 +102,12 @@ struct SpeakerDiarizationWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

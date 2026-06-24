@@ -64,9 +64,9 @@ struct CoreAIConversionWorkspaceView: View {
         ) { result in
             handleUVSelection(result)
         }
-        .alert("Conversion Error", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Complete the Conversion", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The conversion could not be completed.")
+            Text(workspace.errorMessage ?? "Review the environment checks and try again.")
         }
         .sheet(item: $artifactToStore) { artifact in
             CoreAIArtifactProjectPickerView(artifactURL: artifact.url)
@@ -99,7 +99,7 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -111,7 +111,7 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -123,6 +123,12 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

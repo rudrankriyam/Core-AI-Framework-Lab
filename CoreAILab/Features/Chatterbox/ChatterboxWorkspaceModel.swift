@@ -5,12 +5,12 @@ import Observation
 @MainActor
 @Observable
 final class ChatterboxWorkspaceModel {
-    var prompt = "Oh, that's hilarious! [chuckle] This voice is running entirely on your Mac with Core AI."
+    var prompt = "Oh, that's hilarious! [chuckle] This voice was generated locally with Core AI."
     var modelState = ChatterboxModelState.notLoaded
     var generatedResult: ChatterboxGenerationResult?
     var isWorking = false
     var isPlaying = false
-    var statusMessage = "Preparing Core AI"
+    var statusMessage = "Preparing Core AI…"
     var presentedError: ChatterboxPresentedError?
     private(set) var recipeManifest: CoreAIRecipeManifest?
 
@@ -34,6 +34,15 @@ final class ChatterboxWorkspaceModel {
         return inspection
     }
 
+    var isShowingError: Bool {
+        get { presentedError != nil }
+        set {
+            if !newValue {
+                presentedError = nil
+            }
+        }
+    }
+
     var canGenerate: Bool {
         guard let inspection else {
             return false
@@ -55,13 +64,15 @@ final class ChatterboxWorkspaceModel {
             let manifest = try await engine.bundledRecipeManifest()
             recipeManifest = manifest
             let targetName = manifest.defaultTarget?.displayName ?? "selected target"
-            statusMessage = "Specializing \(manifest.pipeline.stages.count) models for \(targetName)"
-            modelState = .ready(try await engine.prepareBundledModels())
+            statusMessage = "Specializing \(manifest.pipeline.stages.count) models for \(targetName)…"
+            let inspection = try await engine.prepareBundledModels()
+            modelState = .ready(inspection)
+            statusMessage = "Ready to generate speech."
         } catch {
             recipeManifest = nil
             modelState = .failed(error.localizedDescription)
-            statusMessage = "Core AI preparation failed"
-            present(error)
+            statusMessage = "Core AI preparation failed."
+            present(error, title: "Couldn't Prepare Chatterbox")
         }
         isWorking = false
     }
@@ -83,7 +94,7 @@ final class ChatterboxWorkspaceModel {
     private func synthesize() async {
         stopPlayback()
         isWorking = true
-        statusMessage = "Generating speech entirely with Core AI"
+        statusMessage = "Generating speech with Core AI…"
         generatedResult = nil
 
         do {
@@ -91,9 +102,11 @@ final class ChatterboxWorkspaceModel {
                 ChatterboxGenerationRequest(text: prompt)
             )
             generatedResult = result
+            statusMessage = "Generated \(result.audioDuration.formatted(.number.precision(.fractionLength(1)))) seconds of speech in \(result.elapsedTime.formatted(.number.precision(.fractionLength(1)))) seconds."
             play(result)
         } catch {
-            present(error)
+            statusMessage = "Speech generation failed."
+            present(error, title: "Couldn't Generate Speech")
         }
         isWorking = false
     }
@@ -117,7 +130,9 @@ final class ChatterboxWorkspaceModel {
                 self?.isPlaying = false
             }
         } catch {
-            present(error)
+            isPlaying = false
+            statusMessage = "Speech is ready, but playback couldn't start."
+            present(error, title: "Couldn't Play Speech")
         }
     }
 
@@ -129,8 +144,9 @@ final class ChatterboxWorkspaceModel {
         isPlaying = false
     }
 
-    private func present(_ error: Error) {
+    private func present(_ error: Error, title: String) {
         presentedError = ChatterboxPresentedError(
+            title: title,
             message: error.localizedDescription
         )
     }

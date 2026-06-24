@@ -73,7 +73,7 @@ struct AppleModelDetailView: View {
 
                 if let segmentationExample = model.segmentationExample {
                     if segmentationExample == .sam3 {
-                        Text("SAM 3 requires accepting Meta's gated Hugging Face license and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
+                        Text("SAM 3 requires accepting Meta's gated Hugging Face license and authenticating with the `hf` command-line tool before export. Core AI Lab never reads or stores those credentials.")
                             .foregroundStyle(.secondary)
                     }
                     NavigationLink(
@@ -91,7 +91,7 @@ struct AppleModelDetailView: View {
 
                 if let diffusionExample = model.diffusionExample {
                     if diffusionExample == .stableDiffusion35 {
-                        Text("Stable Diffusion 3.5 weights require accepting Stability AI's gated Hugging Face terms and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
+                        Text("Stable Diffusion 3.5 weights require accepting Stability AI's gated Hugging Face terms and authenticating with the `hf` command-line tool before export. Core AI Lab never reads or stores those credentials.")
                             .foregroundStyle(.secondary)
                     }
                     NavigationLink(

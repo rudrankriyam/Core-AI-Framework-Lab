@@ -60,9 +60,9 @@ struct CoreAIAssetInspectorView: View {
         ) { result in
             handleModelImport(result)
         }
-        .alert("Core AI Operation Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Inspect the Model", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The Core AI operation failed.")
+            Text(workspace.errorMessage ?? "Check the model asset and try again.")
         }
         .task(id: initialURL) {
             do {
@@ -94,7 +94,9 @@ struct CoreAIAssetInspectorView: View {
                 await workspace.inspect(url: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.presentImportError(error)
+            }
         }
     }
 

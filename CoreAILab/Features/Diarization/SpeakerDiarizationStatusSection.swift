@@ -31,24 +31,17 @@ struct SpeakerDiarizationStatusSection: View {
                     )
                 }
             }
-            HStack {
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                        .accessibilityHidden(true)
-                } else {
-                    Image(systemName: "waveform.badge.mic")
-                        .accessibilityHidden(true)
-                }
-                Text(statusMessage)
-                    .foregroundStyle(isBusy ? .primary : .secondary)
+            if isBusy {
+                ProgressView(statusMessage)
+                    .accessibilityAddTraits(.updatesFrequently)
+            } else {
+                Label(statusMessage, systemImage: "waveform.badge.mic")
+                    .foregroundStyle(.secondary)
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.updatesFrequently)
         } header: {
-            Label("Speaker Diarization Lab", systemImage: "person.wave.2")
+            Label("Speaker Diarization", systemImage: "person.wave.2")
         } footer: {
-            Text("The bundled CAM++ asset is Apache-2.0. This experimental batch engine assigns anonymous labels, not real identities, and energy segmentation does not detect overlapping speakers.")
+            Text("The bundled CAM++ asset is Apache-2.0. This experimental batch engine uses anonymous labels—not identities—and does not detect overlapping speakers.")
         }
     }
 }

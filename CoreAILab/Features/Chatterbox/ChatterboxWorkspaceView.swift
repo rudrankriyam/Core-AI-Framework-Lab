@@ -31,12 +31,13 @@ struct ChatterboxWorkspaceView: View {
             .task {
                 await model.prepare()
             }
-            .alert(item: $model.presentedError) { presentedError in
-                Alert(
-                    title: Text("Chatterbox Core AI"),
-                    message: Text(presentedError.message),
-                    dismissButton: .default(Text("OK"))
-                )
+            .alert(
+                model.presentedError?.title ?? "Couldn't Complete the Request",
+                isPresented: $model.isShowingError
+            ) {
+                Button("Dismiss", role: .cancel) {}
+            } message: {
+                Text(model.presentedError?.message ?? "Try again.")
             }
         }
     }

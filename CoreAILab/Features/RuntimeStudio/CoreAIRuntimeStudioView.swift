@@ -15,12 +15,12 @@ struct CoreAIRuntimeStudioView: View {
             Group {
                 if let loadError = model.loadError {
                     ContentUnavailableView(
-                        "Runtime Registry Unavailable",
+                        "Couldn't Load Runtime Experiences",
                         systemImage: "exclamationmark.triangle",
                         description: Text(loadError)
                     )
                 } else if model.registry == nil {
-                    ProgressView("Loading Runtime Studio…")
+                    ProgressView("Loading runtime experiences…")
                 } else if model.filteredMappings.isEmpty {
                     ContentUnavailableView.search
                 } else {
@@ -39,6 +39,7 @@ struct CoreAIRuntimeStudioView: View {
                             )
                         }
                     }
+                    .listStyle(.inset)
                 }
             }
             .navigationTitle("Runtime Studio")
@@ -66,11 +67,11 @@ struct CoreAIRuntimeStudioView: View {
                     )
                 } else {
                     ContentUnavailableView(
-                        "Experience Unavailable",
+                        "Experience Not Found",
                         systemImage: "questionmark.folder",
                         description: Text(route.unavailableDescription)
                     )
-                    .navigationTitle("Experience Unavailable")
+                    .navigationTitle("Experience Not Found")
                 }
             }
             .task {

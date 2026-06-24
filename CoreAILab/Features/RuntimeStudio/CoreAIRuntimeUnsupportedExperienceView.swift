@@ -5,7 +5,7 @@ struct CoreAIRuntimeUnsupportedExperienceView: View {
 
     var body: some View {
         ContentUnavailableView(
-            "Experience Adapter Unavailable",
+            "Adapter Not Available in This Build",
             systemImage: "exclamationmark.triangle",
             description: Text(
                 "The recipe maps \(mapping.experience.modelIdentifier) to \(mapping.experience.adapter.rawValue), but this build cannot resolve that model preset."
