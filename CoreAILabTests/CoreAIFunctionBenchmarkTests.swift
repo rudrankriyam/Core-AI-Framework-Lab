@@ -372,7 +372,12 @@ struct CoreAIFunctionBenchmarkTests {
     @Test
     func realFixtureRunsWarmupAndMeasuredInference() async throws {
         let service = CoreAISpecializationService()
-        let fixtureURL = try CoreAITestFixtures.tensorModelURL()
+        let fixtureURL = try CoreAITestFixtures.temporaryTensorModelURL()
+        defer {
+            try? FileManager.default.removeItem(
+                at: fixtureURL.deletingLastPathComponent()
+            )
+        }
         try? await service.removeCachedEntries(at: fixtureURL)
 
         do {
