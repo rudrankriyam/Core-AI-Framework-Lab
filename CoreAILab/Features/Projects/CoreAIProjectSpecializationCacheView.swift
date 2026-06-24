@@ -10,8 +10,7 @@ struct CoreAIProjectSpecializationCacheView: View {
     var body: some View {
         Section {
             if link.specializationCaches.isEmpty {
-                Text("Specialize this project artifact to register a cache entry.")
-                    .foregroundStyle(.secondary)
+                Label("No Cached Configurations", systemImage: "minus.circle")
             } else {
                 ForEach(link.sortedSpecializationCaches) { record in
                     CoreAISpecializationCacheRowView(

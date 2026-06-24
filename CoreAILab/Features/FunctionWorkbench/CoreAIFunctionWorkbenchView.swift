@@ -186,30 +186,34 @@ struct CoreAIFunctionWorkbenchView: View {
         .navigationTitle("Function Workbench")
         .toolbar {
 #if os(macOS)
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button("Open Model", systemImage: "folder", action: openModelPicker)
-                    .disabled(
-                        workspace.phase.isBusy
-                            || workspace.assetWorkspace.phase.isBusy
-                            || workspace.isExportingIntegration
-                    )
-                    .keyboardShortcut("o", modifiers: .command)
+            if workspace.assetWorkspace.report != nil {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Open Model", systemImage: "folder", action: openModelPicker)
+                        .disabled(
+                            workspace.phase.isBusy
+                                || workspace.assetWorkspace.phase.isBusy
+                                || workspace.isExportingIntegration
+                        )
+                        .keyboardShortcut("o", modifiers: .command)
 
-                Button("Run Function", systemImage: "play.fill", action: runFunction)
-                    .disabled(!workspace.canRun)
-                    .help(
-                        "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
-                    )
+                    Button("Run Function", systemImage: "play.fill", action: runFunction)
+                        .disabled(!workspace.canRun)
+                        .help(
+                            "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
+                        )
+                }
             }
 #else
-            ToolbarItem(placement: .primaryAction) {
-                Button("Open Model", systemImage: "folder", action: openModelPicker)
-                    .disabled(
-                        workspace.phase.isBusy
-                            || workspace.assetWorkspace.phase.isBusy
-                            || workspace.isExportingIntegration
-                    )
-                    .keyboardShortcut("o", modifiers: .command)
+            if workspace.assetWorkspace.report != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Open Model", systemImage: "folder", action: openModelPicker)
+                        .disabled(
+                            workspace.phase.isBusy
+                                || workspace.assetWorkspace.phase.isBusy
+                                || workspace.isExportingIntegration
+                        )
+                        .keyboardShortcut("o", modifiers: .command)
+                }
             }
 #endif
         }

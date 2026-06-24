@@ -63,12 +63,14 @@ struct CoreAIProjectDetailView: View {
         .navigationTitle(project.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button(
-                    "Import Artifact",
-                    systemImage: "square.and.arrow.down",
-                    action: showArtifactImporter
-                )
-                .disabled(controller.isPerformingOperation)
+                if !project.artifactLinks.isEmpty {
+                    Button(
+                        "Import Artifact",
+                        systemImage: "square.and.arrow.down",
+                        action: showArtifactImporter
+                    )
+                    .disabled(controller.isPerformingOperation)
+                }
 
                 Menu("Project Actions", systemImage: "ellipsis.circle") {
                     Button("Rename Project", systemImage: "pencil", action: showRenamePrompt)

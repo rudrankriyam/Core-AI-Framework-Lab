@@ -30,22 +30,24 @@ struct SpeakerDiarizationWorkspaceView: View {
                     runAction: workspace.startDiarization
                 )
 
-                SpeakerDiarizationWatcherSection(
-                    summary: workspace.mediaSummary,
-                    player: watcher.player,
-                    currentTime: watcher.currentTime,
-                    activeTurn: activeTurn,
-                    isPlaying: watcher.isPlaying,
-                    togglePlayback: watcher.togglePlayback,
-                    restart: watcher.restart
-                )
+                if workspace.mediaSummary != nil {
+                    SpeakerDiarizationWatcherSection(
+                        summary: workspace.mediaSummary,
+                        player: watcher.player,
+                        currentTime: watcher.currentTime,
+                        activeTurn: activeTurn,
+                        isPlaying: watcher.isPlaying,
+                        togglePlayback: watcher.togglePlayback,
+                        restart: watcher.restart
+                    )
 
-                SpeakerDiarizationAnalysisSection(
-                    waveform: workspace.waveform,
-                    result: workspace.result,
-                    playheadTime: watcher.currentTime,
-                    activeTurnID: activeTurn?.id
-                )
+                    SpeakerDiarizationAnalysisSection(
+                        waveform: workspace.waveform,
+                        result: workspace.result,
+                        playheadTime: watcher.currentTime,
+                        activeTurnID: activeTurn?.id
+                    )
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("Diarization")

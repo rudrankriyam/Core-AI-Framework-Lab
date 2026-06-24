@@ -75,7 +75,7 @@ struct CoreAIProjectArtifactDetailView: View {
                             "The persisted descriptor snapshot is invalid.",
                             systemImage: "exclamationmark.triangle"
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.orange)
                     }
                 }
 

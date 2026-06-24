@@ -24,12 +24,10 @@ struct CoreAISourceProvenanceSummaryView: View {
                     LabeledContent("License", value: provenance.licenseName)
                 }
                 if !provenance.notes.isEmpty {
-                    Text(provenance.notes)
-                        .foregroundStyle(.secondary)
+                    LabeledContent("Notes", value: provenance.notes)
                 }
             } else {
-                Text("No source provenance has been recorded.")
-                    .foregroundStyle(.secondary)
+                Label("No Source Provenance", systemImage: "minus.circle")
             }
             Button(
                 "Edit Source Provenance",

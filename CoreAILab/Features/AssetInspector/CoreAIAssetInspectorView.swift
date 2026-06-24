@@ -44,10 +44,12 @@ struct CoreAIAssetInspectorView: View {
         }
         .navigationTitle("Asset Inspector")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Open Model", systemImage: "folder", action: openModelPicker)
-                    .disabled(workspace.phase.isBusy)
-                    .keyboardShortcut("o", modifiers: .command)
+            if workspace.report != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Open Model", systemImage: "folder", action: openModelPicker)
+                        .disabled(workspace.phase.isBusy)
+                        .keyboardShortcut("o", modifiers: .command)
+                }
             }
         }
         .fileImporter(

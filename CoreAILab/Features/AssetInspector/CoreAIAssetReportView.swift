@@ -20,8 +20,7 @@ struct CoreAIAssetReportView: View {
                 LabeledContent("Author", value: valueOrFallback(report.author))
                 LabeledContent("License", value: valueOrFallback(report.license))
                 if !report.description.isEmpty {
-                    Text(report.description)
-                        .foregroundStyle(.secondary)
+                    LabeledContent("Description", value: report.description)
                 }
             } header: {
                 Label("Asset", systemImage: "shippingbox")
@@ -29,8 +28,7 @@ struct CoreAIAssetReportView: View {
 
             Section {
                 if report.functions.isEmpty {
-                    Text("No functions were declared in the asset summary.")
-                        .foregroundStyle(.secondary)
+                    Label("No Functions Declared", systemImage: "minus.circle")
                 } else {
                     ForEach(report.functions) { function in
                         DisclosureGroup {
@@ -58,8 +56,7 @@ struct CoreAIAssetReportView: View {
 
             Section {
                 if report.computeTypes.isEmpty {
-                    Text("No compute types were reported.")
-                        .foregroundStyle(.secondary)
+                    Label("Not Reported", systemImage: "minus.circle")
                 } else {
                     ForEach(report.computeTypes, id: \.self) { computeType in
                         Text(computeType)
@@ -71,8 +68,7 @@ struct CoreAIAssetReportView: View {
 
             Section {
                 if report.storageTypes.isEmpty {
-                    Text("No storage statistics were reported.")
-                        .foregroundStyle(.secondary)
+                    Label("Not Reported", systemImage: "minus.circle")
                 } else {
                     ForEach(report.storageTypes) { storageType in
                         LabeledContent(
@@ -88,8 +84,7 @@ struct CoreAIAssetReportView: View {
 
             Section {
                 if report.operationDistribution.isEmpty {
-                    Text("No operation statistics were reported.")
-                        .foregroundStyle(.secondary)
+                    Label("Not Reported", systemImage: "minus.circle")
                 } else {
                     ForEach(report.operationDistribution) { operation in
                         LabeledContent(

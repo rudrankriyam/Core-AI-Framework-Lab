@@ -22,10 +22,6 @@ struct CoreAIRecipeReferenceListEditorView: View {
 
         GroupBox(title) {
             VStack(alignment: .leading) {
-                if valueIDs.isEmpty {
-                    Text("None")
-                        .foregroundStyle(.secondary)
-                }
                 ForEach(valueIDs, id: \.self) { valueID in
                     if let value = value(for: valueID) {
                         HStack {

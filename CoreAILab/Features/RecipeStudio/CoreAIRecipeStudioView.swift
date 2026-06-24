@@ -13,16 +13,9 @@ struct CoreAIRecipeStudioView: View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section {
-                    VStack(alignment: .leading) {
-                        Text(workspace.recipe.displayName)
-                            .font(.headline)
-                            .lineLimit(2)
-
-                        Label(validationTitle, systemImage: validationSystemImage)
-                            .font(.callout)
-                            .foregroundStyle(validationStyle)
-                    }
-                    .accessibilityElement(children: .combine)
+                    Text(workspace.recipe.displayName)
+                        .font(.headline)
+                        .lineLimit(2)
                 }
 
                 Section("Authoring") {

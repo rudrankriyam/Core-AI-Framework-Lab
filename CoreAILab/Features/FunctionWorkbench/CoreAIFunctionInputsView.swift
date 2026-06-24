@@ -7,8 +7,7 @@ struct CoreAIFunctionInputsView: View {
     var body: some View {
         Section {
             if drafts.isEmpty {
-                Text("This function has no generated tensor inputs.")
-                    .foregroundStyle(.secondary)
+                Label("No Generated Inputs", systemImage: "minus.circle")
             } else {
                 ForEach(drafts, id: \.name) { draft in
                     CoreAIFunctionInputDraftView(
