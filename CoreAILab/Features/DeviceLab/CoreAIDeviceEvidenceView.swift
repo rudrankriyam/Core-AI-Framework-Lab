@@ -45,19 +45,19 @@ struct CoreAIDeviceEvidenceView: View {
                 }
                 LabeledContent(
                     "Specialization",
-                    value: displayName(evidence.specialization.status.rawValue)
+                    value: displayName(evidence.specialization.status)
                 )
                 LabeledContent(
                     "Inference",
-                    value: displayName(evidence.inference.status.rawValue)
+                    value: displayName(evidence.inference.status)
                 )
                 LabeledContent(
                     "Energy",
-                    value: displayName(evidence.energy.availability.rawValue)
+                    value: displayName(evidence.energy.availability)
                 )
                 LabeledContent(
                     "Execution placement",
-                    value: displayName(evidence.placement.availability.rawValue)
+                    value: displayName(evidence.placement.availability)
                 )
             } else {
                 ContentUnavailableView(
@@ -76,7 +76,23 @@ struct CoreAIDeviceEvidenceView: View {
         isImportingEvidence = true
     }
 
-    private func displayName(_ rawValue: String) -> String {
-        rawValue.replacing("_", with: " ").capitalized
+    private func displayName(_ status: CoreAIDeviceTrialStatus) -> String {
+        switch status {
+        case .notRun:
+            "Not run"
+        case .succeeded:
+            "Succeeded"
+        case .failed:
+            "Failed"
+        }
+    }
+
+    private func displayName(_ availability: CoreAIDeviceMetricAvailability) -> String {
+        switch availability {
+        case .unavailable:
+            "Unavailable"
+        case .observed:
+            "Observed"
+        }
     }
 }
