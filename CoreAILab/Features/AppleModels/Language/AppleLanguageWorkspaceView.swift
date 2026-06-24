@@ -26,11 +26,10 @@ struct AppleLanguageWorkspaceView: View {
         Form {
             Section {
                 LabeledContent("Model", value: workspace.modelName ?? "Not loaded")
-                Label(
-                    workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "text.bubble"
-                )
-                .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "text.bubble.fill")
             }
@@ -40,11 +39,10 @@ struct AppleLanguageWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Model Bundle") {
-                HStack {
-                    Button("Import Qwen Bundle", systemImage: "shippingbox", action: importModel)
-                    Button("New Session", systemImage: "arrow.counterclockwise", action: resetSession)
-                        .disabled(workspace.modelName == nil || workspace.isBusy)
+            Section {
+                ViewThatFits(in: .horizontal) {
+                    modelActions(axis: .horizontal)
+                    modelActions(axis: .vertical)
                 }
 
                 LabeledContent("macOS export") {
@@ -57,9 +55,11 @@ struct AppleLanguageWorkspaceView: View {
                         .font(.body.monospaced())
                         .textSelection(.enabled)
                 }
+            } header: {
+                Label("Model Bundle", systemImage: "shippingbox")
             }
 
-            Section("Prompt") {
+            Section {
                 TextField("Ask Qwen", text: $workspace.prompt, axis: .vertical)
                     .lineLimit(3...8)
                     .disabled(!workspace.canEditGenerationInputs)
@@ -71,29 +71,47 @@ struct AppleLanguageWorkspaceView: View {
                 )
                 .disabled(!workspace.canEditGenerationInputs)
 
-                HStack {
-                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canGenerate)
-                    if workspace.isGenerating {
-                        Button("Cancel", systemImage: "stop.fill", role: .destructive, action: workspace.cancelGeneration)
-                    }
+#if !os(macOS)
+                ViewThatFits(in: .horizontal) {
+                    generationActions(axis: .horizontal)
+                    generationActions(axis: .vertical)
                 }
+#endif
+            } header: {
+                Label("Prompt", systemImage: "text.bubble")
             }
 
             AppleLanguageResponseView(response: workspace.response)
         }
         .formStyle(.grouped)
         .navigationTitle("\(workspace.example.title) Language Model")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.isGenerating {
+                    Button(
+                        "Cancel Generation",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelGeneration
+                    )
+                } else {
+                    Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                        .disabled(!workspace.canGenerate)
+                        .help(workspace.statusMessage)
+                }
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.folder]
         ) { result in
             handleModelImport(result)
         }
-        .alert("Language Model Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Generate a Response", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model bundle and prompt, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {
@@ -120,7 +138,47 @@ struct AppleLanguageWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.presentImportError(error)
+            }
+        }
+    }
+
+    private func modelActions(axis: Axis) -> some View {
+        adaptiveLayout(axis: axis) {
+            Button("Import Qwen Bundle", systemImage: "shippingbox", action: importModel)
+            Button("New Session", systemImage: "arrow.counterclockwise", action: resetSession)
+                .disabled(workspace.modelName == nil || workspace.isBusy)
+        }
+    }
+
+#if !os(macOS)
+    private func generationActions(axis: Axis) -> some View {
+        adaptiveLayout(axis: axis) {
+            Button("Generate", systemImage: "play.fill", action: workspace.startGeneration)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canGenerate)
+            if workspace.isGenerating {
+                Button(
+                    "Cancel",
+                    systemImage: "stop.fill",
+                    role: .cancel,
+                    action: workspace.cancelGeneration
+                )
+            }
+        }
+    }
+#endif
+
+    private func adaptiveLayout<Content: View>(
+        axis: Axis,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+        return layout {
+            content()
         }
     }
 }

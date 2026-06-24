@@ -8,17 +8,18 @@ struct CoreAIProjectLibraryView: View {
     @State private var controller = CoreAIProjectLibraryController()
     @State private var path: [CoreAIProjectRoute] = []
     @State private var isCreatingProject = false
+    @State private var searchText = ""
 
     var body: some View {
+        let visibleProjects = searchText.isEmpty
+            ? projects
+            : projects.filter { $0.name.localizedStandardContains(searchText) }
+
         NavigationStack(path: $path) {
             Group {
                 if projects.isEmpty {
                     ContentUnavailableView {
-                        Label("Create a Lab Project", systemImage: "folder.badge.plus")
-                    } description: {
-                        Text(
-                            "Projects keep imported models and resource bundles available across launches with checksummed, deduplicated storage."
-                        )
+                        Label("Create Your First Project", systemImage: "folder.badge.plus")
                     } actions: {
                         Button(
                             "New Project",
@@ -28,23 +29,30 @@ struct CoreAIProjectLibraryView: View {
                         .buttonStyle(.borderedProminent)
                     }
                 } else {
-                    List(projects) { project in
-                        NavigationLink(value: CoreAIProjectRoute.project(project.id)) {
-                            CoreAIProjectRowView(project: project)
+                    Group {
+                        if visibleProjects.isEmpty {
+                            ContentUnavailableView.search
+                        } else {
+                            List(visibleProjects) { project in
+                                NavigationLink(value: CoreAIProjectRoute.project(project.id)) {
+                                    CoreAIProjectRowView(project: project)
+                                }
+                            }
+                        }
+                    }
+                    .searchable(text: $searchText, prompt: "Search projects")
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(
+                                "New Project",
+                                systemImage: "plus",
+                                action: showNewProject
+                            )
                         }
                     }
                 }
             }
             .navigationTitle("Projects")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(
-                        "New Project",
-                        systemImage: "plus",
-                        action: showNewProject
-                    )
-                }
-            }
             .navigationDestination(for: CoreAIProjectRoute.self) { route in
                 CoreAIProjectDestinationView(
                     route: route,
@@ -58,9 +66,9 @@ struct CoreAIProjectLibraryView: View {
                 path.append(.project(project.id))
             }
         }
-        .alert("Project Operation Failed", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Update the Project Library", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "The project operation failed.")
+            Text(controller.errorMessage ?? "Check project storage and try again.")
         }
     }
 

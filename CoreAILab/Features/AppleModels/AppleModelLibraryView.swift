@@ -28,12 +28,17 @@ struct AppleModelLibraryView: View {
                         }
 
                         ForEach(groups) { group in
-                            Section(group.category.rawValue) {
+                            Section {
                                 ForEach(group.models) { entry in
                                     NavigationLink(value: entry) {
                                         AppleModelRow(model: entry)
                                     }
                                 }
+                            } header: {
+                                Label(
+                                    group.category.rawValue,
+                                    systemImage: group.category.systemImage
+                                )
                             }
                         }
                     }

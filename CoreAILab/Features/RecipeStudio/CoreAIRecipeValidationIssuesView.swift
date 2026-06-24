@@ -5,7 +5,7 @@ struct CoreAIRecipeValidationIssuesView: View {
 
     var body: some View {
         if issues.isEmpty {
-            Label("This draft is structurally valid", systemImage: "checkmark.circle.fill")
+            Label("Structurally Valid", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
         } else {
             ForEach(issues) { issue in

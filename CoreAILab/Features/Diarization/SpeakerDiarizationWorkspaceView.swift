@@ -11,23 +11,26 @@ struct SpeakerDiarizationWorkspaceView: View {
         let activeTurn = workspace.result?.turn(at: watcher.currentTime)
 
         NavigationStack {
-            GeometryReader { geometry in
-                Form {
-                    SpeakerDiarizationStatusSection(
-                        modelInfo: workspace.modelInfo,
-                        summary: workspace.mediaSummary,
-                        statusMessage: workspace.statusMessage,
-                        isBusy: workspace.isBusy
-                    )
+            Form {
+                SpeakerDiarizationStatusSection(
+                    modelInfo: workspace.modelInfo,
+                    summary: workspace.mediaSummary,
+                    statusMessage: workspace.statusMessage,
+                    isBusy: workspace.isBusy
+                )
 
-                    SpeakerDiarizationImportSection(
-                        canRunDiarization: workspace.canRunDiarization,
-                        isBusy: workspace.isBusy,
-                        importModelAction: importModel,
-                        importMediaAction: importMedia,
-                        runAction: workspace.startDiarization
-                    )
+                SpeakerDiarizationImportSection(
+                    canRunDiarization: workspace.canRunDiarization,
+                    canImportModel: !workspace.isLoadingModel
+                        && !workspace.isRunningDiarization,
+                    canImportMedia: !workspace.isAnalyzingMedia
+                        && !workspace.isRunningDiarization,
+                    importModelAction: importModel,
+                    importMediaAction: importMedia,
+                    runAction: workspace.startDiarization
+                )
 
+                if workspace.mediaSummary != nil {
                     SpeakerDiarizationWatcherSection(
                         summary: workspace.mediaSummary,
                         player: watcher.player,
@@ -39,16 +42,28 @@ struct SpeakerDiarizationWorkspaceView: View {
                     )
 
                     SpeakerDiarizationAnalysisSection(
-                        availableWidth: geometry.size.width,
                         waveform: workspace.waveform,
                         result: workspace.result,
                         playheadTime: watcher.currentTime,
                         activeTurnID: activeTurn?.id
                     )
                 }
-                .formStyle(.grouped)
             }
+            .formStyle(.grouped)
             .navigationTitle("Diarization")
+            .toolbar {
+#if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Button(
+                        "Run Diarization",
+                        systemImage: "person.2.wave.2",
+                        action: workspace.startDiarization
+                    )
+                    .disabled(!workspace.canRunDiarization)
+                    .help(workspace.statusMessage)
+                }
+#endif
+            }
             .task {
                 await workspace.prepareBundledModel()
             }
@@ -71,9 +86,9 @@ struct SpeakerDiarizationWorkspaceView: View {
             ) { result in
                 handleMediaImport(result)
             }
-            .alert("Diarization Lab Failed", isPresented: $workspace.isShowingError) {
+            .alert("Couldn't Separate the Speakers", isPresented: $workspace.isShowingError) {
             } message: {
-                Text(workspace.errorMessage ?? "The request could not be completed.")
+                Text(workspace.errorMessage ?? "Check the model and media file, then try again.")
             }
         }
     }
@@ -91,7 +106,7 @@ struct SpeakerDiarizationWorkspaceView: View {
         case .success(let url):
             workspace.selectMedia(url)
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -102,6 +117,12 @@ struct SpeakerDiarizationWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

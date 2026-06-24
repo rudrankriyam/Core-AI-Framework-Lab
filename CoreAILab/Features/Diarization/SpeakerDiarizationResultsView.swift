@@ -79,8 +79,7 @@ struct SpeakerDiarizationResultsView: View {
             } else {
                 ContentUnavailableView(
                     "No Speaker Turns Yet",
-                    systemImage: "person.2.slash",
-                    description: Text("Choose media, then run the bundled CAM++ diarizer.")
+                    systemImage: "person.2.slash"
                 )
                 .frame(maxWidth: .infinity, minHeight: 180)
             }

@@ -17,7 +17,12 @@ struct AppleObjectDetectionPreviewView: View {
                 }
                 .accessibilityLabel("Object detection source image")
 
-            if !detections.isEmpty {
+            if detections.isEmpty {
+                ContentUnavailableView(
+                    "No Detections Yet",
+                    systemImage: "viewfinder"
+                )
+            } else {
                 Table(detections) {
                     TableColumn("Object", value: \.label)
                     TableColumn("Confidence") { detection in

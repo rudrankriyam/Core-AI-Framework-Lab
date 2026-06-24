@@ -19,5 +19,8 @@ struct CoreAILabApp: App {
             ContentView()
         }
         .modelContainer(modelContainer)
+#if os(macOS)
+        .defaultSize(width: 1_280, height: 820)
+#endif
     }
 }

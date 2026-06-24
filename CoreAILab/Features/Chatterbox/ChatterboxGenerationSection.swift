@@ -3,6 +3,7 @@ import SwiftUI
 struct ChatterboxGenerationSection: View {
     let canGenerate: Bool
     let isWorking: Bool
+    let workingActionTitle: String
     let statusMessage: String
     let result: ChatterboxGenerationResult?
     let isPlaying: Bool
@@ -11,34 +12,43 @@ struct ChatterboxGenerationSection: View {
 
     var body: some View {
         Section {
-            Button(
-                "Generate speech",
-                systemImage: "play.circle.fill",
-                action: generateAction
-            )
+#if !os(macOS)
+            Button(action: generateAction) {
+                Label {
+                    Text(isWorking ? workingActionTitle : "Generate Speech")
+                } icon: {
+                    if isWorking {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "play.circle.fill")
+                    }
+                }
+            }
             .buttonStyle(.borderedProminent)
             .disabled(!canGenerate)
+#endif
 
             if isWorking {
-                ProgressView(statusMessage)
+                Text(statusMessage)
+                    .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
 
             if let result {
                 Button(
-                    isPlaying ? "Stop playback" : "Play generated speech",
+                    isPlaying ? "Stop Playback" : "Play Generated Speech",
                     systemImage: isPlaying ? "stop.fill" : "speaker.wave.3.fill",
                     action: playbackAction
                 )
 
                 LabeledContent(
-                    "Generation",
-                    value: result.elapsedTime,
-                    format: .number.precision(.fractionLength(2))
+                    "Generation time",
+                    value: "\(result.elapsedTime.formatted(.number.precision(.fractionLength(2)))) seconds"
                 )
                 LabeledContent(
-                    "Audio",
-                    value: result.audioDuration,
-                    format: .number.precision(.fractionLength(2))
+                    "Audio duration",
+                    value: "\(result.audioDuration.formatted(.number.precision(.fractionLength(2)))) seconds"
                 )
                 LabeledContent(
                     "Real-time factor",
@@ -55,11 +65,12 @@ struct ChatterboxGenerationSection: View {
                     item: result.audioURL,
                     preview: SharePreview("Chatterbox Core AI audio")
                 ) {
-                    Label("Share generated audio", systemImage: "square.and.arrow.up")
+                    Label("Share Generated Audio", systemImage: "square.and.arrow.up")
                 }
             }
-        } footer: {
-            Text("The first launch specializes the bundled graphs. Later runs reuse Core AI's persistent cache.")
+        } header: {
+            Label("Generate & Playback", systemImage: "speaker.wave.3")
         }
+        .help("The first launch specializes the bundled graphs; later runs may reuse Core AI's cache.")
     }
 }

@@ -5,7 +5,7 @@ struct CoreAIPipelineValidationIssuesView: View {
 
     var body: some View {
         if issues.isEmpty {
-            Label("Pipeline contract is valid", systemImage: "checkmark.circle.fill")
+            Label("Contract Valid", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
         } else {
             ForEach(issues) { issue in

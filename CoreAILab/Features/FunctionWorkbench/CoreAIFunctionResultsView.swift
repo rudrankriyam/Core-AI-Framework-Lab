@@ -4,7 +4,7 @@ struct CoreAIFunctionResultsView: View {
     let result: CoreAIFunctionRunResult
 
     var body: some View {
-        Section("Latest Run") {
+        Section {
             LabeledContent("Function", value: result.functionName)
             LabeledContent("Inference time") {
                 Text(result.duration.formatted(.time(pattern: .minuteSecond)))
@@ -12,6 +12,8 @@ struct CoreAIFunctionResultsView: View {
             ForEach(result.outputs) { output in
                 CoreAIFunctionOutputSummaryView(output: output)
             }
+        } header: {
+            Label("Latest Run", systemImage: "checkmark.circle")
         }
     }
 }

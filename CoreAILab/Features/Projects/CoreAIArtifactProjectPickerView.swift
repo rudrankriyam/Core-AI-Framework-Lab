@@ -18,8 +18,6 @@ struct CoreAIArtifactProjectPickerView: View {
                 if projects.isEmpty {
                     ContentUnavailableView {
                         Label("No Projects", systemImage: "folder.badge.plus")
-                    } description: {
-                        Text("Create a project before storing this conversion output.")
                     } actions: {
                         Button(
                             "New Project",
@@ -57,9 +55,9 @@ struct CoreAIArtifactProjectPickerView: View {
                 storeArtifact(in: project)
             }
         }
-        .alert("Artifact Could Not Be Stored", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Store the Artifact", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "Core AI Lab could not store the artifact.")
+            Text(controller.errorMessage ?? "Choose another project or try again.")
         }
     }
 

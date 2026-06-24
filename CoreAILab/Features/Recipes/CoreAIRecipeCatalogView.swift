@@ -10,13 +10,8 @@ struct CoreAIRecipeCatalogView: View {
         let entries = model.entries
 
         NavigationStack {
-            List {
+            Form {
                 Section {
-                    Text("Trust describes where a recipe came from. Verification describes which checks have evidence. Neither state grants imported code permission to run.")
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Curated recipes") {
                     if let catalogError = model.catalogError {
                         ContentUnavailableView(
                             "Catalog Unavailable",
@@ -33,9 +28,14 @@ struct CoreAIRecipeCatalogView: View {
                             CoreAIRecipeCatalogEntryView(entry: entry)
                         }
                     }
+                } header: {
+                    Label("Curated Recipes", systemImage: "checkmark.seal")
                 }
+                .help(
+                    "Trust identifies source. Verification names evidence-backed checks; neither grants code permission."
+                )
 
-                Section("Imported bundle") {
+                Section {
                     CoreAIImportedRecipeBundleView(
                         summary: model.importedSummary,
                         codeApprovalState: model.codeApprovalState,
@@ -44,8 +44,11 @@ struct CoreAIRecipeCatalogView: View {
                         onApprove: approveReferencedCode,
                         onRevoke: revokeReferencedCode
                     )
+                } header: {
+                    Label("Imported Bundle", systemImage: "shippingbox.and.arrow.backward")
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -65,7 +68,7 @@ struct CoreAIRecipeCatalogView: View {
                 handleImportResult(result)
             }
             .alert(
-                "Recipe Bundle Import Failed",
+                "Couldn't Import the Recipe Bundle",
                 isPresented: $model.isShowingError,
                 presenting: model.errorMessage
             ) { _ in
@@ -85,7 +88,9 @@ struct CoreAIRecipeCatalogView: View {
             guard let url = urls.first else { return }
             Task { await model.importBundle(at: url) }
         case .failure(let error):
-            model.presentImportError(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                model.presentImportError(error)
+            }
         }
     }
 

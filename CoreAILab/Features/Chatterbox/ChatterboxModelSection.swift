@@ -4,12 +4,9 @@ struct ChatterboxModelSection: View {
     let state: ChatterboxModelState
 
     var body: some View {
-        Section("Bundled Core AI Model") {
+        Section {
             Label(state.title, systemImage: state.systemImage)
-
-            Text(state.detail)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .help(state.detail)
 
             if case .ready(let inspection) = state {
                 LabeledContent("Model bundle", value: inspection.formattedTotalSize)
@@ -21,6 +18,8 @@ struct ChatterboxModelSection: View {
                     LabeledContent("Author", value: inspection.author)
                 }
             }
+        } header: {
+            Label("Bundled Core AI Model", systemImage: "shippingbox")
         }
     }
 }

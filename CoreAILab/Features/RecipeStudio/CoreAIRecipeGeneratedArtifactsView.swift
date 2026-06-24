@@ -8,9 +8,9 @@ struct CoreAIRecipeGeneratedArtifactsView: View {
             if workspace.generatedArtifacts.isEmpty {
                 ContentUnavailableView(
                     "No Generated Stubs",
-                    systemImage: "doc.badge.gearshape",
-                    description: Text("Generate stubs from an attributed unsupported-operation finding.")
+                    systemImage: "doc.badge.gearshape"
                 )
+                .help("Generate stubs from an attributed unsupported-operation finding.")
             }
 
             ForEach(workspace.generatedArtifacts) { artifact in

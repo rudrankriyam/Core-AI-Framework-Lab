@@ -7,5 +7,7 @@ struct CoreAIRecipeStudioPanelLink: View {
         NavigationLink(value: panel) {
             Label(panel.title, systemImage: panel.systemImage)
         }
+        .help(panel.summary)
+        .accessibilityHint(panel.summary)
     }
 }

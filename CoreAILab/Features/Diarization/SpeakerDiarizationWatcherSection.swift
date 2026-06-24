@@ -21,8 +21,7 @@ struct SpeakerDiarizationWatcherSection: View {
                 } else {
                     ContentUnavailableView(
                         "Audio Watcher",
-                        systemImage: "waveform.circle",
-                        description: Text("Playback still drives the same live playhead and active speaker state.")
+                        systemImage: "waveform.circle"
                     )
                 }
 
@@ -40,16 +39,14 @@ struct SpeakerDiarizationWatcherSection: View {
                     Button("Restart", systemImage: "backward.end.fill", action: restart)
                 }
 
-                Text("The watcher synchronizes playback with the completed batch timeline. It does not claim streaming inference.")
-                    .foregroundStyle(.secondary)
             } else {
                 ContentUnavailableView(
                     "No Media to Watch",
-                    systemImage: "play.rectangle",
-                    description: Text("Import audio or video to enable synchronized playback.")
+                    systemImage: "play.rectangle"
                 )
             }
         }
+        .help("Playback follows the completed batch timeline; it is not streaming inference.")
     }
 
     private func positionText(for summary: SpeakerDiarizationMediaSummary) -> String {

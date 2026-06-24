@@ -18,7 +18,7 @@ struct CoreAIProjectArtifactDetailView: View {
 
         Form {
             if let artifact = link.artifact {
-                Section("Artifact") {
+                Section {
                     LabeledContent("Name", value: link.displayName)
                     LabeledContent(
                         "Kind",
@@ -31,9 +31,11 @@ struct CoreAIProjectArtifactDetailView: View {
                     LabeledContent("Imported") {
                         Text(artifact.importedAt, format: .dateTime.day().month().year().hour().minute())
                     }
+                } header: {
+                    Label("Artifact", systemImage: "shippingbox")
                 }
 
-                Section("Integrity") {
+                Section {
                     LabeledContent("SHA-256") {
                         Text(artifact.sha256Digest)
                             .font(.callout.monospaced())
@@ -42,8 +44,12 @@ struct CoreAIProjectArtifactDetailView: View {
                     LabeledContent("Store path") {
                         Text(artifact.storageRelativePath)
                             .font(.callout.monospaced())
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                             .textSelection(.enabled)
                     }
+                } header: {
+                    Label("Integrity", systemImage: "checkmark.seal")
                 }
 
                 if artifact.resourceSnapshotData != nil {
@@ -69,20 +75,20 @@ struct CoreAIProjectArtifactDetailView: View {
                             "The persisted descriptor snapshot is invalid.",
                             systemImage: "exclamationmark.triangle"
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.orange)
                     }
                 }
 
                 if artifact.kind == .modelAsset {
-                    Section("Open With") {
-                        NavigationLink(
-                            "Asset Inspector",
-                            value: CoreAIProjectRoute.inspect(link.id)
-                        )
-                        NavigationLink(
-                            "Function Workbench",
-                            value: CoreAIProjectRoute.workbench(link.id)
-                        )
+                    Section {
+                        NavigationLink(value: CoreAIProjectRoute.inspect(link.id)) {
+                            Label("Asset Inspector", systemImage: "doc.text.magnifyingglass")
+                        }
+                        NavigationLink(value: CoreAIProjectRoute.workbench(link.id)) {
+                            Label("Function Workbench", systemImage: "function")
+                        }
+                    } header: {
+                        Label("Open With", systemImage: "arrow.up.forward.app")
                     }
 
                     CoreAIProjectSpecializationCacheView(
@@ -149,9 +155,9 @@ struct CoreAIProjectArtifactDetailView: View {
                 "Project cache records are removed. Core AI deletes configurations only when another project does not still reference them."
             )
         }
-        .alert("Artifact Operation Failed", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Update the Artifact", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "The artifact operation failed.")
+            Text(controller.errorMessage ?? "Check the stored artifact and try again.")
         }
         .sheet(isPresented: $isShowingProvenanceEditor) {
             CoreAISourceProvenanceEditorView(

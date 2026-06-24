@@ -28,11 +28,10 @@ struct AppleSegmentationWorkspaceView: View {
             Section {
                 LabeledContent("Model", value: workspace.modelName ?? "Not loaded")
                 LabeledContent("Image", value: workspace.imageName ?? "Not loaded")
-                Label(
-                    workspace.statusMessage,
-                    systemImage: statusSystemImage
-                )
-                    .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "square.stack.3d.up")
             }
@@ -42,19 +41,22 @@ struct AppleSegmentationWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Run Apple's Export") {
-                HStack {
-                    Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Image", systemImage: "photo", action: importImage)
-                    Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canRun)
+            Section {
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
                 .disabled(workspace.isBusy)
+            } header: {
+                Label("Model & Image", systemImage: "square.stack.3d.up")
+            }
 
+            Section {
                 Text(workspace.example.exportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Apple Export Command", systemImage: "terminal")
             }
 
             AppleSegmentationQueryControlsView(workspace: workspace)
@@ -65,6 +67,15 @@ struct AppleSegmentationWorkspaceView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("\(workspace.example.title) Segmentation")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
+                    .disabled(!workspace.canRun)
+                    .help(workspace.statusMessage)
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.folder]
@@ -77,9 +88,9 @@ struct AppleSegmentationWorkspaceView: View {
         ) { result in
             handleImageImport(result)
         }
-        .alert("Segmentation Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Segment the Image", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model bundle and image, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {
@@ -90,19 +101,6 @@ struct AppleSegmentationWorkspaceView: View {
 
     private func importModel() {
         isImportingModel = true
-    }
-
-    private var statusSystemImage: String {
-        if workspace.isBusy {
-            return "hourglass"
-        }
-        if workspace.isShowingError {
-            return "exclamationmark.triangle"
-        }
-        if workspace.modelName != nil, workspace.sourceImage != nil {
-            return "checkmark.circle"
-        }
-        return "info.circle"
     }
 
     private func importImage() {
@@ -122,7 +120,7 @@ struct AppleSegmentationWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -131,6 +129,28 @@ struct AppleSegmentationWorkspaceView: View {
         case .success(let url):
             workspace.loadImage(from: url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import Model Bundle", systemImage: "shippingbox", action: importModel)
+            Button("Choose Image", systemImage: "photo", action: importImage)
+#if !os(macOS)
+            Button("Run Segmentation", systemImage: "play.fill", action: runSegmentation)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canRun)
+#endif
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

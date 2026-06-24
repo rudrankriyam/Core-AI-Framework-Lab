@@ -5,7 +5,7 @@ struct CoreAIDeviceEvidenceView: View {
     @Binding var isImportingEvidence: Bool
 
     var body: some View {
-        Section("Physical Evidence") {
+        Section {
             Button(
                 "Import Runner Evidence",
                 systemImage: "square.and.arrow.down",
@@ -19,7 +19,7 @@ struct CoreAIDeviceEvidenceView: View {
 
             if let error = workspace.importErrorMessage {
                 Label(error, systemImage: "xmark.octagon")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.red)
             }
 
             if let evidence = workspace.importedEvidence {
@@ -31,36 +31,68 @@ struct CoreAIDeviceEvidenceView: View {
                         : evidence.device.modelIdentifier
                 )
                 LabeledContent("iOS", value: evidence.device.operatingSystemVersion)
-                LabeledContent("Artifact", value: evidence.artifact.identifier)
-                LabeledContent("Configuration", value: evidence.configuration.identifier)
+                LabeledContent("Artifact") {
+                    Text(evidence.artifact.identifier)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled)
+                }
+                LabeledContent("Configuration") {
+                    Text(evidence.configuration.identifier)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled)
+                }
                 LabeledContent(
                     "Specialization",
-                    value: evidence.specialization.status.rawValue
+                    value: displayName(evidence.specialization.status)
                 )
-                LabeledContent("Inference", value: evidence.inference.status.rawValue)
-                LabeledContent("Energy", value: evidence.energy.availability.rawValue)
+                LabeledContent(
+                    "Inference",
+                    value: displayName(evidence.inference.status)
+                )
+                LabeledContent(
+                    "Energy",
+                    value: displayName(evidence.energy.availability)
+                )
                 LabeledContent(
                     "Execution placement",
-                    value: evidence.placement.availability.rawValue
+                    value: displayName(evidence.placement.availability)
                 )
-                Text(
-                    "Artifact and configuration SHA-256 identities are retained in the imported JSON."
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             } else {
                 ContentUnavailableView(
                     "No Device Evidence",
-                    systemImage: "iphone.slash",
-                    description: Text(
-                        "Run the physical harness or its dry run with --evidence-json, then import that file."
-                    )
+                    systemImage: "iphone.slash"
                 )
+                .help("Run the physical harness with --evidence-json, then import that file.")
             }
+        } header: {
+            Label("Physical Evidence", systemImage: "doc.text.magnifyingglass")
         }
+        .help("Imported JSON retains artifact and configuration SHA-256 identities.")
     }
 
     private func beginImport() {
         isImportingEvidence = true
+    }
+
+    private func displayName(_ status: CoreAIDeviceTrialStatus) -> String {
+        switch status {
+        case .notRun:
+            "Not run"
+        case .succeeded:
+            "Succeeded"
+        case .failed:
+            "Failed"
+        }
+    }
+
+    private func displayName(_ availability: CoreAIDeviceMetricAvailability) -> String {
+        switch availability {
+        case .unavailable:
+            "Unavailable"
+        case .observed:
+            "Observed"
+        }
     }
 }

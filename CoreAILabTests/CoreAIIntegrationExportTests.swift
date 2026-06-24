@@ -595,6 +595,7 @@ struct CoreAIIntegrationExportTests {
     func cleanExportVerifierBuildsTheStandalonePackage() async throws {
         let exportParent = temporaryDirectory()
         let cleanParent = temporaryDirectory()
+        let developerDirectory = try activeDeveloperDirectory()
         defer {
             try? FileManager.default.removeItem(at: exportParent)
             try? FileManager.default.removeItem(at: cleanParent)
@@ -614,7 +615,7 @@ struct CoreAIIntegrationExportTests {
             at: URL(filePath: "/usr/bin/python3"),
             arguments: [cleanPackageURL.appending(path: "verify-export.py").path],
             environment: [
-                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+                "DEVELOPER_DIR": developerDirectory,
             ]
         )
         #expect(output.contains("Core AI integration export verified."))
@@ -682,7 +683,7 @@ struct CoreAIIntegrationExportTests {
                 "--disable-automatic-resolution",
             ],
             environment: [
-                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+                "DEVELOPER_DIR": developerDirectory,
                 "SWIFTPM_DISABLE_PACKAGE_REPOSITORY_CACHE": "1",
             ]
         )
@@ -752,7 +753,7 @@ struct CoreAIIntegrationExportTests {
                 "build",
             ],
             environment: [
-                "DEVELOPER_DIR": "/Applications/Xcode-beta.app/Contents/Developer",
+                "DEVELOPER_DIR": developerDirectory,
                 "SWIFTPM_DISABLE_PACKAGE_REPOSITORY_CACHE": "1",
             ],
             currentDirectoryURL: iOSConsumerURL
@@ -848,6 +849,17 @@ struct CoreAIIntegrationExportTests {
 
     private func temporaryDirectory() -> URL {
         URL.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    }
+
+    private func activeDeveloperDirectory() throws -> String {
+        if let developerDirectory = ProcessInfo.processInfo.environment["DEVELOPER_DIR"],
+           FileManager.default.fileExists(atPath: developerDirectory) {
+            return developerDirectory
+        }
+        return try runExecutable(
+            at: URL(filePath: "/usr/bin/xcode-select"),
+            arguments: ["--print-path"]
+        ).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func packageSnapshot(at rootURL: URL) throws -> [String: Data] {

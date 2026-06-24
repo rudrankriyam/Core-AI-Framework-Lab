@@ -8,9 +8,9 @@ struct CoreAIRecipeDynamicDimensionsEditorView: View {
             if workspace.recipe.dynamicDimensions.isEmpty {
                 ContentUnavailableView(
                     "No Dynamic Dimensions",
-                    systemImage: "arrow.left.and.right",
-                    description: Text("Static example shapes remain unchanged until a bounded dynamic axis is added.")
+                    systemImage: "arrow.left.and.right"
                 )
+                .help("Static example shapes remain unchanged until a bounded dynamic axis is added.")
             }
 
             ForEach($workspace.recipe.dynamicDimensions) { $dimension in
@@ -45,8 +45,9 @@ struct CoreAIRecipeDynamicDimensionsEditorView: View {
                     action: workspace.addDynamicDimension
                 )
                 .disabled(!workspace.canAddDynamicDimension)
-            } footer: {
-                Text("Bounds are authoring constraints, not evidence that every shape specializes or runs on a preferred compute unit.")
+                .help(
+                    "Bounds are authoring constraints; they do not prove specialization or execution placement."
+                )
             }
         }
         .formStyle(.grouped)

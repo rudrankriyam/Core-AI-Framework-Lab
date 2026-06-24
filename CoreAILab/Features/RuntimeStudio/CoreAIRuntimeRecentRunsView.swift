@@ -5,7 +5,7 @@ struct CoreAIRuntimeRecentRunsView: View {
 
     var body: some View {
         if !coordinator.history.isEmpty {
-            Section("Recent Runtime Runs") {
+            Section {
                 ForEach(coordinator.history.prefix(8)) { run in
                     VStack(alignment: .leading) {
                         Label(
@@ -26,6 +26,8 @@ struct CoreAIRuntimeRecentRunsView: View {
                     }
                     .accessibilityElement(children: .combine)
                 }
+            } header: {
+                Label("Recent Runtime Runs", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
             }
         }
     }

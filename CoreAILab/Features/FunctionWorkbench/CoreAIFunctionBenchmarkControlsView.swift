@@ -31,8 +31,13 @@ struct CoreAIFunctionBenchmarkControlsView: View {
             }
 
             if let message = workspace.benchmarkStatusMessage {
-                Label(message, systemImage: "info.circle")
-                    .foregroundStyle(.secondary)
+                if workspace.phase == .benchmarking {
+                    ProgressView(message)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else {
+                    Label(message, systemImage: "info.circle")
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if CoreAIBuildConfiguration.current == .debug {
@@ -43,11 +48,7 @@ struct CoreAIFunctionBenchmarkControlsView: View {
                 .foregroundStyle(.orange)
             }
         } header: {
-            Text("Benchmark")
-        } footer: {
-            Text(
-                "Warmups are excluded. Measured runs reuse one function and one deterministic input set, execute sequentially, and remain visible individually. Stopping takes effect between Core AI inference calls."
-            )
+            Label("Benchmark", systemImage: "gauge.with.dots.needle.67percent")
         }
     }
 }

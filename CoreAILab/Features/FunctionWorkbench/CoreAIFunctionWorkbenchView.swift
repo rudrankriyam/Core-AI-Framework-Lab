@@ -37,8 +37,8 @@ struct CoreAIFunctionWorkbenchView: View {
 
         Group {
             if let report = workspace.assetWorkspace.report {
-                List {
-                    Section("Asset") {
+                Form {
+                    Section {
                         LabeledContent("Name", value: report.url.lastPathComponent)
                         LabeledContent(
                             "Device",
@@ -47,7 +47,11 @@ struct CoreAIFunctionWorkbenchView: View {
                         Text(report.url.path)
                             .font(.callout.monospaced())
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                             .textSelection(.enabled)
+                    } header: {
+                        Label("Asset", systemImage: "shippingbox")
                     }
 
                     CoreAIRuntimeLifecycleView(
@@ -63,32 +67,32 @@ struct CoreAIFunctionWorkbenchView: View {
                     )
 
                     if workspace.assetWorkspace.specializationResult == nil {
-                        Section("Function Workbench") {
+                        Section {
                             ContentUnavailableView(
                                 "Specialize the Asset",
-                                systemImage: "cpu",
-                                description: Text(
-                                    "Choose a compute profile above, then specialize or load its cached model to inspect runtime contracts."
-                                )
+                                systemImage: "cpu"
                             )
+                            .help("Choose a compute profile, then specialize or load its cached model.")
+                        } header: {
+                            Label("Function Workbench", systemImage: "function")
                         }
                     } else if workspace.phase == .preparingContracts {
-                        Section("Function Workbench") {
+                        Section {
                             ContentUnavailableView {
                                 Label("Reading Function Contracts", systemImage: "list.bullet.rectangle")
-                            } description: {
-                                Text("Loading input, state, and output descriptors from the specialized model.")
                             } actions: {
                                 ProgressView()
                             }
+                        } header: {
+                            Label("Function Workbench", systemImage: "function")
                         }
                     } else if workspace.contracts.isEmpty {
-                        Section("Function Workbench") {
+                        Section {
                             ContentUnavailableView {
                                 Label(
                                     workspace.contractLoadFailureMessage == nil
                                         ? "No Functions"
-                                        : "Unable to Load Functions",
+                                        : "Couldn't Read Functions",
                                     systemImage: workspace.contractLoadFailureMessage == nil
                                         ? "function"
                                         : "exclamationmark.triangle"
@@ -107,6 +111,8 @@ struct CoreAIFunctionWorkbenchView: View {
                                     )
                                 }
                             }
+                        } header: {
+                            Label("Function Workbench", systemImage: "function")
                         }
                     } else {
                         CoreAIFunctionContractView(workspace: workspace)
@@ -115,6 +121,18 @@ struct CoreAIFunctionWorkbenchView: View {
                             isDisabled: workspace.phase.isBusy
                         )
 
+                        if workspace.phase == .running {
+                            Section {
+                                ProgressView(
+                                    "Running \(workspace.selectedFunctionName ?? "function")…"
+                                )
+                                .accessibilityAddTraits(.updatesFrequently)
+                            } header: {
+                                Label("Run", systemImage: "play.fill")
+                            }
+                        }
+
+#if !os(macOS)
                         Section {
                             Button(
                                 "Run Function",
@@ -123,16 +141,10 @@ struct CoreAIFunctionWorkbenchView: View {
                             )
                             .buttonStyle(.borderedProminent)
                             .disabled(!workspace.canRun)
-
-                            if workspace.phase.isBusy {
-                                Label("Core AI operation in progress", systemImage: "hourglass")
-                                    .foregroundStyle(.secondary)
-                            }
-                        } footer: {
-                            Text(
-                                "Generated inputs are synthetic contract probes, not semantically correct task data. Core AI inference itself cannot be canceled once started."
-                            )
+                        } header: {
+                            Label("Run", systemImage: "play.fill")
                         }
+#endif
 
                         CoreAIFunctionBenchmarkControlsView(workspace: workspace)
 
@@ -153,38 +165,57 @@ struct CoreAIFunctionWorkbenchView: View {
                         )
                     }
                 }
+                .formStyle(.grouped)
             } else if workspace.phase == .loadingAsset
                         || workspace.assetWorkspace.isInspecting {
                 ContentUnavailableView {
                     Label("Opening Model", systemImage: "shippingbox")
-                } description: {
-                    Text("Inspecting the asset before specialization.")
                 } actions: {
                     ProgressView()
                 }
             } else {
                 ContentUnavailableView {
                     Label("Function Workbench", systemImage: "function")
-                } description: {
-                    Text(
-                        "Open a Core AI asset to inspect every function and run supported stateless tensor contracts with generated inputs."
-                    )
                 } actions: {
                     Button("Open Model", systemImage: "folder", action: openModelPicker)
                         .buttonStyle(.borderedProminent)
                 }
+                .help("Open a Core AI asset to inspect its functions and supported tensor contracts.")
             }
         }
         .navigationTitle("Function Workbench")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Open Model", systemImage: "folder", action: openModelPicker)
-                    .disabled(
-                        workspace.phase.isBusy
-                            || workspace.assetWorkspace.phase.isBusy
-                            || workspace.isExportingIntegration
-                    )
+#if os(macOS)
+            if workspace.assetWorkspace.report != nil {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Open Model", systemImage: "folder", action: openModelPicker)
+                        .disabled(
+                            workspace.phase.isBusy
+                                || workspace.assetWorkspace.phase.isBusy
+                                || workspace.isExportingIntegration
+                        )
+                        .keyboardShortcut("o", modifiers: .command)
+
+                    Button("Run Function", systemImage: "play.fill", action: runFunction)
+                        .disabled(!workspace.canRun)
+                        .help(
+                            "Run synthetic contract inputs. Core AI inference cannot be canceled once started."
+                        )
+                }
             }
+#else
+            if workspace.assetWorkspace.report != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Open Model", systemImage: "folder", action: openModelPicker)
+                        .disabled(
+                            workspace.phase.isBusy
+                                || workspace.assetWorkspace.phase.isBusy
+                                || workspace.isExportingIntegration
+                        )
+                        .keyboardShortcut("o", modifiers: .command)
+                }
+            }
+#endif
         }
         .fileImporter(
             isPresented: $isImportingModel,
@@ -207,11 +238,11 @@ struct CoreAIFunctionWorkbenchView: View {
             handleBenchmarkEvidenceExport(result)
         }
         .alert(
-            "Function Workbench Error",
+            "Couldn't Complete the Core AI Operation",
             isPresented: $assetWorkspace.isShowingError
         ) {
         } message: {
-            Text(assetWorkspace.errorMessage ?? "The Core AI operation failed.")
+            Text(assetWorkspace.errorMessage ?? "Check the model and configuration, then try again.")
         }
         .task(id: initialURL) {
             do {

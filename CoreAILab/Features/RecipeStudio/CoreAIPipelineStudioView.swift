@@ -63,16 +63,14 @@ struct CoreAIPipelineStudioView: View {
                     action: workspace.connectSelectedEndpoints
                 )
                 .disabled(!workspace.canConnectSelectedEndpoints)
+                .help("Each destination accepts one compatible source value contract.")
             } header: {
                 Text("Connect Typed Ports")
-            } footer: {
-                Text("Only compatible value contracts can be connected, and each destination accepts one source.")
             }
 
             Section("Edges") {
                 if displayedEdges.isEmpty {
-                    Text("No edges")
-                        .foregroundStyle(.secondary)
+                    ContentUnavailableView("No Edges", systemImage: "arrow.triangle.branch")
                 }
                 ForEach(displayedEdges) { edge in
                     LabeledContent(

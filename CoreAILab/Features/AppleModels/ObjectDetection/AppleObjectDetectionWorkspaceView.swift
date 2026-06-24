@@ -19,35 +19,40 @@ struct AppleObjectDetectionWorkspaceView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+        Form {
+            Section {
                 AppleObjectDetectionHeaderView(
                     modelName: workspace.modelName,
                     imageName: workspace.imageName,
                     statusMessage: workspace.statusMessage,
                     isBusy: workspace.isLoadingModel || workspace.isRunning
                 )
+            }
 
-                HStack(spacing: 12) {
-                    Button("Import YOLOS Model", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Image", systemImage: "photo", action: importImage)
-                    Button("Run Detection", systemImage: "play.fill", action: runDetection)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canRun)
+            Section {
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
                 .disabled(workspace.isBusy)
+            } header: {
+                Label("Model & Image", systemImage: "viewfinder")
+            }
 
-                CoreAIRuntimeLifecycleView(
-                    coordinator: workspace.runCoordinator,
-                    context: workspace.runContext
-                )
+            CoreAIRuntimeLifecycleView(
+                coordinator: workspace.runCoordinator,
+                context: workspace.runContext
+            )
 
-                Text("Export command")
-                    .font(.headline)
+            Section {
                 Text("uv run models/yolo/export.py --model hustvl/yolos-tiny --dtype float16")
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Apple Export Command", systemImage: "terminal")
+            }
 
+            Section {
                 if let sourceImage = workspace.sourceImage {
                     AppleObjectDetectionPreviewView(
                         image: sourceImage,
@@ -56,15 +61,24 @@ struct AppleObjectDetectionWorkspaceView: View {
                 } else {
                     ContentUnavailableView(
                         "Choose an Image",
-                        systemImage: "photo",
-                        description: Text("The result will show Apple's COCO labels, confidence, and bounding boxes.")
+                        systemImage: "photo"
                     )
                 }
+            } header: {
+                Label("Result", systemImage: "viewfinder")
             }
-            .frame(maxWidth: 1_200, alignment: .leading)
-            .padding(32)
         }
+        .formStyle(.grouped)
         .navigationTitle("Object Detection")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button("Run Detection", systemImage: "play.fill", action: runDetection)
+                    .disabled(!workspace.canRun)
+                    .help(workspace.statusMessage)
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.coreAIModelAsset, .folder]
@@ -77,9 +91,9 @@ struct AppleObjectDetectionWorkspaceView: View {
         ) { result in
             handleImageImport(result)
         }
-        .alert("Object Detection Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Detect Objects", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model and image, then try again.")
         }
     }
 
@@ -104,7 +118,7 @@ struct AppleObjectDetectionWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -113,6 +127,28 @@ struct AppleObjectDetectionWorkspaceView: View {
         case .success(let url):
             workspace.loadImage(from: url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout(spacing: 12))
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import YOLOS Model", systemImage: "shippingbox", action: importModel)
+            Button("Choose Image", systemImage: "photo", action: importImage)
+#if !os(macOS)
+            Button("Run Detection", systemImage: "play.fill", action: runDetection)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canRun)
+#endif
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

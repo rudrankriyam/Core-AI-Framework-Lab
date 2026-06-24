@@ -8,9 +8,9 @@ struct CoreAIUnsupportedOperationReportView: View {
             if workspace.recipe.unsupportedOperations.isEmpty {
                 ContentUnavailableView(
                     "No Unsupported Operations Reported",
-                    systemImage: "checkmark.circle",
-                    description: Text("This means the draft has no imported findings; it does not prove that export will succeed.")
+                    systemImage: "checkmark.circle"
                 )
+                .help("No imported findings does not prove that export will succeed.")
             }
 
             ForEach(workspace.recipe.unsupportedOperations) { finding in

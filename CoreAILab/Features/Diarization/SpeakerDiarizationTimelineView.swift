@@ -45,8 +45,7 @@ struct SpeakerDiarizationTimelineView: View {
             } else {
                 ContentUnavailableView(
                     "No Media Selected",
-                    systemImage: "waveform",
-                    description: Text("Choose an audio or video file to build the first timeline.")
+                    systemImage: "waveform"
                 )
                 .frame(maxWidth: .infinity, minHeight: 180)
             }

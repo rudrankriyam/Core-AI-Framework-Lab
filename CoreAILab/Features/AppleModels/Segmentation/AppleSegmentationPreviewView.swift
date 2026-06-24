@@ -5,7 +5,7 @@ struct AppleSegmentationPreviewView: View {
     let result: AppleSegmentationResult?
 
     var body: some View {
-        Section("Result") {
+        Section {
             if let image {
                 Image(
                     image,
@@ -26,10 +26,11 @@ struct AppleSegmentationPreviewView: View {
             } else {
                 ContentUnavailableView(
                     "No Image",
-                    systemImage: "photo",
-                    description: Text("Choose an image to preview segmentation results.")
+                    systemImage: "photo"
                 )
             }
+        } header: {
+            Label("Result", systemImage: "square.stack.3d.up")
         }
     }
 }

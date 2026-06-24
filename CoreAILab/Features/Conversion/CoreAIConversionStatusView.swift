@@ -22,9 +22,6 @@ struct CoreAIConversionStatusView: View {
                 }
             }
 
-            Text(statusMessage)
-                .foregroundStyle(.secondary)
-
             HStack(spacing: 16) {
                 if let processIdentifier {
                     Label("PID \(processIdentifier)", systemImage: "terminal")
@@ -39,7 +36,9 @@ struct CoreAIConversionStatusView: View {
             .font(.callout.monospacedDigit())
             .foregroundStyle(.secondary)
         }
+        .help(statusMessage)
         .accessibilityElement(children: .contain)
+        .accessibilityHint(statusMessage)
         .accessibilityAddTraits(.updatesFrequently)
     }
 }

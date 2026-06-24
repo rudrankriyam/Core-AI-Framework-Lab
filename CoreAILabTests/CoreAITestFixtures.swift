@@ -55,6 +55,30 @@ enum CoreAITestFixtures {
         return modelURL
     }
 
+    static func temporaryTensorModelURL() throws -> URL {
+        let sourceURL = try tensorModelURL()
+        let directoryURL = URL.temporaryDirectory.appending(
+            path: UUID().uuidString,
+            directoryHint: .isDirectory
+        )
+        let modelURL = directoryURL.appending(
+            path: sourceURL.lastPathComponent,
+            directoryHint: .isDirectory
+        )
+
+        do {
+            try FileManager.default.createDirectory(
+                at: directoryURL,
+                withIntermediateDirectories: true
+            )
+            try FileManager.default.copyItem(at: sourceURL, to: modelURL)
+            return modelURL
+        } catch {
+            try? FileManager.default.removeItem(at: directoryURL)
+            throw error
+        }
+    }
+
     static func diarizationFeatureURL() throws -> URL {
         let bundle = Bundle(for: CoreAITestBundleToken.self)
         guard let url = bundle.url(

@@ -4,7 +4,7 @@ struct AppleDiffusionResultView: View {
     let result: AppleDiffusionResult?
 
     var body: some View {
-        Section("Generated Image") {
+        Section {
             if let result {
                 Image(decorative: result.image, scale: 1)
                     .resizable()
@@ -18,10 +18,11 @@ struct AppleDiffusionResultView: View {
             } else {
                 ContentUnavailableView(
                     "No Image Yet",
-                    systemImage: "photo.badge.plus",
-                    description: Text("Import a diffusion bundle, enter a prompt, and generate locally.")
+                    systemImage: "photo.badge.plus"
                 )
             }
+        } header: {
+            Label("Generated Image", systemImage: "photo")
         }
     }
 }

@@ -11,7 +11,7 @@ struct ChatterboxPipelineSection: View {
     }
 
     var body: some View {
-        Section("Native Pipeline") {
+        Section {
             ForEach(inspection?.assets ?? []) { asset in
                 HStack(alignment: .firstTextBaseline) {
                     Image(systemName: isReady(asset.stage)
@@ -20,17 +20,13 @@ struct ChatterboxPipelineSection: View {
                         .foregroundStyle(isReady(asset.stage) ? .green : .secondary)
                         .accessibilityHidden(true)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(asset.displayName)
-                        Text(asset.detail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(asset.displayName)
+                        .help(asset.detail)
 
                     Spacer()
 
                     Text(asset.formattedSize)
-                        .font(.caption.monospacedDigit())
+                        .font(.callout.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
                 .accessibilityElement(children: .combine)
@@ -38,7 +34,7 @@ struct ChatterboxPipelineSection: View {
 
             switch state {
             case .preparing:
-                ProgressView("Loading the recipe contract")
+                ProgressView("Loading the recipe contract…")
             case .failed:
                 Label("Pipeline details are unavailable", systemImage: "xmark.octagon")
                     .foregroundStyle(.red)
@@ -49,9 +45,8 @@ struct ChatterboxPipelineSection: View {
                 EmptyView()
             }
 
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        } header: {
+            Label("Native Pipeline", systemImage: "point.3.connected.trianglepath.dotted")
         }
     }
 
@@ -59,18 +54,4 @@ struct ChatterboxPipelineSection: View {
         inspection?.contractValidation.presentStages.contains(stage) == true
     }
 
-    private var detail: String {
-        switch state {
-        case .notLoaded:
-            "The app has not started validating the bundled recipe."
-        case .preparing:
-            "The app is verifying every bundled asset and function before enabling generation."
-        case .ready(let inspection):
-            inspection.contractValidation.isComplete
-                ? "Text tokenization, autoregressive T3 decoding, S3Gen, and waveform synthesis all run locally."
-                : "The recipe is incomplete; generation remains disabled."
-        case .failed:
-            "Model preparation failed, so the pipeline contract could not be verified."
-        }
-    }
 }

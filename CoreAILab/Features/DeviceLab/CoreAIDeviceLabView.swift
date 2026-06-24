@@ -7,13 +7,6 @@ struct CoreAIDeviceLabView: View {
 
     var body: some View {
         Form {
-            Section {
-                Text(
-                    "Author an iPhone target, plan its asset delivery, and import evidence from the physical runner. Preferences remain separate from measured execution placement."
-                )
-                .foregroundStyle(.secondary)
-            }
-
             CoreAIDeviceTargetAuthoringView(workspace: workspace)
             CoreAIDeviceStoragePlanView(workspace: workspace)
             CoreAIDeviceDiagnosticsView(diagnostics: workspace.diagnostics)
@@ -22,6 +15,10 @@ struct CoreAIDeviceLabView: View {
                 isImportingEvidence: $isImportingEvidence
             )
         }
+        .formStyle(.grouped)
+        .help(
+            "Author an iPhone target, plan asset delivery, and import physical-runner evidence."
+        )
         .navigationTitle("Device Lab")
         .fileImporter(
             isPresented: $isImportingEvidence,
@@ -37,7 +34,9 @@ struct CoreAIDeviceLabView: View {
             guard let url = urls.first else { return }
             workspace.importEvidence(from: url)
         case .failure(let error):
-            workspace.reportImportFailure(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                workspace.reportImportFailure(error)
+            }
         }
     }
 }

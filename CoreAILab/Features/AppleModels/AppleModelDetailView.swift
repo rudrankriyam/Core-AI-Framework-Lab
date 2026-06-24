@@ -7,7 +7,12 @@ struct AppleModelDetailView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Model", value: model.huggingFaceID)
+                LabeledContent("Model") {
+                    Text(model.huggingFaceID)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled)
+                }
                 LabeledContent(
                     "Platforms",
                     value: model.supportedPlatforms.map(\.rawValue).joined(separator: ", ")
@@ -25,13 +30,13 @@ struct AppleModelDetailView: View {
                 Label(model.category.rawValue, systemImage: model.category.systemImage)
             }
 
-            Section("Export with Apple's recipe") {
-                Text("Clone apple/coreai-models, run this command from its root, then import the resulting .aimodel or resource folder into the Lab.")
-                    .foregroundStyle(.secondary)
-
+            Section {
                 Text(model.labRecommendedExportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+                    .help(
+                        "Run from the root of a local apple/coreai-models checkout, then import the exported asset."
+                    )
 
                 if let recipeURL = model.recipeURL(sourceRevision: sourceRevision) {
                     Link("Read the pinned Apple recipe", destination: recipeURL)
@@ -41,20 +46,16 @@ struct AppleModelDetailView: View {
                     "Convert This Recipe",
                     value: AppleModelLibraryRoute.conversion(modelID: model.id)
                 )
+            } header: {
+                Label("Export Recipe", systemImage: "terminal")
             }
 
-            Section("Runtime integration") {
+            Section {
                 Label(model.runtimeSupport.title, systemImage: "shippingbox")
-                Text(model.runtimeSupport.detail)
-                    .foregroundStyle(.secondary)
+                    .help(model.runtimeSupport.detail)
 
                 if let productName = model.runtimeSupport.productName {
                     LabeledContent("Swift product", value: productName)
-                }
-
-                if model.isRunnableInLab {
-                    Text("The Lab includes this runtime adapter, not converted model weights. Export the model locally under its upstream license, then import the result.")
-                        .foregroundStyle(.secondary)
                 }
 
                 if model.runtimeSupport == .objectDetection, model.isRunnableInLab {
@@ -66,8 +67,11 @@ struct AppleModelDetailView: View {
 
                 if let segmentationExample = model.segmentationExample {
                     if segmentationExample == .sam3 {
-                        Text("SAM 3 requires accepting Meta's gated Hugging Face license and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
-                            .foregroundStyle(.secondary)
+                        Label("Upstream license required", systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                            .help(
+                                "Accept Meta's gated Hugging Face license and authenticate with the hf tool before export. Core AI Lab never reads or stores those credentials."
+                            )
                     }
                     NavigationLink(
                         segmentationExample.playgroundButtonTitle,
@@ -84,8 +88,11 @@ struct AppleModelDetailView: View {
 
                 if let diffusionExample = model.diffusionExample {
                     if diffusionExample == .stableDiffusion35 {
-                        Text("Stable Diffusion 3.5 weights require accepting Stability AI's gated Hugging Face terms and authenticating with the `hf` command-line tool before export. Credentials stay outside the Lab.")
-                            .foregroundStyle(.secondary)
+                        Label("Upstream license required", systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                            .help(
+                                "Accept Stability AI's gated Hugging Face terms and authenticate with the hf tool before export. Core AI Lab never reads or stores those credentials."
+                            )
                     }
                     NavigationLink(
                         diffusionExample.playgroundButtonTitle,
@@ -99,16 +106,20 @@ struct AppleModelDetailView: View {
                         value: AppleModelLibraryRoute.audio(audioExample)
                     )
                 }
+            } header: {
+                Label("Runtime Integration", systemImage: "play.rectangle")
             }
 
-            Section("Provenance") {
+            Section {
                 LabeledContent("Registry revision") {
                     Text(sourceRevision)
                         .font(.callout.monospaced())
                         .textSelection(.enabled)
                 }
-                Text("The export recipe and Swift utilities use Apple's BSD-3-Clause repository. Downloaded model weights retain their original authors' licenses and are not redistributed by Core AI Lab.")
-                    .foregroundStyle(.secondary)
+                LabeledContent("Recipe code", value: "Apple BSD-3-Clause")
+                LabeledContent("Model weights", value: "Upstream license")
+            } header: {
+                Label("Provenance", systemImage: "checkmark.seal")
             }
         }
         .formStyle(.grouped)

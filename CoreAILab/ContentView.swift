@@ -2,31 +2,64 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: CoreAILabSection? = .projects
+    @SceneStorage("CoreAILab.selectedSection")
+    private var selectedSectionRawValue = CoreAILabSection.projects.rawValue
+
+    @SceneStorage("CoreAILab.isWorkspaceInspectorPresented")
+    private var isWorkspaceInspectorPresented = false
+
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView {
-            List(selection: $selection) {
-                Section("Workspaces") {
-                    ForEach(CoreAILabSection.workspaces) { section in
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            List(selection: selectedSectionBinding) {
+                Section("Library") {
+                    ForEach(CoreAILabSection.library) { section in
                         NavigationLink(value: section) {
                             Label(section.title, systemImage: section.systemImage)
                         }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
                     }
                 }
 
-                Section("Tools") {
-                    ForEach(CoreAILabSection.tools) { section in
+                Section("Build") {
+                    ForEach(CoreAILabSection.build) { section in
                         NavigationLink(value: section) {
                             Label(section.title, systemImage: section.systemImage)
                         }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
+                    }
+                }
+
+                Section("Run") {
+                    ForEach(CoreAILabSection.run) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
+                    }
+                }
+
+                Section("Validate") {
+                    ForEach(CoreAILabSection.validate) { section in
+                        NavigationLink(value: section) {
+                            Label(section.title, systemImage: section.systemImage)
+                        }
+                        .help(section.summary)
+                        .accessibilityHint(section.summary)
                     }
                 }
             }
-            .navigationTitle("Core AI Lab")
-            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
+#if os(macOS)
+            .toolbar(removing: .sidebarToggle)
+#endif
         } detail: {
-            switch selection ?? .projects {
+            switch selectedSection {
             case .projects:
                 CoreAIProjectLibraryView()
             case .appleModels:
@@ -54,6 +87,60 @@ struct ContentView: View {
             }
         }
         .navigationSplitViewStyle(.prominentDetail)
+        .formStyle(.grouped)
+        .tint(.blue)
+        .inspector(isPresented: $isWorkspaceInspectorPresented) {
+            CoreAIWorkspaceInspectorView(section: selectedSection)
+        }
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .navigation) {
+                Button(
+                    "Toggle Sidebar",
+                    systemImage: "sidebar.leading",
+                    action: toggleSidebar
+                )
+                .help("Show or hide the workspace sidebar")
+                .keyboardShortcut("s", modifiers: [.command, .control])
+            }
+#endif
+
+            ToolbarItem(placement: .primaryAction) {
+                Button(
+                    "Workspace Inspector",
+                    systemImage: "sidebar.trailing",
+                    action: toggleWorkspaceInspector
+                )
+                .help("Show the selected workspace's workflow and evidence boundary")
+#if os(macOS)
+                .keyboardShortcut("0", modifiers: [.command, .option])
+#endif
+            }
+        }
+#if os(macOS)
+        .frame(minWidth: 1_000, minHeight: 680)
+#endif
+    }
+
+    private func toggleWorkspaceInspector() {
+        isWorkspaceInspectorPresented.toggle()
+    }
+
+    private var selectedSection: CoreAILabSection {
+        CoreAILabSection(rawValue: selectedSectionRawValue) ?? .projects
+    }
+
+    private var selectedSectionBinding: Binding<CoreAILabSection?> {
+        Binding(
+            get: { selectedSection },
+            set: { selectedSectionRawValue = ($0 ?? .projects).rawValue }
+        )
+    }
+
+    private func toggleSidebar() {
+        withAnimation {
+            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+        }
     }
 }
 

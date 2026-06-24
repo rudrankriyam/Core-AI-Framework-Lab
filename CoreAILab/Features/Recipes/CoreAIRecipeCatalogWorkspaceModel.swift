@@ -80,7 +80,7 @@ final class CoreAIRecipeCatalogWorkspaceModel {
         } catch is CancellationError {
             guard activeImportID == importID else { return }
             phase = .idle
-            statusMessage = "Import cancelled."
+            statusMessage = "Import canceled."
         } catch {
             guard activeImportID == importID else { return }
             phase = .idle

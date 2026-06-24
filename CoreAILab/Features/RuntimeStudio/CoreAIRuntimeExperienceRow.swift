@@ -4,33 +4,38 @@ struct CoreAIRuntimeExperienceRow: View {
     let mapping: CoreAIRecipeExperienceMapping
 
     var body: some View {
-        VStack(alignment: .leading) {
+        HStack(alignment: .firstTextBaseline) {
             Label(
                 mapping.experience.title,
                 systemImage: mapping.experience.systemImage
             )
             .font(.headline)
 
-            Text(mapping.experience.summary)
-                .foregroundStyle(.secondary)
+            Spacer()
 
-            Text(capabilitySummary)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-
-            Label(platformSummary, systemImage: "desktopcomputer.and.iphone")
+            Label(platformSummary, systemImage: platformSystemImage)
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
+        .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens the local runtime experience")
+        .help("\(mapping.experience.summary) \(capabilitySummary)")
     }
 
     private var capabilitySummary: String {
-        mapping.experience.capabilities.map(\.title).joined(separator: ", ")
+        mapping.experience.capabilities.map(\.title).joined(separator: " · ")
     }
 
     private var platformSummary: String {
         mapping.experience.platforms.map(\.rawValue).joined(separator: " · ")
+    }
+
+    private var platformSystemImage: String {
+        mapping.experience.platforms.count > 1
+            ? "desktopcomputer.and.iphone"
+            : mapping.experience.platforms.first == .iOS
+                ? "iphone"
+                : "desktopcomputer"
     }
 }

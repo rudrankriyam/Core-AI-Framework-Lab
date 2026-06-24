@@ -11,21 +11,15 @@ struct AppleObjectDetectionHeaderView: View {
             Label("YOLOS Tiny", systemImage: "viewfinder")
                 .font(.title2.bold())
 
-            Text("The first runnable Apple gallery model uses Apple's export recipe and CoreAIObjectDetection Swift package.")
-                .foregroundStyle(.secondary)
-
             LabeledContent("Model", value: modelName ?? "Not imported")
             LabeledContent("Image", value: imageName ?? "Not selected")
 
-            HStack(spacing: 8) {
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Text(statusMessage)
-                    .foregroundStyle(.secondary)
+            if isBusy {
+                ProgressView(statusMessage)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
         }
+        .help("Uses Apple's YOLOS export recipe and CoreAIObjectDetection runtime.")
         .accessibilityElement(children: .contain)
     }
 }

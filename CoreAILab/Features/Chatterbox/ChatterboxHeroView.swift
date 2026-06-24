@@ -20,7 +20,7 @@ struct ChatterboxHeroView: View {
                     .foregroundStyle(.secondary)
 
                 Label(targetDescription, systemImage: "laptopcomputer")
-                    .font(.caption)
+                    .font(.callout)
                     .foregroundStyle(.secondary)
             }
             .padding(.vertical, 6)

@@ -7,22 +7,15 @@ struct CoreAISpecializationCacheRowView: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading) {
-                Label(record.configurationTitle, systemImage: "cpu")
-                Text(
-                    record.lastUsedAt,
-                    format: .relative(presentation: .named)
-                )
-                .foregroundStyle(.secondary)
-                Text(
-                    record.wasLoadedFromCache
-                        ? "Loaded from existing cache"
-                        : "Created by specialization"
-                )
-                .foregroundStyle(.secondary)
-            }
+            Label(record.configurationTitle, systemImage: "cpu")
 
             Spacer()
+
+            Text(
+                record.lastUsedAt,
+                format: .relative(presentation: .named)
+            )
+                .foregroundStyle(.secondary)
 
             Button(
                 "Remove \(record.configurationTitle)",
@@ -35,5 +28,10 @@ struct CoreAISpecializationCacheRowView: View {
             .disabled(isDisabled)
         }
         .accessibilityElement(children: .contain)
+        .help(
+            record.wasLoadedFromCache
+                ? "Loaded from an existing specialization cache"
+                : "Created by specialization"
+        )
     }
 }

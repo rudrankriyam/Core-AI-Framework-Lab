@@ -4,13 +4,14 @@ struct CoreAIDeviceTargetAuthoringView: View {
     @Bindable var workspace: CoreAIDeviceLabWorkspaceModel
 
     var body: some View {
-        Section("iPhone Target") {
+        Section {
             Picker("Compute preference", selection: $workspace.preferredComputeUnit) {
                 ForEach(CoreAIComputeUnitPreference.allCases, id: \.self) { preference in
                     Text(workspace.computeUnitTitle(preference))
                         .tag(preference)
                 }
             }
+            .help("A compute preference does not prove execution placement.")
             Toggle(
                 "Expect frequent reshapes",
                 isOn: $workspace.expectsFrequentReshapes
@@ -52,11 +53,8 @@ struct CoreAIDeviceTargetAuthoringView: View {
                 "Leave input widths dynamic",
                 isOn: $workspace.usesDynamicSequenceDimension
             )
-            Text(
-                "A compute preference shapes specialization options. It is not an execution-placement measurement."
-            )
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+        } header: {
+            Label("iPhone Target", systemImage: "iphone.gen3")
         }
     }
 }

@@ -2,7 +2,8 @@ import SwiftUI
 
 struct CoreAIRecipeStudioView: View {
     @State private var workspace: CoreAIRecipeStudioWorkspaceModel
-    @State private var selection: CoreAIRecipeStudioPanel? = .source
+    @SceneStorage("CoreAILab.recipeStudio.selectedPanel")
+    private var selectedPanelRawValue = CoreAIRecipeStudioPanel.source.rawValue
 
     init(recipe: CoreAIRecipeAuthoringManifest = .starter) {
         _workspace = State(initialValue: CoreAIRecipeStudioWorkspaceModel(recipe: recipe))
@@ -10,7 +11,13 @@ struct CoreAIRecipeStudioView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
+            List(selection: selectedPanelBinding) {
+                Section {
+                    Text(workspace.recipe.displayName)
+                        .font(.headline)
+                        .lineLimit(2)
+                }
+
                 Section("Authoring") {
                     CoreAIRecipeStudioPanelLink(panel: .source)
                     CoreAIRecipeStudioPanelLink(panel: .exampleInputs)
@@ -31,14 +38,15 @@ struct CoreAIRecipeStudioView: View {
                 }
 
                 Section("Draft Status") {
-                    LabeledContent("Validation issues") {
-                        Text(workspace.validationIssues.count, format: .number)
-                    }
+                    Label(validationTitle, systemImage: validationSystemImage)
+                        .foregroundStyle(validationStyle)
                 }
             }
+            .listStyle(.sidebar)
             .navigationTitle("Recipe Studio")
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 260)
         } detail: {
-            switch selection ?? .source {
+            switch selectedPanel {
             case .source:
                 CoreAIRecipeSourceEditorView(workspace: workspace)
             case .exampleInputs:
@@ -62,6 +70,40 @@ struct CoreAIRecipeStudioView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+    }
+
+    private var selectedPanel: CoreAIRecipeStudioPanel {
+        CoreAIRecipeStudioPanel(rawValue: selectedPanelRawValue) ?? .source
+    }
+
+    private var selectedPanelBinding: Binding<CoreAIRecipeStudioPanel?> {
+        Binding(
+            get: { selectedPanel },
+            set: { selectedPanelRawValue = ($0 ?? .source).rawValue }
+        )
+    }
+
+    private var validationTitle: String {
+        let count = workspace.validationIssues.count
+        if count == 0 {
+            return "Structurally valid"
+        } else if count == 1 {
+            return "1 validation issue"
+        } else {
+            return "\(count) validation issues"
+        }
+    }
+
+    private var validationSystemImage: String {
+        workspace.validationIssues.isEmpty
+            ? "checkmark.circle.fill"
+            : "exclamationmark.triangle.fill"
+    }
+
+    private var validationStyle: AnyShapeStyle {
+        workspace.validationIssues.isEmpty
+            ? AnyShapeStyle(.green)
+            : AnyShapeStyle(.orange)
     }
 }
 

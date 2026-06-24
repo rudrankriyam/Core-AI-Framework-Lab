@@ -32,11 +32,10 @@ struct AppleAudioWorkspaceView: View {
                     LabeledContent("Input", value: "1 × \(info.sampleCount) \(info.scalarTypeName)")
                     LabeledContent("Sample rate", value: "\(Int(info.sampleRate).formatted()) Hz mono")
                 }
-                Label(
-                    workspace.statusMessage,
-                    systemImage: workspace.isBusy ? "hourglass" : "waveform"
-                )
-                .foregroundStyle(workspace.isBusy ? .primary : .secondary)
+                if workspace.isBusy {
+                    ProgressView(workspace.statusMessage)
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
             } header: {
                 Label(workspace.example.title, systemImage: "waveform.badge.mic")
             }
@@ -46,37 +45,51 @@ struct AppleAudioWorkspaceView: View {
                 context: workspace.runContext
             )
 
-            Section("Inputs") {
-                HStack {
-                    Button("Import Wav2Vec2", systemImage: "shippingbox", action: importModel)
-                    Button("Choose Audio", systemImage: "waveform", action: importAudio)
-                    Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!workspace.canTranscribe)
-                    if workspace.isTranscribing {
-                        Button(
-                            "Cancel",
-                            systemImage: "stop.fill",
-                            role: .destructive,
-                            action: workspace.cancelTranscription
-                        )
-                    }
+            Section {
+                ViewThatFits(in: .horizontal) {
+                    inputActions(axis: .horizontal)
+                    inputActions(axis: .vertical)
                 }
 
-                Text("The static Apple recipe accepts at most five seconds. Audio is decoded, downmixed, and resampled to 16 kHz mono before inference.")
-                    .foregroundStyle(.secondary)
+            } header: {
+                Label("Model & Audio", systemImage: "waveform.badge.mic")
             }
+            .help("Audio is limited to five seconds and prepared as 16 kHz mono before inference.")
 
-            Section("Apple Export Command") {
+            Section {
                 Text(workspace.example.exportCommand)
                     .font(.body.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Apple Export Command", systemImage: "terminal")
             }
 
             AppleAudioTranscriptionResultView(result: workspace.result)
         }
         .formStyle(.grouped)
         .navigationTitle("Audio Transcription")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.isTranscribing {
+                    Button(
+                        "Cancel Transcription",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelTranscription
+                    )
+                } else {
+                    Button(
+                        "Transcribe",
+                        systemImage: "captions.bubble",
+                        action: workspace.startTranscription
+                    )
+                    .disabled(!workspace.canTranscribe)
+                    .help(workspace.statusMessage)
+                }
+            }
+#endif
+        }
         .fileImporter(
             isPresented: $isImportingModel,
             allowedContentTypes: [.coreAIModelAsset, .folder]
@@ -89,9 +102,9 @@ struct AppleAudioWorkspaceView: View {
         ) { result in
             handleAudioImport(result)
         }
-        .alert("Audio Transcription Failed", isPresented: $workspace.isShowingError) {
+        .alert("Couldn't Transcribe Audio", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The request could not be completed.")
+            Text(workspace.errorMessage ?? "Check the model and audio files, then try again.")
         }
         .task(id: initialModelURL) {
             if let initialModelURL {
@@ -116,7 +129,7 @@ struct AppleAudioWorkspaceView: View {
                 await workspace.loadModel(from: url)
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -125,6 +138,36 @@ struct AppleAudioWorkspaceView: View {
         case .success(let url):
             workspace.selectAudio(url)
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func inputActions(axis: Axis) -> some View {
+        let layout = axis == .horizontal
+            ? AnyLayout(HStackLayout())
+            : AnyLayout(VStackLayout(alignment: .leading))
+
+        return layout {
+            Button("Import Wav2Vec2 Model", systemImage: "shippingbox", action: importModel)
+            Button("Choose Audio", systemImage: "waveform", action: importAudio)
+#if !os(macOS)
+            Button("Transcribe", systemImage: "captions.bubble", action: workspace.startTranscription)
+                .buttonStyle(.borderedProminent)
+                .disabled(!workspace.canTranscribe)
+            if workspace.isTranscribing {
+                Button(
+                    "Cancel",
+                    systemImage: "stop.fill",
+                    role: .cancel,
+                    action: workspace.cancelTranscription
+                )
+            }
+#endif
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

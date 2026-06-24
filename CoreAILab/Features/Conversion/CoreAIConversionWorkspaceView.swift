@@ -43,6 +43,28 @@ struct CoreAIConversionWorkspaceView: View {
             }
         }
         .navigationTitle("Convert")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if workspace.canCancelConversion {
+                    Button(
+                        "Cancel Conversion",
+                        systemImage: "stop.fill",
+                        role: .cancel,
+                        action: workspace.cancelConversion
+                    )
+                    .keyboardShortcut(.cancelAction)
+                } else {
+                    Button(
+                        "Start Conversion",
+                        systemImage: "play.fill",
+                        action: workspace.startConversion
+                    )
+                    .disabled(!workspace.canStartConversion)
+                    .help(workspace.statusMessage)
+                    .keyboardShortcut(.return, modifiers: .command)
+                }
+            }
+        }
         .navigationDestination(for: CoreAIConversionArtifact.self) { artifact in
             CoreAIConversionArtifactDestinationView(artifact: artifact)
         }
@@ -64,10 +86,9 @@ struct CoreAIConversionWorkspaceView: View {
         ) { result in
             handleUVSelection(result)
         }
-        .alert("Conversion Error", isPresented: $workspace.isShowingError) {
-            Button("OK", role: .cancel) {}
+        .alert("Couldn't Complete the Conversion", isPresented: $workspace.isShowingError) {
         } message: {
-            Text(workspace.errorMessage ?? "The conversion could not be completed.")
+            Text(workspace.errorMessage ?? "Review the environment checks and try again.")
         }
         .sheet(item: $artifactToStore) { artifact in
             CoreAIArtifactProjectPickerView(artifactURL: artifact.url)
@@ -100,7 +121,7 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -112,7 +133,7 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
-            workspace.presentImportError(error)
+            presentSelectionError(error)
         }
     }
 
@@ -124,6 +145,12 @@ struct CoreAIConversionWorkspaceView: View {
                 await workspace.refreshEnvironment()
             }
         case .failure(let error):
+            presentSelectionError(error)
+        }
+    }
+
+    private func presentSelectionError(_ error: any Error) {
+        if (error as? CocoaError)?.code != .userCancelled {
             workspace.presentImportError(error)
         }
     }

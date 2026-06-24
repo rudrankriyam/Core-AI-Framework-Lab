@@ -10,27 +10,28 @@ struct CoreAIImportedRecipeBundleView: View {
 
     var body: some View {
         if let summary {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(summary.manifest.displayName)
+            VStack(alignment: .leading) {
+                Label(summary.manifest.displayName, systemImage: "shippingbox.fill")
                     .font(.headline)
                 LabeledContent("Trust", value: summary.trustState.displayName)
                 LabeledContent(
                     "Bundle SHA-256",
-                    value: String(summary.manifestSHA256.prefix(12))
+                    value: summary.manifestSHA256
                 )
                 .font(.callout.monospaced())
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
                 LabeledContent(
                     "Code references",
                     value: "\(summary.manifest.codeReferences.count)"
                 )
                 ForEach(summary.manifest.codeReferences) { reference in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(reference.id)
-                            .font(.callout.weight(.medium))
-                        Text("\(reference.language.rawValue) · \(reference.relativePath) · \(reference.entryPoint)")
-                            .font(.caption.monospaced())
-                            .foregroundStyle(.secondary)
-                    }
+                    LabeledContent(
+                        reference.id,
+                        value: "\(reference.language.rawValue.capitalized) · \(reference.entryPoint)"
+                    )
+                    .help(reference.relativePath)
                 }
             }
 
@@ -42,9 +43,9 @@ struct CoreAIImportedRecipeBundleView: View {
         } else {
             ContentUnavailableView(
                 "No Imported Bundle",
-                systemImage: "shippingbox",
-                description: Text(statusMessage)
+                systemImage: "shippingbox"
             )
+            .help(statusMessage)
         }
 
         if isImporting {
@@ -52,10 +53,6 @@ struct CoreAIImportedRecipeBundleView: View {
                 ProgressView()
                 Text(statusMessage)
             }
-        } else if summary != nil {
-            Text(statusMessage)
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 

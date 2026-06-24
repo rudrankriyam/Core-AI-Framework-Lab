@@ -31,12 +31,15 @@ struct SpeakerDiarizationStatusSection: View {
                     )
                 }
             }
-            Label(statusMessage, systemImage: isBusy ? "hourglass" : "waveform.badge.mic")
-                .foregroundStyle(isBusy ? .primary : .secondary)
+            if isBusy {
+                ProgressView(statusMessage)
+                    .accessibilityAddTraits(.updatesFrequently)
+            }
         } header: {
-            Label("Speaker Diarization Lab", systemImage: "person.wave.2")
-        } footer: {
-            Text("The bundled CAM++ asset is Apache-2.0. This experimental batch engine assigns anonymous labels, not real identities, and energy segmentation does not detect overlapping speakers.")
+            Label("Speaker Diarization", systemImage: "person.wave.2")
         }
+        .help(
+            "\(statusMessage) The Apache-2.0 CAM++ engine uses anonymous labels and does not detect overlapping speakers."
+        )
     }
 }
