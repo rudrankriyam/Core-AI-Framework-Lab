@@ -44,7 +44,7 @@ def main() -> None:
             "-project",
             "CoreAIFrameworkLab.xcodeproj",
             "-scheme",
-            "CoreAILabMac",
+            "CoreAILab",
             "-destination",
             destination,
             "-derivedDataPath",
@@ -61,10 +61,10 @@ def main() -> None:
         capture_output=True,
         text=True,
     ).stdout.strip()
-    source = products / f"CoreAILabMac_macosx{sdk_version}-arm64.xctestrun"
+    source = products / f"CoreAILab_macosx{sdk_version}-arm64.xctestrun"
     with source.open("rb") as file:
         configuration = plistlib.load(file)
-    test_target = configuration["CoreAILabMacTests"]
+    test_target = configuration["CoreAILabTests"]
     environment = test_target.setdefault("EnvironmentVariables", {})
     if model is not None:
         environment["COREAI_CAMPPLUS_MODEL_PATH"] = str(model)
@@ -79,7 +79,7 @@ def main() -> None:
         with tempfile.NamedTemporaryFile(
             mode="wb",
             suffix=".xctestrun",
-            prefix="CoreAILabMac-diarization-",
+            prefix="CoreAILab-diarization-",
             dir=products,
             delete=False,
         ) as file:
@@ -92,7 +92,7 @@ def main() -> None:
                 str(temporary_path),
                 "-destination",
                 destination,
-                "-only-testing:CoreAILabMacTests/SpeakerDiarizationIntegrationTests",
+                "-only-testing:CoreAILabTests/SpeakerDiarizationIntegrationTests",
                 "test-without-building",
             ]
         )

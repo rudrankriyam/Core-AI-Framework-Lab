@@ -3,7 +3,7 @@
 ## Scope and product truth
 
 - This file applies to the entire repository.
-- Core AI Lab is a SwiftUI workbench for Apple's `CoreAI.framework`, targeting iOS 27 and macOS 27 with Xcode 27 and Swift 6.4. One language adapter bridges through `FoundationModels`, but Core AI is the asset/runtime subject; do not treat Foundation Models, Core ML, and Core AI as interchangeable APIs.
+- Core AI Lab is a macOS 27 SwiftUI workbench for Apple's `CoreAI.framework`, built with Xcode 27 and Swift 6.4. The opt-in physical-device harness separately validates selected Core AI behavior on iOS 27+. One language adapter bridges through `FoundationModels`, but Core AI is the asset/runtime subject; do not treat Foundation Models, Core ML, and Core AI as interchangeable APIs.
 - Core AI is a new SDK surface. Before using an unfamiliar API, inspect the declarations in the selected Xcode 27 SDK and compile the call. Do not invent compatibility shims, private APIs, or behavior that the SDK does not expose.
 - Keep user-facing claims measurable. A preferred compute unit is a preference, not proof of hardware placement; a cache hit is not a timing or memory claim; a conversion recipe is not a bundled model.
 
@@ -17,7 +17,7 @@
 ## Repository map
 
 - `CoreAILab/`: SwiftUI app, navigation, feature views, and observable workspace models.
-- `CoreAILabCore/`: reusable Core AI runtime, specialization, conversion, export, benchmark, and persistence logic shared by both app targets.
+- `CoreAILabCore/`: reusable Core AI runtime, specialization, conversion, export, benchmark, and persistence logic used by the macOS app and its test and device fixtures.
 - `CoreAILabTests/`: Swift Testing suites plus opt-in real-model integration tests.
 - `Conversion/Chatterbox/`: Python 3.12 and `uv` pipeline for exporting and validating Chatterbox assets.
 - `Scripts/`: catalog generation, deterministic fixture creation, and the physical-device test harness.
@@ -25,7 +25,7 @@
 ## Implementation rules
 
 - Keep views declarative. Put state transitions in `@MainActor @Observable` workspace/controller types and reusable runtime, filesystem, and process behavior in `CoreAILabCore`.
-- Preserve both app targets. Wrap macOS-only process and conversion code in `#if os(macOS)` and keep shared code valid for iOS.
+- Preserve the single macOS app target. Wrap macOS-only process and conversion code in `#if os(macOS)`, and do not add another app platform target without explicit scope.
 - Follow Swift 6 concurrency rules: make isolation explicit, check cancellation around expensive async work, and prevent stale tasks from replacing newer state.
 - Preserve honest failure states. Do not turn unsupported descriptors, missing assets, conversion failures, or cancelled work into apparent success or placeholder output.
 - Pass executable URLs and argument arrays directly to `Process`; never construct a shell command from user-selected paths.
@@ -46,7 +46,7 @@ Build the macOS app:
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project CoreAIFrameworkLab.xcodeproj \
-  -scheme CoreAILabMac \
+  -scheme CoreAILab \
   -destination 'platform=macOS,arch=arm64' \
   -derivedDataPath ./build/Xcode27 \
   build
@@ -57,7 +57,7 @@ Run the Swift contract tests:
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project CoreAIFrameworkLab.xcodeproj \
-  -scheme CoreAILabMac \
+  -scheme CoreAILab \
   -destination 'platform=macOS,arch=arm64' \
   -derivedDataPath ./build/Xcode27 \
   test
