@@ -66,9 +66,9 @@ struct CoreAIProjectLibraryView: View {
                 path.append(.project(project.id))
             }
         }
-        .alert("Project Operation Failed", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Update the Project Library", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "The project operation failed.")
+            Text(controller.errorMessage ?? "Check project storage and try again.")
         }
     }
 

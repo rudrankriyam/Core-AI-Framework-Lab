@@ -14,8 +14,14 @@ struct CoreAINewProjectView: View {
 
         NavigationStack {
             Form {
-                TextField("Project Name", text: $name)
-                    .textContentType(.name)
+                Section {
+                    TextField("Project Name", text: $name)
+                        .textContentType(.name)
+                } header: {
+                    Label("Project", systemImage: "folder")
+                } footer: {
+                    Text("Projects keep related assets, provenance, runs, and evidence together.")
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("New Project")
@@ -27,13 +33,14 @@ struct CoreAINewProjectView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create", action: createProject)
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .keyboardShortcut(.defaultAction)
                 }
             }
         }
-        .frame(minWidth: 360, minHeight: 180)
-        .alert("Project Could Not Be Created", isPresented: $controller.isShowingError) {
+        .frame(minWidth: 380, minHeight: 220)
+        .alert("Couldn't Create the Project", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "Core AI Lab could not create the project.")
+            Text(controller.errorMessage ?? "Choose a different name and try again.")
         }
     }
 

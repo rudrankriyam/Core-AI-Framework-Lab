@@ -32,36 +32,43 @@ struct CoreAISourceProvenanceEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Picker("Source type", selection: $kind) {
-                    ForEach(CoreAISourceProvenanceKind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                Section {
+                    Picker("Source type", selection: $kind) {
+                        ForEach(CoreAISourceProvenanceKind.allCases) { kind in
+                            Text(kind.title).tag(kind)
+                        }
                     }
-                }
 
-                TextField("Source location", text: $sourceLocation, axis: .vertical)
-                    .lineLimit(2...5)
-                TextField("Provider", text: $providerName)
-                TextField("License", text: $licenseName)
-                TextField("Notes", text: $notes, axis: .vertical)
-                    .lineLimit(3...8)
+                    TextField("Source location", text: $sourceLocation, axis: .vertical)
+                        .lineLimit(2...5)
+                    TextField("Provider", text: $providerName)
+                    TextField("License", text: $licenseName)
+                    TextField("Notes", text: $notes, axis: .vertical)
+                        .lineLimit(3...8)
+                } header: {
+                    Label("Source", systemImage: "link")
+                } footer: {
+                    Text("Record enough information to trace this artifact to its original source and license.")
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("Source Provenance")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: dismiss.callAsFunction)
+                    Button("Cancel", role: .cancel, action: dismiss.callAsFunction)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
                         .disabled(kind != .unknown && sourceLocation.trimmed.isEmpty)
+                        .keyboardShortcut(.defaultAction)
                 }
             }
-            .alert("Unable to Save Provenance", isPresented: $isShowingError) {
-                Button("OK") {
+            .alert("Couldn't Save Provenance", isPresented: $isShowingError) {
+                Button("Dismiss", role: .cancel) {
                     errorMessage = nil
                 }
             } message: {
-                Text(errorMessage ?? "The source provenance could not be saved.")
+                Text(errorMessage ?? "Check the source details and try again.")
             }
         }
     }

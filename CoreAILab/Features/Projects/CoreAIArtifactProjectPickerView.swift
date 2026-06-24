@@ -57,9 +57,9 @@ struct CoreAIArtifactProjectPickerView: View {
                 storeArtifact(in: project)
             }
         }
-        .alert("Artifact Could Not Be Stored", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Store the Artifact", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "Core AI Lab could not store the artifact.")
+            Text(controller.errorMessage ?? "Choose another project or try again.")
         }
     }
 

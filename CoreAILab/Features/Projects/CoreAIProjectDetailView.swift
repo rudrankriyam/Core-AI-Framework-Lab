@@ -16,8 +16,8 @@ struct CoreAIProjectDetailView: View {
     var body: some View {
         @Bindable var controller = controller
 
-        List {
-            Section("Overview") {
+        Form {
+            Section {
                 LabeledContent("Artifacts", value: project.artifactLinks.count.formatted())
                 LabeledContent("Stored size") {
                     Text(project.storedByteCount, format: .byteCount(style: .file))
@@ -28,9 +28,11 @@ struct CoreAIProjectDetailView: View {
                 LabeledContent("Last opened") {
                     Text(project.lastOpenedAt, format: .relative(presentation: .named))
                 }
+            } header: {
+                Label("Overview", systemImage: "folder")
             }
 
-            Section("Artifacts") {
+            Section {
                 if project.artifactLinks.isEmpty {
                     ContentUnavailableView {
                         Label("No Stored Artifacts", systemImage: "shippingbox")
@@ -54,14 +56,14 @@ struct CoreAIProjectDetailView: View {
                 }
 
                 if controller.activeProjectID == project.id {
-                    Label(
-                        controller.activeOperation?.title ?? "Updating project…",
-                        systemImage: controller.activeOperation?.systemImage ?? "hourglass"
-                    )
-                        .foregroundStyle(.secondary)
+                    ProgressView(controller.activeOperation?.title ?? "Updating project…")
+                        .accessibilityAddTraits(.updatesFrequently)
                 }
+            } header: {
+                Label("Artifacts", systemImage: "shippingbox")
             }
         }
+        .formStyle(.grouped)
         .navigationTitle(project.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -106,9 +108,9 @@ struct CoreAIProjectDetailView: View {
                 "Project metadata is deleted. Stored artifacts are reclaimed only when no other project references the same SHA-256 content."
             )
         }
-        .alert("Project Operation Failed", isPresented: $controller.isShowingError) {
+        .alert("Couldn't Update the Project", isPresented: $controller.isShowingError) {
         } message: {
-            Text(controller.errorMessage ?? "The project operation failed.")
+            Text(controller.errorMessage ?? "Check the project and try again.")
         }
         .task(id: project.id) {
             do {
@@ -138,7 +140,9 @@ struct CoreAIProjectDetailView: View {
                 }
             }
         case .failure(let error):
-            controller.present(error)
+            if (error as? CocoaError)?.code != .userCancelled {
+                controller.present(error)
+            }
         }
     }
 
