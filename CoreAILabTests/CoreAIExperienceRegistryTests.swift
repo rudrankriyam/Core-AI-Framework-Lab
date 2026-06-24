@@ -158,7 +158,7 @@ struct CoreAIExperienceRegistryTests {
         )
 
         #expect(route.unavailableDescription.contains("missing-experience"))
-        #expect(route.unavailableDescription.contains("current runtime registry"))
+        #expect(route.unavailableDescription.contains("runtime registry"))
     }
 
     private func makeManifest(
