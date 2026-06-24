@@ -29,7 +29,7 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode-beta.app/Contents/Developer
       DERIVED_DATA: build/CI/macOS-${{ github.run_id }}-${{ github.run_attempt }}
       EVIDENCE_DIRECTORY: TestResults/CI/macOS
-      RESULT_BUNDLE: TestResults/CoreAILabMac-${{ github.run_id }}-${{ github.run_attempt }}.xcresult
+      RESULT_BUNDLE: TestResults/CoreAILab-${{ github.run_id }}-${{ github.run_attempt }}.xcresult
     steps:
       - name: Check out source and repository LFS assets
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -85,7 +85,7 @@ jobs:
             -u RUN_CHATTERBOX_INTEGRATION \
             xcodebuild \
               -project CoreAIFrameworkLab.xcodeproj \
-              -scheme CoreAILabMac \
+              -scheme CoreAILab \
               -destination 'platform=macOS,arch=arm64' \
               -derivedDataPath "$DERIVED_DATA" \
               -resultBundlePath "$RESULT_BUNDLE" \
