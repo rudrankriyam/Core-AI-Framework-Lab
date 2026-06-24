@@ -32,27 +32,31 @@ struct CoreAIProjectLibraryView: View {
                         )
                         .buttonStyle(.borderedProminent)
                     }
-                } else if visibleProjects.isEmpty {
-                    ContentUnavailableView.search
                 } else {
-                    List(visibleProjects) { project in
-                        NavigationLink(value: CoreAIProjectRoute.project(project.id)) {
-                            CoreAIProjectRowView(project: project)
+                    Group {
+                        if visibleProjects.isEmpty {
+                            ContentUnavailableView.search
+                        } else {
+                            List(visibleProjects) { project in
+                                NavigationLink(value: CoreAIProjectRoute.project(project.id)) {
+                                    CoreAIProjectRowView(project: project)
+                                }
+                            }
+                        }
+                    }
+                    .searchable(text: $searchText, prompt: "Search projects")
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(
+                                "New Project",
+                                systemImage: "plus",
+                                action: showNewProject
+                            )
                         }
                     }
                 }
             }
             .navigationTitle("Projects")
-            .searchable(text: $searchText, prompt: "Search projects")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(
-                        "New Project",
-                        systemImage: "plus",
-                        action: showNewProject
-                    )
-                }
-            }
             .navigationDestination(for: CoreAIProjectRoute.self) { route in
                 CoreAIProjectDestinationView(
                     route: route,
