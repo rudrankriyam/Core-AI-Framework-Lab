@@ -13,12 +13,29 @@ struct AppleModelCatalogSourceView: View {
             Text("A pinned snapshot of Apple's model registry. Entries are export recipes, not bundled weights.")
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 16) {
-                Label("\(modelCount) presets", systemImage: "list.bullet")
-                Text(sourceRevision.prefix(8))
-                    .font(.callout.monospaced())
-                    .foregroundStyle(.secondary)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Label("\(modelCount) recipes", systemImage: "list.bullet")
+                    Label {
+                        Text(sourceRevision.prefix(8))
+                            .monospaced()
+                    } icon: {
+                        Image(systemName: "point.topleft.down.to.point.bottomright.curvepath")
+                    }
+                }
+
+                VStack(alignment: .leading) {
+                    Label("\(modelCount) recipes", systemImage: "list.bullet")
+                    Label {
+                        Text(sourceRevision.prefix(8))
+                            .monospaced()
+                    } icon: {
+                        Image(systemName: "point.topleft.down.to.point.bottomright.curvepath")
+                    }
+                }
             }
+            .font(.callout)
+            .foregroundStyle(.secondary)
 
             if let sourceRepositoryURL {
                 Link("Open apple/coreai-models", destination: sourceRepositoryURL)

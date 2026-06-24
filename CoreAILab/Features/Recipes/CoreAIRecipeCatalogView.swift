@@ -10,13 +10,17 @@ struct CoreAIRecipeCatalogView: View {
         let entries = model.entries
 
         NavigationStack {
-            List {
+            Form {
                 Section {
-                    Text("Trust describes where a recipe came from. Verification describes which checks have evidence. Neither state grants imported code permission to run.")
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading) {
+                        Label("Trust & Verification", systemImage: "checkmark.shield")
+                            .font(.headline)
+                        Text("Trust describes a recipe's source. Verification names the checks backed by evidence. Neither state grants imported code permission to run.")
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
-                Section("Curated recipes") {
+                Section {
                     if let catalogError = model.catalogError {
                         ContentUnavailableView(
                             "Catalog Unavailable",
@@ -33,9 +37,11 @@ struct CoreAIRecipeCatalogView: View {
                             CoreAIRecipeCatalogEntryView(entry: entry)
                         }
                     }
+                } header: {
+                    Label("Curated Recipes", systemImage: "checkmark.seal")
                 }
 
-                Section("Imported bundle") {
+                Section {
                     CoreAIImportedRecipeBundleView(
                         summary: model.importedSummary,
                         codeApprovalState: model.codeApprovalState,
@@ -44,8 +50,11 @@ struct CoreAIRecipeCatalogView: View {
                         onApprove: approveReferencedCode,
                         onRevoke: revokeReferencedCode
                     )
+                } header: {
+                    Label("Imported Bundle", systemImage: "shippingbox.and.arrow.backward")
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

@@ -10,15 +10,18 @@ struct CoreAIImportedRecipeBundleView: View {
 
     var body: some View {
         if let summary {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(summary.manifest.displayName)
+            VStack(alignment: .leading) {
+                Label(summary.manifest.displayName, systemImage: "shippingbox.fill")
                     .font(.headline)
                 LabeledContent("Trust", value: summary.trustState.displayName)
                 LabeledContent(
                     "Bundle SHA-256",
-                    value: String(summary.manifestSHA256.prefix(12))
+                    value: summary.manifestSHA256
                 )
                 .font(.callout.monospaced())
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
                 LabeledContent(
                     "Code references",
                     value: "\(summary.manifest.codeReferences.count)"
@@ -26,10 +29,12 @@ struct CoreAIImportedRecipeBundleView: View {
                 ForEach(summary.manifest.codeReferences) { reference in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(reference.id)
-                            .font(.callout.weight(.medium))
+                            .font(.callout)
+                            .bold()
                         Text("\(reference.language.rawValue) · \(reference.relativePath) · \(reference.entryPoint)")
-                            .font(.caption.monospaced())
+                            .font(.footnote.monospaced())
                             .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
                     }
                 }
             }
@@ -54,7 +59,7 @@ struct CoreAIImportedRecipeBundleView: View {
             }
         } else if summary != nil {
             Text(statusMessage)
-                .font(.caption)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
         }
     }

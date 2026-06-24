@@ -8,16 +8,21 @@ struct CoreAIProjectLibraryView: View {
     @State private var controller = CoreAIProjectLibraryController()
     @State private var path: [CoreAIProjectRoute] = []
     @State private var isCreatingProject = false
+    @State private var searchText = ""
 
     var body: some View {
+        let visibleProjects = searchText.isEmpty
+            ? projects
+            : projects.filter { $0.name.localizedStandardContains(searchText) }
+
         NavigationStack(path: $path) {
             Group {
                 if projects.isEmpty {
                     ContentUnavailableView {
-                        Label("Create a Lab Project", systemImage: "folder.badge.plus")
+                        Label("Create Your First Project", systemImage: "folder.badge.plus")
                     } description: {
                         Text(
-                            "Projects keep imported models and resource bundles available across launches with checksummed, deduplicated storage."
+                            "Keep models, resource bundles, provenance, runs, and evidence together in checksummed storage."
                         )
                     } actions: {
                         Button(
@@ -27,8 +32,10 @@ struct CoreAIProjectLibraryView: View {
                         )
                         .buttonStyle(.borderedProminent)
                     }
+                } else if visibleProjects.isEmpty {
+                    ContentUnavailableView.search
                 } else {
-                    List(projects) { project in
+                    List(visibleProjects) { project in
                         NavigationLink(value: CoreAIProjectRoute.project(project.id)) {
                             CoreAIProjectRowView(project: project)
                         }
@@ -36,6 +43,7 @@ struct CoreAIProjectLibraryView: View {
                 }
             }
             .navigationTitle("Projects")
+            .searchable(text: $searchText, prompt: "Search projects")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(
