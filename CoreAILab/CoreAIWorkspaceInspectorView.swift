@@ -60,7 +60,11 @@ struct CoreAIWorkspaceInspectorView: View {
             Image(systemName: systemImage)
                 .frame(width: 16)
             Text(title)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

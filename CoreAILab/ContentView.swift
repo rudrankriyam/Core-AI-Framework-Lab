@@ -8,10 +8,12 @@ struct ContentView: View {
     @SceneStorage("CoreAILab.isWorkspaceInspectorPresented")
     private var isWorkspaceInspectorPresented = false
 
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+
     var body: some View {
         let selectedSection = selection ?? .projects
 
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $selection) {
                 Section("Library") {
                     ForEach(CoreAILabSection.library) { section in
@@ -55,6 +57,9 @@ struct ContentView: View {
             }
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
+#if os(macOS)
+            .toolbar(removing: .sidebarToggle)
+#endif
         } detail: {
             switch selectedSection {
             case .projects:
@@ -90,7 +95,19 @@ struct ContentView: View {
             CoreAIWorkspaceInspectorView(section: selectedSection)
         }
         .toolbar {
-            ToolbarItem(placement: .secondaryAction) {
+#if os(macOS)
+            ToolbarItem(placement: .navigation) {
+                Button(
+                    "Toggle Sidebar",
+                    systemImage: "sidebar.leading",
+                    action: toggleSidebar
+                )
+                .help("Show or hide the workspace sidebar")
+                .keyboardShortcut("s", modifiers: [.command, .control])
+            }
+#endif
+
+            ToolbarItem(placement: .primaryAction) {
                 Button(
                     "Workspace Inspector",
                     systemImage: "sidebar.trailing",
@@ -109,6 +126,12 @@ struct ContentView: View {
 
     private func toggleWorkspaceInspector() {
         isWorkspaceInspectorPresented.toggle()
+    }
+
+    private func toggleSidebar() {
+        withAnimation {
+            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+        }
     }
 }
 
