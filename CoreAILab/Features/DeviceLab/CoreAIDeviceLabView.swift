@@ -8,14 +8,13 @@ struct CoreAIDeviceLabView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent {
+                VStack(alignment: .leading) {
+                    Label("Physical Device Planning", systemImage: "iphone.gen3")
+                        .font(.headline)
                     Text(
                         "Author an iPhone target, plan asset delivery, and import evidence from the physical runner. Preferences remain separate from measured execution placement."
                     )
                     .foregroundStyle(.secondary)
-                } label: {
-                    Label("Physical Device Planning", systemImage: "iphone.gen3")
-                        .font(.headline)
                 }
             }
 

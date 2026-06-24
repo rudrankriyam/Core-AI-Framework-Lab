@@ -6,19 +6,28 @@ struct CoreAIAssetReportView: View {
     let allowsCacheRemoval: Bool
 
     var body: some View {
-        List {
-            Section("Asset") {
+        Form {
+            Section {
                 LabeledContent("Name", value: report.url.lastPathComponent)
-                LabeledContent("Valid Core AI asset", value: report.isValid ? "Yes" : "No")
+                LabeledContent("Core AI asset") {
+                    Label(
+                        report.isValid ? "Valid" : "Invalid",
+                        systemImage: report.isValid
+                            ? "checkmark.circle.fill"
+                            : "xmark.circle.fill"
+                    )
+                }
                 LabeledContent("Author", value: valueOrFallback(report.author))
                 LabeledContent("License", value: valueOrFallback(report.license))
                 if !report.description.isEmpty {
                     Text(report.description)
                         .foregroundStyle(.secondary)
                 }
+            } header: {
+                Label("Asset", systemImage: "shippingbox")
             }
 
-            Section("Functions") {
+            Section {
                 if report.functions.isEmpty {
                     Text("No functions were declared in the asset summary.")
                         .foregroundStyle(.secondary)
@@ -43,9 +52,11 @@ struct CoreAIAssetReportView: View {
                         }
                     }
                 }
+            } header: {
+                Label("Functions", systemImage: "function")
             }
 
-            Section("Compute Types") {
+            Section {
                 if report.computeTypes.isEmpty {
                     Text("No compute types were reported.")
                         .foregroundStyle(.secondary)
@@ -54,9 +65,11 @@ struct CoreAIAssetReportView: View {
                         Text(computeType)
                     }
                 }
+            } header: {
+                Label("Compute Types", systemImage: "cpu")
             }
 
-            Section("Storage Types") {
+            Section {
                 if report.storageTypes.isEmpty {
                     Text("No storage statistics were reported.")
                         .foregroundStyle(.secondary)
@@ -69,9 +82,11 @@ struct CoreAIAssetReportView: View {
                         )
                     }
                 }
+            } header: {
+                Label("Storage Types", systemImage: "internaldrive")
             }
 
-            Section("Operation Distribution") {
+            Section {
                 if report.operationDistribution.isEmpty {
                     Text("No operation statistics were reported.")
                         .foregroundStyle(.secondary)
@@ -84,12 +99,16 @@ struct CoreAIAssetReportView: View {
                         )
                     }
                 }
+            } header: {
+                Label("Operation Distribution", systemImage: "chart.bar.xaxis")
             }
 
-            Section("Source") {
+            Section {
                 Text(report.url.path)
                     .font(.callout.monospaced())
                     .textSelection(.enabled)
+            } header: {
+                Label("Source", systemImage: "folder")
             }
 
             CoreAISpecializationControlsView(
@@ -97,6 +116,7 @@ struct CoreAIAssetReportView: View {
                 allowsCacheRemoval: allowsCacheRemoval
             )
         }
+        .formStyle(.grouped)
     }
 
     private func valueOrFallback(_ value: String) -> String {

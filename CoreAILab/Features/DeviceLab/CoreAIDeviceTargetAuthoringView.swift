@@ -4,7 +4,7 @@ struct CoreAIDeviceTargetAuthoringView: View {
     @Bindable var workspace: CoreAIDeviceLabWorkspaceModel
 
     var body: some View {
-        Section("iPhone Target") {
+        Section {
             Picker("Compute preference", selection: $workspace.preferredComputeUnit) {
                 ForEach(CoreAIComputeUnitPreference.allCases, id: \.self) { preference in
                     Text(workspace.computeUnitTitle(preference))
@@ -57,6 +57,8 @@ struct CoreAIDeviceTargetAuthoringView: View {
             )
             .font(.subheadline)
             .foregroundStyle(.secondary)
+        } header: {
+            Label("iPhone Target", systemImage: "iphone.gen3")
         }
     }
 }

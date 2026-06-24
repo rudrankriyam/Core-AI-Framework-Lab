@@ -4,7 +4,7 @@ struct CoreAIDeviceStoragePlanView: View {
     @Bindable var workspace: CoreAIDeviceLabWorkspaceModel
 
     var body: some View {
-        Section("Asset Delivery") {
+        Section {
             Picker("Model delivery", selection: $workspace.modelDeliveryMode) {
                 ForEach(CoreAIAssetDeliveryMode.allCases, id: \.self) { mode in
                     Text(mode.title).tag(mode)
@@ -77,6 +77,8 @@ struct CoreAIDeviceStoragePlanView: View {
                     }
                 }
             }
+        } header: {
+            Label("Asset Delivery", systemImage: "shippingbox")
         }
     }
 }

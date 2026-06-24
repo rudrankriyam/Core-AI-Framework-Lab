@@ -6,7 +6,7 @@ struct CoreAISpecializationControlsView: View {
     var allowsCacheRemoval = true
 
     var body: some View {
-        Section("Specialization & Cache") {
+        Section {
             Picker("Compute profile", selection: $workspace.selectedProfile) {
                 ForEach(CoreAISpecializationProfile.allCases) { profile in
                     Text(profile.title)
@@ -96,8 +96,8 @@ struct CoreAISpecializationControlsView: View {
             .disabled(workspace.phase.isBusy || isInteractionDisabled)
 
             if workspace.phase.isBusy {
-                Label("Core AI operation in progress", systemImage: "hourglass")
-                    .foregroundStyle(.secondary)
+                ProgressView(operationTitle)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
 
             Text("Core AI exposes hit/miss and deletion for known assets, but not cache paths, entry sizes, or a complete inventory.")
@@ -111,6 +111,23 @@ struct CoreAISpecializationControlsView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
+        } header: {
+            Label("Specialization & Cache", systemImage: "cpu")
+        }
+    }
+
+    private var operationTitle: String {
+        switch workspace.phase {
+        case .inspecting:
+            "Inspecting model…"
+        case .checkingCache:
+            "Checking specialization cache…"
+        case .specializing:
+            "Specializing model…"
+        case .removingCache:
+            "Deleting cached specialization…"
+        case .idle, .ready:
+            "Updating Core AI state…"
         }
     }
 

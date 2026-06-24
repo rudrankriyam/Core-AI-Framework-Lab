@@ -51,6 +51,7 @@ struct CoreAIAssetInspectorView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button("Open Model", systemImage: "folder", action: openModelPicker)
                     .disabled(workspace.phase.isBusy)
+                    .keyboardShortcut("o", modifiers: .command)
             }
         }
         .fileImporter(
