@@ -86,9 +86,9 @@ Color is semantic and restrained. SwiftUI system backgrounds, labels, separators
 
 ## Typography
 
-**Display Font:** SF Pro through SwiftUI semantic title styles  
-**Body Font:** SF Pro through SwiftUI semantic body, callout, subheadline, and footnote styles  
-**Label/Mono Font:** SF Mono through monospaced variants of the nearest semantic style
+- **Display Font:** SF Pro through SwiftUI semantic title styles
+- **Body Font:** SF Pro through SwiftUI semantic body, callout, subheadline, and footnote styles
+- **Label/Mono Font:** SF Mono through monospaced variants of the nearest semantic style
 
 **Character:** Familiar, highly legible, and quiet. Typography creates hierarchy without oversized display treatments or gratuitous weight changes.
 
